@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+# sme-script
+# purpose: Run the manifest validators for the repo that owns a path; PASS or the first failure
+# inputs: arg:path, file:.sme/vars.toml, file:.sme/manifests/repo-*.md
+# outputs: stdout:text, exit:0=pass, exit:2=fail
+# side_effects: process:spawn
+# end-sme-script
+"""The one shell command the model is allowed to run in interim mode (A3).
+
+Takes a path, finds the repo clone that owns it, and runs that repo's
+`Validate local:` lines through `atpy repo validate-local`. Prints the verdict
+line and, when it is not a pass, the one detail line under it. Nothing else:
+the per-command `ok` lines that validate-local prints on success are dropped,
+because the model only needs PASS or the first failure.
+
+Exit is binary by design (0 pass, 2 anything else) per script-catalog.md. The
+verdict text still distinguishes FAIL (a check failed) from HUMAN (the manifest
+has no runnable `- local:` line), because the fix differs.
+"""
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+SELF = Path(os.path.realpath(__file__))
+TOOLS = SELF.parent.parent
+ATPY = SELF.parent / "atpy"
+
+
+def fail(msg):
+    print(f"VERDICT: FAIL {msg}")
+    return 2
+
+
+def repos_dir():
+    """The clone folder, from sme_store so there is one source of truth."""
+    sys.path.insert(0, str(TOOLS))
+    from commands import sme_store
+    return sme_store.repos_dir().resolve()
+
+
+def slug_for(path):
+    """The repo slug owning `path`: the directory directly under the clone folder."""
+    try:
+        root = repos_dir()
+    except Exception as e:
+        return None, f"cannot read the clone folder from .sme/vars.toml: {e}"
+
+    p = Path(path).expanduser()
+    if not p.exists():
+        return None, f"no such path: {p}"
+    p = p.resolve()
+
+    for parent in [p] + list(p.parents):
+        if parent.parent == root:
+            return parent.name, None
+    return None, f"{p} is not inside a clone under {root}"
+
+
+def main(argv):
+    target = argv[1] if len(argv) > 1 else os.getcwd()
+    if target in ("-h", "--help"):
+        print("usage: sme-check <path inside a repo clone>")
+        return 0
+
+    slug, err = slug_for(target)
+    if err:
+        return fail(err)
+
+    try:
+        r = subprocess.run(
+            [str(ATPY), "repo", "validate-local", "--repo", slug],
+            capture_output=True, text=True,
+        )
+    except Exception as e:
+        return fail(f"could not run validate-local for {slug}: {e}")
+
+    lines = [ln for ln in (r.stdout or "").splitlines() if ln.strip()]
+    verdict = next((ln for ln in lines if ln.startswith("VERDICT: ")), None)
+    if verdict is None:
+        detail = (r.stderr or "").strip().splitlines()
+        return fail(f"validate-local printed no verdict for {slug}: "
+                    f"{detail[-1][:160] if detail else 'no output'}")
+
+    print(verdict)
+    if r.returncode != 0:
+        after = lines[lines.index(verdict) + 1:]
+        if after and after[0].startswith(" "):
+            print(after[0])
+    return 0 if r.returncode == 0 else 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

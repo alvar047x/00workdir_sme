@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "description": "Master system validation manifest - runs all validators and aggregates results",
+  "validators": [
+    {
+      "name": "tickets",
+      "script": "selfdestruction_kiroV2/scripts/validate_tickets.py",
+      "description": "Validate all ticket structures",
+      "required": true
+    },
+    {
+      "name": "gates",
+      "script": "selfdestruction_kiroV2/scripts/validate_gates.py",
+      "description": "Validate gate system state",
+      "required": true
+    },
+    {
+      "name": "syncs",
+      "script": "selfdestruction_kiroV2/scripts/validate_syncs.py",
+      "description": "Validate V2 sync completeness",
+      "required": true
+    },
+    {
+      "name": "steering",
+      "script": "selfdestruction_kiroV2/scripts/validate_steering.py",
+      "description": "Validate steering file structure",
+      "required": true
+    }
+  ],
+  "fail_on_first": false,
+  "report_format": "markdown"
+}

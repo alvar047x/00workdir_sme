@@ -1,0 +1,543 @@
+{
+  "suite": "gitlab",
+  "schema": "schemas/suite-verb.schema.json",
+  "evidence": "reports/audit-2026-09-18/01-atpy-inventory.md",
+  "verbs": [
+    {
+      "name": "gather",
+      "suite": "gitlab",
+      "description": "Repo, MR and newest-pipeline state for a ticket key in one call, verdict first.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.ci_project_path",
+        "system.gitlab.token_env",
+        "repo.base_branch"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "branches": {
+          "type": "array",
+          "description": "local and remote branches carrying the key"
+        },
+        "mr": {
+          "type": "object",
+          "description": "iid, state, url, or null"
+        },
+        "pipeline": {
+          "type": "object",
+          "description": "id, status, url, or null"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0"
+      }
+    },
+    {
+      "name": "mr-prepare",
+      "suite": "gitlab",
+      "description": "Write the MR description file for the ticket and print the new-MR link and the drafted ticket comment; creates no MR.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "from_file": {
+            "type": "string",
+            "description": "Path of the MR markdown, or - for stdin"
+          },
+          "title": {
+            "type": "string",
+            "description": "MR title"
+          },
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [
+          "key",
+          "from_file"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.ci_project_path",
+        "system.gitlab.token_env",
+        "repo.mr_target_branch",
+        "repo.base_branch"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "mr_file": {
+          "type": "string",
+          "description": "path written"
+        },
+        "new_mr_url": {
+          "type": "string",
+          "description": "prefilled GitLab new-MR link"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0 and mr_file exists"
+      }
+    },
+    {
+      "name": "watch",
+      "suite": "gitlab",
+      "description": "Watch one pipeline for one layer until plan or apply resolves; verdict first; never plays a job.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "pipeline": {
+            "type": "string",
+            "description": "Pipeline id or URL"
+          },
+          "layer": {
+            "type": "string",
+            "description": "Layer dir from the manifest"
+          },
+          "paths": {
+            "type": "string",
+            "description": "Comma list of changed paths, resolved to a layer"
+          },
+          "mr": {
+            "type": "integer",
+            "description": "MR iid whose changed paths resolve the layer"
+          },
+          "once": {
+            "type": "boolean",
+            "description": "One snapshot; exit 4 while running"
+          },
+          "until": {
+            "enum": [
+              "plan",
+              "apply"
+            ]
+          },
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [
+          "pipeline"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.ci_project_path",
+        "system.gitlab.token_env",
+        "repo.watch"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "layer": {
+          "type": "string",
+          "description": "resolved layer"
+        },
+        "plan_job": {
+          "type": "object",
+          "description": "status and summary line"
+        },
+        "apply_job": {
+          "type": "object",
+          "description": "status and summary line"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0 pass; 2 blocked or failed; 3 timeout; 4 still running (only with once)"
+      }
+    },
+    {
+      "name": "watch-derive",
+      "suite": "gitlab",
+      "description": "Print layer lines derived from the CI files for human approval into the manifest.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.ci_files"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "layers": {
+          "type": "array",
+          "description": "dir, plan_job, apply_job per layer"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0"
+      }
+    },
+    {
+      "name": "pipeline-list",
+      "suite": "gitlab",
+      "description": "List recent pipelines for the repo, optionally for the current branch.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "current_branch_only": {
+            "type": "boolean",
+            "description": "Filter to the clone's HEAD branch"
+          },
+          "status": {
+            "enum": [
+              "running",
+              "pending",
+              "success",
+              "failed",
+              "canceled",
+              "manual"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Rows, default 10",
+            "maximum": 50
+          },
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.ci_project_path",
+        "system.gitlab.token_env"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "pipelines": {
+          "type": "array",
+          "description": "id, ref, status, url"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0"
+      }
+    },
+    {
+      "name": "pipeline-show",
+      "suite": "gitlab",
+      "description": "Pipeline details and its jobs.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "pipeline": {
+            "type": "string",
+            "description": "Pipeline id or URL"
+          },
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [
+          "pipeline"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.ci_project_path",
+        "system.gitlab.token_env"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "status": {
+          "type": "string",
+          "description": "pipeline status"
+        },
+        "jobs": {
+          "type": "array",
+          "description": "name, stage, status, id"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0"
+      }
+    },
+    {
+      "name": "job-trace",
+      "suite": "gitlab",
+      "description": "Tail of a job log; optionally save the full log.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "job": {
+            "type": "string",
+            "description": "Job id or URL"
+          },
+          "lines": {
+            "type": "integer",
+            "description": "Tail length, default 100",
+            "maximum": 400
+          },
+          "save": {
+            "type": "boolean",
+            "description": "Save full log under the ticket dir"
+          },
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [
+          "job"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.ci_project_path",
+        "system.gitlab.token_env"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "tail": {
+          "type": "string",
+          "description": "last N lines"
+        },
+        "log_file": {
+          "type": "string",
+          "description": "path when saved"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0"
+      }
+    },
+    {
+      "name": "mr-diff",
+      "suite": "gitlab",
+      "description": "Diff of one merge request for review.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "mr": {
+            "type": "integer",
+            "description": "MR iid"
+          },
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [
+          "mr"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.ci_project_path",
+        "system.gitlab.token_env"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "files": {
+          "type": "array",
+          "description": "path and diff per file"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0"
+      }
+    },
+    {
+      "name": "mr-comments",
+      "suite": "gitlab",
+      "description": "Non-system notes on one merge request.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "mr": {
+            "type": "integer",
+            "description": "MR iid"
+          },
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [
+          "mr"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.ci_project_path",
+        "system.gitlab.token_env"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "notes": {
+          "type": "array",
+          "description": "author, created, body"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0"
+      }
+    }
+  ],
+  "annotations": {
+    "gather": {
+      "source": "automation_tools/commands/gather.py:handle_gather_commands (at gather)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--repo slug"
+      ],
+      "note": ""
+    },
+    "mr-prepare": {
+      "source": "automation_tools/commands/gitlab/mr.py:handle_mr_prepare (at gitlab mr-prepare)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--repo slug",
+        "--source branch (FREE BRANCH ARGUMENT: must become HEAD of the resolved clone)"
+      ],
+      "note": "Writes only under the ticket dir in 00workdir, never in the work repo. In Window C the input file is replaced by the record-derived description."
+    },
+    "watch": {
+      "source": "automation_tools/commands/gitlab/watch.py:handle_gitlab_watch (at gitlab watch)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--repo slug",
+        "--project raw path (FREE PROJECT ARGUMENT: remove; manifest only)"
+      ],
+      "note": "Exit 3 and 4 are part of the contract; the runner wrapper needs the exit passthrough flag for this verb."
+    },
+    "watch-derive": {
+      "source": "automation_tools/commands/gitlab/watch.py (at gitlab watch --derive)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--repo slug",
+        "--project"
+      ],
+      "note": "Bootstrap tool: belongs to the evaluator, run by the human, not offered to the model."
+    },
+    "pipeline-list": {
+      "source": "automation_tools/commands/gitlab/pipeline.py:handle_gitlab_pipelines (at gitlab pipelines)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--project (FREE PROJECT ARGUMENT, required today)",
+        "--ref (FREE BRANCH ARGUMENT)"
+      ],
+      "note": "One page only today; keep that, the limit cap makes it explicit."
+    },
+    "pipeline-show": {
+      "source": "automation_tools/commands/gitlab/pipeline.py:handle_gitlab_pipeline (at gitlab pipeline)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--project (FREE PROJECT ARGUMENT, required today)"
+      ],
+      "note": "URL form already carries the project; the verb must check it equals the manifest project and refuse otherwise."
+    },
+    "job-trace": {
+      "source": "automation_tools/commands/gitlab/pipeline.py:handle_gitlab_job (at gitlab job)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--project (FREE PROJECT ARGUMENT, required today)"
+      ],
+      "note": "Today saves into commands/gitlab/logs/ inside the tool tree; move to the ticket dir."
+    },
+    "mr-diff": {
+      "source": "automation_tools/commands/gitlab/mr.py diff branch (at gitlab diff MR_URL)",
+      "status": "in use but fragile: imports from automation_tools/archived/mcp_experiments",
+      "free_args_today_that_become_bindings": [
+        "mr_url carries host, project path and iid as one free string"
+      ],
+      "note": "Rebuild on the same http client as watch; drop the archived dependency."
+    },
+    "mr-comments": {
+      "source": "automation_tools/commands/gitlab/mr.py comments branch (at gitlab comments MR_URL)",
+      "status": "in use but fragile: same archived dependency",
+      "free_args_today_that_become_bindings": [
+        "mr_url"
+      ],
+      "note": "Today returns only the first 10 notes cut to 200 chars; decide the cap on purpose."
+    }
+  }
+}

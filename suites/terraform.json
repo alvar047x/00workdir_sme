@@ -1,0 +1,56 @@
+{
+  "suite": "terraform",
+  "schema": "schemas/suite-verb.schema.json",
+  "evidence": "reports/audit-2026-09-18/01-atpy-inventory.md",
+  "verbs": [
+    {
+      "name": "validate-local",
+      "suite": "terraform",
+      "description": "Run the manifest's local validator commands in order; pass or the first failure.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.validators.local"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "results": {
+          "type": "array",
+          "description": "validator id and PASS or FAIL"
+        },
+        "first_failure": {
+          "type": "string",
+          "description": "output tail of the first failure"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0 when every validator exits 0"
+      }
+    }
+  ],
+  "annotations": {
+    "validate-local": {
+      "source": "automation_tools/commands/repo.py:cmd_validate_local (at repo validate-local)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--repo slug"
+      ],
+      "note": "Not terraform-specific: it runs whatever the manifest lists, with shell=True. Filed under terraform because every manifest that has local lines today lists terraform fmt or validate. It is the ONLY terraform verb in current use: plan and apply run in CI, and the cvg-titan-input local plan is a five-step prose recipe in the manifest, not a verb."
+    }
+  }
+}

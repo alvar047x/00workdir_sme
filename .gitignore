@@ -1,0 +1,8 @@
+# sessions/ is its own git repo (an embedded repo the outer one cannot track).
+# Ignore it wholesale: the per-dir whitelists that worked when the store lived
+# inside 00workdir cannot cross a nested repo boundary.
+sessions/
+
+# machine-specific paths and live run state
+vars.toml
+state/

@@ -1,0 +1,171 @@
+{
+  "suite": "git",
+  "schema": "schemas/suite-verb.schema.json",
+  "evidence": "reports/audit-2026-09-18/01-atpy-inventory.md",
+  "verbs": [
+    {
+      "name": "pull",
+      "suite": "git",
+      "description": "Fetch, check out the base branch and fast-forward it; refuses on a dirty tree.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.base_branch",
+        "repo.remote_name"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "head": {
+          "type": "string",
+          "description": "one-line log of the new HEAD"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0 and git pull --ff-only succeeded"
+      }
+    },
+    {
+      "name": "branch-start",
+      "suite": "git",
+      "description": "Create or check out the ticket branch from the manifest pattern, off the fetched base branch.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "title": {
+            "type": "string",
+            "description": "Plan title, slugged into the branch name",
+            "maxLength": 80
+          },
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          }
+        },
+        "required": [
+          "key",
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.base_branch",
+        "repo.remote_name",
+        "repo.branch_pattern"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "branch_name": {
+          "type": "string",
+          "description": "the branch now checked out"
+        },
+        "created": {
+          "type": "boolean",
+          "description": "false when it already existed"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0 and HEAD is on branch_name"
+      }
+    },
+    {
+      "name": "push",
+      "suite": "git",
+      "description": "Push the current branch with upstream set; a non-fast-forward returns verdict HUMAN with the exact force command and does nothing.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string",
+            "description": "Manifest slug. Omit to resolve from the cwd's origin URL hash. Needed because the Kiro workspace is multi-root and the cwd is usually 00workdir."
+          },
+          "force_with_lease": {
+            "type": "boolean",
+            "description": "Only with recorded human approval; refreshes the lease with a fetch first"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "repo.identity.remote_hash",
+        "repo.base_branch",
+        "repo.remote_name",
+        "repo.branch_pattern",
+        "repo.protected_branches"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "pushed_ref": {
+          "type": "string",
+          "description": "remote ref that was updated"
+        },
+        "mr_create_url": {
+          "type": "string",
+          "description": "new-MR link printed by GitLab, when present"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0; exit 2 with VERDICT: HUMAN on non-fast-forward"
+      }
+    }
+  ],
+  "annotations": {
+    "pull": {
+      "source": "automation_tools/commands/repo.py:cmd_pull (at repo pull)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "repo_name positional (slug; becomes cwd/hash resolution)"
+      ],
+      "note": "Class is write because it changes the local checkout; no remote effect. default branch already comes from the manifest today."
+    },
+    "branch-start": {
+      "source": "automation_tools/commands/repo.py:cmd_branch_start (at repo branch-start)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--repo slug"
+      ],
+      "note": "Branch name is derived, never typed: already true today. Keep the dirty-tree refusal and the existing-branch checkout path."
+    },
+    "push": {
+      "source": "automation_tools/commands/repo.py:cmd_push (at repo push)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "repo_name positional",
+        "branch is implicit from HEAD (good)",
+        "remote is hard-coded origin (becomes repo.remote_name)"
+      ],
+      "note": "Human-only in the target design: the agent is denied git push. CLI --force today skips the approval check that the at do path enforces; the verb must not."
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "description": "Sync validation manifest - validates V2 sync completeness and idempotency",
+  "sync_sources": [
+    {
+      "source_path": ".kiro/hooks",
+      "target_path": "selfdestruction_kiroV2/hooks",
+      "description": "Hook definitions must be in sync",
+      "required": true
+    }
+  ],
+  "validations": [
+    {
+      "type": "file_count_match",
+      "description": "Source and target must have same number of files"
+    },
+    {
+      "type": "content_hash_match",
+      "description": "File contents must match exactly between source and target"
+    },
+    {
+      "type": "idempotent_check",
+      "description": "Running sync twice produces same result"
+    },
+    {
+      "type": "json_validity",
+      "description": "All JSON files must be valid"
+    }
+  ],
+  "state_file": "automation_tools/state/v2_sync_state.json",
+  "state_file_description": "Records last sync timestamp and checksums"
+}

@@ -1,0 +1,60 @@
+{
+  "version": "1.0",
+  "description": "Ticket validation manifest - defines required structure for all tickets",
+  "required_files": [
+    {
+      "name": "metadata.json",
+      "type": "file",
+      "description": "Ticket metadata",
+      "required": true
+    },
+    {
+      "name": "quick-start.md",
+      "type": "file",
+      "description": "Quick reference for ticket implementation",
+      "required": true
+    },
+    {
+      "name": "ticket.json",
+      "type": "file",
+      "description": "Full ticket data",
+      "required": true
+    }
+  ],
+  "required_directories": [
+    {
+      "name": "artifacts",
+      "description": "Generated outputs, reports, screenshots",
+      "required": false
+    },
+    {
+      "name": "sessions",
+      "description": "Session logs and context files",
+      "required": false
+    },
+    {
+      "name": "implementation",
+      "description": "Implementation details and code changes",
+      "required": false
+    }
+  ],
+  "file_validations": [
+    {
+      "file": "metadata.json",
+      "type": "json_valid",
+      "description": "Must be valid JSON"
+    },
+    {
+      "file": "quick-start.md",
+      "type": "markdown_valid",
+      "description": "Must be valid markdown with heading"
+    },
+    {
+      "file": "ticket.json",
+      "type": "json_valid",
+      "description": "Must be valid JSON"
+    }
+  ],
+  "naming_pattern": "^DVPS-\\d+$",
+  "naming_description": "Ticket directories must match DVPS-{number} pattern"
+}

@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "scout-report.schema.json",
+  "title": "Scout Report",
+  "description": "Pre-plan gate. AI must generate and validate this before minting an execution manifest. Proves recon was actually performed.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "ticket",
+    "sso_verified",
+    "sso_identity",
+    "repo_state",
+    "blast_radius_assessment",
+    "affected_files",
+    "constraints_extracted",
+    "scout_timestamp"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+
+    "ticket": {
+      "type": "object",
+      "required": ["key", "type", "summary"],
+      "additionalProperties": false,
+      "properties": {
+        "key":     { "type": "string", "pattern": "^DVPS-[0-9]+$" },
+        "type":    { "type": "string", "enum": ["ecr_migration","azure_infra","aws_infra","cicd","k8s","security","hospital"] },
+        "summary": { "type": "string", "minLength": 10 }
+      }
+    },
+
+    "sso_verified": {
+      "type": "boolean",
+      "const": true,
+      "description": "Must be true. Scout cannot proceed without confirmed AWS auth."
+    },
+
+    "sso_identity": {
+      "type": "string",
+      "pattern": "^arn:aws:sts::[0-9]+:assumed-role/.+",
+      "description": "Actual ARN from aws sts get-caller-identity. Not a placeholder."
+    },
+
+    "repo_state": {
+      "type": "object",
+      "required": ["repo", "branch", "last_commit", "is_clean"],
+      "additionalProperties": false,
+      "properties": {
+        "repo":        { "type": "string", "minLength": 1 },
+        "branch":      { "type": "string", "minLength": 1 },
+        "last_commit": { "type": "string", "pattern": "^[a-f0-9]{7,40}$" },
+        "is_clean":    { "type": "boolean",
+          "description": "False = uncommitted changes exist. Scout must flag this."
+        }
+      }
+    },
+
+    "blast_radius_assessment": {
+      "type": "string",
+      "minLength": 50,
+      "description": "AI must write a substantive paragraph proving it understands the impact. Minimum 50 chars enforces non-trivial analysis. Generic entries like 'changes some resources' will fail length check."
+    },
+
+    "affected_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^(~/vscode/clonedRepos|\\./|/Users/).+\\.(tf|yaml|yml|json|py|sh|md)$"
+      },
+      "description": "Real file paths identified during scout. Must be non-empty."
+    },
+
+    "constraints_extracted": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["constraint", "source", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "constraint": { "type": "string", "minLength": 5 },
+          "source":     { "type": "string", "enum": ["jira_ticket","repo_ops_file","wiki","context_manifest","repo_code"] },
+          "value":      { "type": "string", "minLength": 5 }
+        }
+      }
+    },
+
+    "scout_timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}",
+      "description": "ISO 8601 timestamp of when scout was performed. Stale reports can be rejected."
+    },
+
+    "blockers_identified": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 5 },
+      "description": "Optional. Any blockers found during scout (missing tags, auth failures, dependency issues)."
+    },
+
+    "environment": {
+      "type": "string",
+      "enum": ["build","qa-aws","stage-aws","prod-au","prod-ca","prod-ie","prod-uk","prod-us","qa","stg","prod"]
+    }
+  }
+}

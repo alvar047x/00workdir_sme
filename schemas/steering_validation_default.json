@@ -1,0 +1,34 @@
+{
+  "version": "1.0",
+  "description": "Steering validation manifest - validates steering file structure and completeness",
+  "required_structure": {
+    "directory": ".kiro/steering",
+    "minimum_files": 40,
+    "file_extension": ".md"
+  },
+  "validations": [
+    {
+      "type": "file_count",
+      "description": "Must have minimum files defined",
+      "minimum": 40
+    },
+    {
+      "type": "markdown_valid",
+      "description": "All files must be valid markdown with headers"
+    },
+    {
+      "type": "no_duplicates",
+      "description": "No duplicate steering files by name"
+    },
+    {
+      "type": "naming_convention",
+      "description": "Filenames must be lowercase with hyphens",
+      "pattern": "^[a-z0-9-]+\\.md$"
+    }
+  ],
+  "critical_files": [
+    "autonomy-rules.md",
+    "agent-behavior-rules.md"
+  ],
+  "critical_files_description": "These files must always exist and be valid"
+}

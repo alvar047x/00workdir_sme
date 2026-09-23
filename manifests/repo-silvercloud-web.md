@@ -1,0 +1,25 @@
+---
+kind: repo
+key: https://gitlab.com/amwell/on-prem-migrated/silvercloud/silvercloud-web.git
+slug: silvercloud-web
+report: none
+last_intake: none
+---
+
+## Environment
+- default branch: main; protected: development,main
+- MR target: development; branch pattern: DVPS-XXXX-desc (topology.yaml)
+- contents: dockerfile image build
+- pipeline: .gitlab-ci.yml
+
+## Validate (what "done" looks like here)
+- pending intake
+
+## Watch (how to monitor this repo's pipelines)
+- pending intake; template T-0001 once written
+
+## Decisions in force here
+none yet (global decisions apply without being listed)
+
+## Overrides
+none

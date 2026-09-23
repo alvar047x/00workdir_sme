@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GitState",
+  "description": "Schema for git-state.json (Audit trail of commits, branches, and MRs per ticket)",
+  "type": "object",
+  "required": ["ticket_key", "repository", "branch_name", "commits"],
+  "properties": {
+    "ticket_key": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
+    "repository": { "type": "string" },
+    "branch_name": { "type": "string" },
+    "mr_url": { "type": ["string", "null"], "format": "uri" },
+    "mr_status": { "type": "string", "enum": ["none", "draft", "opened", "merged", "closed"] },
+    "base_commit": { "type": "string" },
+    "commits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sha", "message", "timestamp"],
+        "properties": {
+          "sha": { "type": "string" },
+          "message": { "type": "string" },
+          "timestamp": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Test Manifest Schema",
+  "description": "Defines all automated tests for the Kiro system",
+  "type": "object",
+  "required": ["version", "tests"],
+  "properties": {
+    "version": {"type": "string"},
+    "created": {"type": "string"},
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": {"type": "string"},
+          "type": {"type": "string", "enum": ["json_validity", "file_exists", "handler_callable", "command_succeeds", "output_contains", "hook_type_check"]},
+          "description": {"type": "string"},
+          "enabled": {"type": "boolean", "default": true},
+          "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"], "default": "high"},
+          "target": {"type": "string"},
+          "hook_name": {"type": "string"},
+          "expected_type": {"type": "string", "enum": ["command", "agent"]},
+          "command": {"type": "string"},
+          "input": {"type": "string"},
+          "expected_output": {"type": "string"},
+          "timeout": {"type": "number", "default": 30}
+        }
+      }
+    }
+  }
+}

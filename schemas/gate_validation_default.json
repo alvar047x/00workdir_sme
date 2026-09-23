@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "description": "Gate validation manifest - validates gate system state",
+  "required_files": [
+    {
+      "name": "gate-audit.log",
+      "type": "file",
+      "description": "Gate audit log",
+      "required": true
+    },
+    {
+      "name": "system-audit.md",
+      "type": "file",
+      "description": "System audit report in markdown",
+      "required": true
+    }
+  ],
+  "file_validations": [
+    {
+      "file": "gate-audit.log",
+      "type": "text_nonempty",
+      "description": "Gate audit log must not be empty"
+    },
+    {
+      "file": "system-audit.md",
+      "type": "markdown_valid",
+      "description": "Must be valid markdown"
+    }
+  ],
+  "bypass_allowed": true,
+  "bypass_description": "BYPASS file may exist to override gate checks during incident mode"
+}

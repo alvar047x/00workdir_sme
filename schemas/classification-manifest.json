@@ -1,0 +1,336 @@
+{
+  "version": "1.0",
+  "description": "Manifest-driven ticket type classification rules. Used by evaluate_ticket.py to detect ticket type and confidence in <2ms.",
+  
+  "ticket_types": [
+    {
+      "id": "infrastructure_change",
+      "display_name": "Infrastructure Change",
+      "description": "Changes to infrastructure, cloud resources, networking, or platform systems",
+      
+      "patterns": {
+        "keywords": [
+          "terraform", "aws", "azure", "kubernetes", "k8s", "network", "firewall", "gateway",
+          "rds", "vpn", "iam", "autoscaling", "ecr", "elb", "alb", "vpc", "subnet", "nat",
+          "dns", "load.?balancer", "cdn", "storage", "database", "cluster", "node", "pod"
+        ],
+        "domain_regex": "infrastructure|platform|devops|ops|cloud|network",
+        "min_confidence_single_keyword": 0.7,
+        "min_confidence_multi_keyword": 0.9
+      },
+      
+      "risk_profile": {
+        "baseline_risk": "MEDIUM",
+        "compliance_deadline_critical": false,
+        "affects_production_likely": true,
+        "requires_approval": true,
+        "sla_hours": 48
+      },
+      
+      "approval_gates": [
+        {
+          "gate": "technical_review",
+          "approver_role": "platform_lead",
+          "sla_hours": 24
+        },
+        {
+          "gate": "operations_readiness",
+          "approver_role": "ops_team",
+          "sla_hours": 24
+        }
+      ],
+      
+      "escalation": {
+        "auto_escalate_if_sla_exceeded": true,
+        "escalation_path": ["Platform Lead", "Infrastructure Manager", "CTO"]
+      }
+    },
+    
+    {
+      "id": "security_compliance",
+      "display_name": "Security / Compliance",
+      "description": "Security findings, compliance requirements, vulnerability fixes, or audit findings",
+      
+      "patterns": {
+        "keywords": [
+          "security", "finding", "vulnerability", "fips", "compliance", "audit", "cve",
+          "deprecated", "retirement", "end.?of.?support", "end.?of.?life", "eol", "ssl", "tls",
+          "certificate", "encryption", "key", "password", "secret", "token", "auth",
+          "threat", "risk", "pentest", "penetration", "audit.?finding", "stackrox"
+        ],
+        "requires_deadline": true,
+        "critical_if_deadline_lt_30_days": true,
+        "min_confidence_single_keyword": 0.8,
+        "min_confidence_multi_keyword": 0.95
+      },
+      
+      "risk_profile": {
+        "baseline_risk": "HIGH",
+        "compliance_deadline_critical": true,
+        "affects_production_likely": true,
+        "requires_approval": true,
+        "sla_hours": 24
+      },
+      
+      "approval_gates": [
+        {
+          "gate": "security_review",
+          "approver_role": "security_lead",
+          "sla_hours": 12
+        },
+        {
+          "gate": "compliance_verification",
+          "approver_role": "compliance_officer",
+          "sla_hours": 12
+        }
+      ],
+      
+      "escalation": {
+        "auto_escalate_if_sla_exceeded": true,
+        "escalation_path": ["Security Lead", "CISO", "CTO", "CEO"]
+      }
+    },
+    
+    {
+      "id": "ktlo_operational",
+      "display_name": "KTLO / Operational",
+      "description": "Keep-the-lights-on work, maintenance, or routine operational tasks",
+      
+      "patterns": {
+        "parent_key_regex": "DVPS-650[6-7]|OPS-.*",
+        "labels_contain": ["KTLO", "operational", "maintenance", "routine", "regular"],
+        "keywords": ["maintenance", "routine", "operational", "support", "ktlo"],
+        "min_confidence": 0.75
+      },
+      
+      "risk_profile": {
+        "baseline_risk": "LOW",
+        "compliance_deadline_critical": false,
+        "affects_production_likely": false,
+        "requires_approval": false,
+        "sla_hours": 72
+      },
+      
+      "approval_gates": [],
+      
+      "escalation": {
+        "auto_escalate_if_sla_exceeded": false,
+        "escalation_path": []
+      }
+    },
+    
+    {
+      "id": "defect_bug",
+      "display_name": "Defect / Bug",
+      "description": "Bug reports, defect fixes, or error corrections",
+      
+      "patterns": {
+        "type": "Bug",
+        "keywords": [
+          "critical", "high", "bug", "defect", "error", "crash", "fail", "broken",
+          "stackrox", "violation", "exception", "issue", "problem", "not.?working",
+          "regression", "break"
+        ],
+        "min_confidence_critical": 0.85,
+        "min_confidence_high": 0.75,
+        "min_confidence_medium": 0.65
+      },
+      
+      "risk_profile": {
+        "baseline_risk": "MEDIUM",
+        "compliance_deadline_critical": false,
+        "affects_production_likely": true,
+        "requires_approval": true,
+        "sla_hours": 24
+      },
+      
+      "approval_gates": [
+        {
+          "gate": "qa_verification",
+          "approver_role": "qa_lead",
+          "sla_hours": 12
+        },
+        {
+          "gate": "technical_review",
+          "approver_role": "platform_lead",
+          "sla_hours": 12
+        }
+      ],
+      
+      "escalation": {
+        "auto_escalate_if_critical": true,
+        "escalation_path": ["QA Lead", "Platform Lead", "Director"]
+      }
+    },
+    
+    {
+      "id": "feature_development",
+      "display_name": "Feature / Development",
+      "description": "New features, enhancements, or development work",
+      
+      "patterns": {
+        "type": ["Story", "Epic"],
+        "keywords": [
+          "feature", "capability", "new", "enhancement", "implement", "develop",
+          "build", "create", "add", "support", "update"
+        ],
+        "min_confidence": 0.7
+      },
+      
+      "risk_profile": {
+        "baseline_risk": "LOW",
+        "compliance_deadline_critical": false,
+        "affects_production_likely": false,
+        "requires_approval": false,
+        "sla_hours": 120
+      },
+      
+      "approval_gates": [],
+      
+      "escalation": {
+        "auto_escalate_if_sla_exceeded": false,
+        "escalation_path": []
+      }
+    },
+    
+    {
+      "id": "documentation",
+      "display_name": "Documentation",
+      "description": "Documentation updates, guides, or knowledge base entries",
+      
+      "patterns": {
+        "keywords": [
+          "doc", "documentation", "guide", "readme", "wiki", "knowledge",
+          "tutorial", "example", "howto", "runbook"
+        ],
+        "min_confidence": 0.8
+      },
+      
+      "risk_profile": {
+        "baseline_risk": "LOW",
+        "compliance_deadline_critical": false,
+        "affects_production_likely": false,
+        "requires_approval": false,
+        "sla_hours": 240
+      },
+      
+      "approval_gates": [],
+      
+      "escalation": {
+        "auto_escalate_if_sla_exceeded": false,
+        "escalation_path": []
+      }
+    }
+  ],
+  
+  "risk_scoring": {
+    "description": "Risk score calculation rules (additive model, max 10.0)",
+    "rules": [
+      {
+        "flag": "compliance_deadline_lt_30_days",
+        "points": 2,
+        "description": "Compliance deadline less than 30 days away"
+      },
+      {
+        "flag": "affects_production",
+        "points": 2,
+        "description": "Change affects production environment"
+      },
+      {
+        "flag": "blast_radius_global",
+        "points": 1,
+        "description": "Change affects all regions/environments"
+      },
+      {
+        "flag": "blast_radius_multi_region",
+        "points": 1,
+        "description": "Change affects multiple regions"
+      },
+      {
+        "flag": "requires_downtime",
+        "points": 1,
+        "description": "Change requires service downtime"
+      },
+      {
+        "flag": "security_implication",
+        "points": 1,
+        "description": "Change has security implications"
+      },
+      {
+        "flag": "requires_coordination_multi_team",
+        "points": 1,
+        "description": "Change requires coordination with multiple teams"
+      }
+    ],
+    "max_score": 10.0,
+    "risk_level_mapping": {
+      "CRITICAL": {"min_score": 8.5, "color": "#ff0000"},
+      "HIGH": {"min_score": 6.5, "color": "#ff6600"},
+      "MEDIUM": {"min_score": 3.5, "color": "#ffcc00"},
+      "LOW": {"min_score": 0.0, "color": "#00cc00"}
+    }
+  },
+  
+  "confidence_thresholds": {
+    "description": "Type detection confidence thresholds",
+    "high_confidence": {
+      "threshold": 0.95,
+      "description": "Multiple strong signals match; >95% sure of classification"
+    },
+    "medium_confidence": {
+      "threshold": 0.75,
+      "description": "Pattern match + keyword; 75-95% sure of classification"
+    },
+    "low_confidence": {
+      "threshold": 0.50,
+      "description": "Weak signals only; 50-75% sure of classification"
+    },
+    "min_for_auto_routing": 0.85,
+    "min_for_manual_review": 0.50
+  },
+  
+  "detection_algorithm": {
+    "description": "Algorithm for determining ticket type and confidence",
+    "steps": [
+      "1. Extract keywords from ticket title + description (lowercased)",
+      "2. Count keyword matches per ticket type",
+      "3. Calculate confidence per type = (matches / total_keywords_in_type) * type_weight",
+      "4. Apply parent epic check (if parent matches, add 0.2 to confidence)",
+      "5. Apply type check (if Jira type matches, add 0.1 to confidence)",
+      "6. Select type with highest confidence",
+      "7. If confidence >= min_for_auto_routing, mark for auto-routing; else flag for review"
+    ]
+  },
+  
+  "examples": [
+    {
+      "title": "Titan AVD - Update Virtual Network Gateway SKU",
+      "description": "The Virtual Network Gateway used for AVDs is VpnGw1... Update SKU to VpnGw1AZ to avoid stability issues. VPN Gateway non-AZ SKUs will be retired on 30 September 2026.",
+      "parent_key": "DVPS-6507",
+      "expected_type": "infrastructure_change",
+      "reasoning": "Keywords: 'azure', 'gateway', 'retirement', 'deadline' → infrastructure + compliance patterns match",
+      "expected_confidence": 0.98
+    },
+    {
+      "title": "Fix StackRox policy violation in authentication service",
+      "description": "CRITICAL: StackRox detected a security policy violation in the auth service deployment.",
+      "expected_type": "security_compliance",
+      "reasoning": "Keywords: 'StackRox', 'CRITICAL', 'security', 'violation' → security patterns match strongly",
+      "expected_confidence": 0.96
+    },
+    {
+      "title": "Update production database instance SKU",
+      "description": "CRITICAL: Upgrade production RDS instance to larger SKU to handle increased load.",
+      "expected_type": "infrastructure_change",
+      "reasoning": "Keywords: 'production', 'RDS', 'upgrade' → infrastructure patterns match",
+      "expected_confidence": 0.88
+    },
+    {
+      "title": "Add documentation for new API endpoint",
+      "description": "Create documentation for the new payment API endpoint released in v2.1.",
+      "expected_type": "documentation",
+      "reasoning": "Keywords: 'documentation', 'API' → documentation type",
+      "expected_confidence": 0.85
+    }
+  ]
+}

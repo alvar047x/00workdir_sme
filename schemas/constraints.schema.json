@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Constraints Schema",
+  "description": "Global constraints: timeouts, confidence thresholds, retention policies",
+  "type": "object",
+  "required": ["version"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "intent_matching": {
+      "type": "object",
+      "properties": {
+        "min_confidence_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Minimum confidence to auto-execute (e.g., 0.80)"
+        },
+        "ambiguity_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence range for ambiguity (0.65-0.79)"
+        },
+        "escalation_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence below this escalates (< 0.65)"
+        }
+      }
+    },
+    "timeouts": {
+      "type": "object",
+      "properties": {
+        "command_execution_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "description": "Max time for command execution (ms)"
+        },
+        "precondition_check_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "description": "Max time for precondition check (ms)"
+        },
+        "gate_approval_ms": {
+          "type": "integer",
+          "minimum": 60000,
+          "description": "Expiry time for gate manifest (ms)"
+        },
+        "session_lock_ms": {
+          "type": "integer",
+          "minimum": 100,
+          "description": "Max time to acquire session lock (ms)"
+        }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "properties": {
+        "session_log_days": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Days to keep session logs before archiving"
+        },
+        "gate_manifest_archive_hours": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Hours before archiving expired gate manifests"
+        },
+        "audit_retention_days": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Days to keep audit logs (90 default)"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

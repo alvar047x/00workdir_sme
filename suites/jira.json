@@ -1,0 +1,880 @@
+{
+  "suite": "jira",
+  "schema": "schemas/suite-verb.schema.json",
+  "evidence": "reports/audit-2026-09-18/01-atpy-inventory.md",
+  "verbs": [
+    {
+      "name": "fetch",
+      "suite": "jira",
+      "description": "Fetch one ticket and write its snapshot under the ticket dir.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "system.atlassian.site"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "snapshot_dir": {
+          "type": "string",
+          "description": "tickets/KEY path"
+        },
+        "status": {
+          "type": "string",
+          "description": "current status"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0 and snapshot files exist"
+      }
+    },
+    {
+      "name": "comment-list",
+      "suite": "jira",
+      "description": "List comments with ids.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "width": {
+            "type": "integer",
+            "description": "Chars of text per comment, default 120"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "system.atlassian.site"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "comments": {
+          "type": "array",
+          "description": "id, author, created, text"
+        }
+      },
+      "validator": {
+        "kind": "http_status",
+        "pass_when": "http 200"
+      }
+    },
+    {
+      "name": "comment-add",
+      "suite": "jira",
+      "description": "Post one Markdown comment, converted to ADF; reports any mention that did not resolve.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "text": {
+            "type": "string",
+            "description": "Markdown"
+          }
+        },
+        "required": [
+          "key",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "system.atlassian.site"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "comment_id": {
+          "type": "string",
+          "description": "id of the new comment"
+        },
+        "unresolved_mentions": {
+          "type": "array",
+          "description": "names that did not resolve"
+        }
+      },
+      "validator": {
+        "kind": "http_status",
+        "pass_when": "http 201"
+      }
+    },
+    {
+      "name": "comment-edit",
+      "suite": "jira",
+      "description": "Replace a comment body by id.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "comment_id": {
+            "type": "string",
+            "description": "Id from comment-list"
+          },
+          "text": {
+            "type": "string",
+            "description": "Markdown"
+          }
+        },
+        "required": [
+          "key",
+          "comment_id",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "system.atlassian.site"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "comment_id": {
+          "type": "string",
+          "description": "id edited"
+        }
+      },
+      "validator": {
+        "kind": "http_status",
+        "pass_when": "http 200"
+      }
+    },
+    {
+      "name": "comment-delete",
+      "suite": "jira",
+      "description": "Delete a comment by id; irreversible; requires confirm.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "comment_id": {
+            "type": "string",
+            "description": "Id from comment-list"
+          },
+          "confirm": {
+            "const": true
+          }
+        },
+        "required": [
+          "key",
+          "comment_id",
+          "confirm"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "system.atlassian.site"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "deleted": {
+          "type": "boolean",
+          "description": "true on 204"
+        }
+      },
+      "validator": {
+        "kind": "http_status",
+        "pass_when": "http 204"
+      }
+    },
+    {
+      "name": "transitions",
+      "suite": "jira",
+      "description": "List the moves possible from the ticket's current status.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "system.atlassian.site"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "transitions": {
+          "type": "array",
+          "description": "id and name"
+        }
+      },
+      "validator": {
+        "kind": "http_status",
+        "pass_when": "http 200"
+      }
+    },
+    {
+      "name": "transition",
+      "suite": "jira",
+      "description": "Move one or more tickets to a named status; ids resolved by name; closing statuses pass the pre-close evidence gate.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "keys": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Ticket key",
+              "pattern": "^[A-Z]+-\\d+$"
+            },
+            "minItems": 1
+          },
+          "status": {
+            "type": "string",
+            "description": "Target status name"
+          }
+        },
+        "required": [
+          "keys",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "system.atlassian.site",
+        "system.atlassian.field_developer",
+        "system.atlassian.field_qa_engineer",
+        "system.atlassian.workflows"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "moved": {
+          "type": "array",
+          "description": "keys moved"
+        },
+        "blocked": {
+          "type": "array",
+          "description": "key and one-line reason"
+        }
+      },
+      "validator": {
+        "kind": "follow_up_read",
+        "pass_when": "status read back equals the requested status",
+        "follow_up_verb": "jira.fetch"
+      }
+    },
+    {
+      "name": "set-fields",
+      "suite": "jira",
+      "description": "Set or show Developer and QA Engineer on a ticket.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "developer": {
+            "type": "boolean",
+            "description": "Set Developer to me"
+          },
+          "qa_engineer": {
+            "type": "boolean",
+            "description": "Set QA Engineer to me"
+          },
+          "show": {
+            "type": "boolean",
+            "description": "Show only"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "system.atlassian.site",
+        "system.atlassian.field_developer",
+        "system.atlassian.field_qa_engineer"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "fields": {
+          "type": "object",
+          "description": "current values"
+        }
+      },
+      "validator": {
+        "kind": "http_status",
+        "pass_when": "http 204 on PUT, 200 on show"
+      }
+    },
+    {
+      "name": "start",
+      "suite": "jira",
+      "description": "Begin work: fetch, set fields, move to Implementing, post the start comment.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "no_comment": {
+            "type": "boolean",
+            "description": "Skip the start comment"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "system.atlassian.site",
+        "system.atlassian.field_developer",
+        "system.atlassian.field_qa_engineer"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "status": {
+          "type": "string",
+          "description": "status after the move"
+        }
+      },
+      "validator": {
+        "kind": "follow_up_read",
+        "pass_when": "status reads Implementing",
+        "follow_up_verb": "jira.fetch"
+      }
+    },
+    {
+      "name": "create",
+      "suite": "jira",
+      "description": "Create a ticket; sprint may be current or next through the board binding.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string",
+            "description": "Title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Markdown"
+          },
+          "issue_type": {
+            "enum": [
+              "Story",
+              "Task",
+              "Bug",
+              "Epic"
+            ]
+          },
+          "story_points": {
+            "type": "number"
+          },
+          "sprint": {
+            "type": "string",
+            "description": "Sprint name, or current, or next"
+          },
+          "assignee": {
+            "type": "string",
+            "description": "me or a name"
+          },
+          "parent": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "link": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "link_type": {
+            "type": "string",
+            "description": "Default Relates"
+          }
+        },
+        "required": [
+          "summary"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "system.atlassian.site",
+        "system.atlassian.board_id",
+        "system.atlassian.project_keys"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "key": {
+          "type": "string",
+          "description": "new ticket key"
+        },
+        "url": {
+          "type": "string",
+          "description": "browse URL"
+        }
+      },
+      "validator": {
+        "kind": "http_status",
+        "pass_when": "http 201"
+      }
+    },
+    {
+      "name": "board",
+      "suite": "jira",
+      "description": "Read the board id and name for a project and print the manifest line to approve.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_key": {
+            "type": "string",
+            "description": "Project key",
+            "pattern": "^[A-Z][A-Z0-9]+$"
+          }
+        },
+        "required": [
+          "project_key"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "system.atlassian.site"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "board_id": {
+          "type": "integer",
+          "description": "board id"
+        },
+        "board_name": {
+          "type": "string",
+          "description": "board name"
+        }
+      },
+      "validator": {
+        "kind": "http_status",
+        "pass_when": "http 200"
+      }
+    },
+    {
+      "name": "sprint-fetch",
+      "suite": "jira",
+      "description": "Fetch every ticket of mine in a named sprint and snapshot each.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sprint_name": {
+            "type": "string",
+            "description": "Sprint name"
+          }
+        },
+        "required": [
+          "sprint_name"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "system.atlassian.site"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "tickets": {
+          "type": "array",
+          "description": "key, status, summary"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0"
+      }
+    },
+    {
+      "name": "meeting",
+      "suite": "jira",
+      "description": "Daily meeting summary of my tickets by status bucket.",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "system.atlassian.site"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "summary": {
+          "type": "string",
+          "description": "text summary"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0"
+      }
+    },
+    {
+      "name": "duplicate",
+      "suite": "jira",
+      "description": "Create a continuation ticket from a source ticket.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "title_prefix": {
+            "type": "string",
+            "description": "Default Continuation:"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "system.atlassian.site",
+        "system.atlassian.board_id"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "key": {
+          "type": "string",
+          "description": "new ticket key"
+        }
+      },
+      "validator": {
+        "kind": "http_status",
+        "pass_when": "http 201"
+      }
+    },
+    {
+      "name": "delete",
+      "suite": "jira",
+      "description": "Delete a ticket. Irreversible.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Ticket key",
+            "pattern": "^[A-Z]+-\\d+$"
+          },
+          "confirm": {
+            "const": true
+          }
+        },
+        "required": [
+          "key",
+          "confirm"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "system.atlassian.site"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "deleted": {
+          "type": "boolean",
+          "description": "true on 204"
+        }
+      },
+      "validator": {
+        "kind": "http_status",
+        "pass_when": "http 204"
+      }
+    },
+    {
+      "name": "archive",
+      "suite": "jira",
+      "description": "Move closed tickets' local directories to closed/ and rebuild the ticket manifests.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "apply": {
+            "type": "boolean",
+            "description": "Actually move; default is scan"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "side_effect_class": "write",
+      "required_bindings": [
+        "system.atlassian.site"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "moved": {
+          "type": "array",
+          "description": "ticket dirs moved"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0"
+      }
+    },
+    {
+      "name": "search",
+      "suite": "jira",
+      "description": "Search locally indexed tickets across repo, resource, error, tag, env.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free text"
+          },
+          "repo_slug": {
+            "type": "string",
+            "description": "Repo filter"
+          },
+          "resource": {
+            "type": "string",
+            "description": "Resource filter"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error signature"
+          },
+          "tag": {
+            "type": "string",
+            "description": "Tag"
+          },
+          "env": {
+            "type": "string",
+            "description": "Environment"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "hits": {
+          "type": "array",
+          "description": "ticket, score, why"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0"
+      }
+    }
+  ],
+  "annotations": {
+    "fetch": {
+      "source": "commands/jira/ticket.py fetch branch -> process_ticket.py (at jira fetch)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [],
+      "note": "Subprocess to process_ticket.py has no timeout today. intake.py reads this snapshot; it does not call Jira itself."
+    },
+    "comment-list": {
+      "source": "commands/jira/comment.py:handle_jira_comments (at jira comments)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [],
+      "note": "First page only today."
+    },
+    "comment-add": {
+      "source": "commands/jira/comment.py:handle_jira_comment (at jira comment)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [],
+      "note": "ADF converter has no links or italics and flattens nested lists; pipe tables were added in 58c1f77. Mention cache: config/jira-users.json."
+    },
+    "comment-edit": {
+      "source": "commands/jira/comment.py:handle_jira_comment_edit",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [],
+      "note": ""
+    },
+    "comment-delete": {
+      "source": "commands/jira/comment.py:handle_jira_comment_delete",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [],
+      "note": "Returns 2 without confirm today; keep."
+    },
+    "transitions": {
+      "source": "commands/jira/workflow.py:handle_jira_transitions",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [],
+      "note": ""
+    },
+    "transition": {
+      "source": "commands/jira/workflow.py:handle_jira_transition",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "custom field ids customfield_13618 and customfield_13630 are hard-coded (become system bindings)"
+      ],
+      "note": "Auto-sets Developer and QA when the target is Implementing. Pre-close gate matches the target STATUS name while jira_manager matches the TRANSITION name; the migrated-workflow tickets differ. --force bypass exists today; in the verb it requires recorded approval."
+    },
+    "set-fields": {
+      "source": "commands/jira/workflow.py:handle_jira_set_fields",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "hard-coded custom field ids"
+      ],
+      "note": ""
+    },
+    "start": {
+      "source": "commands/jira/workflow.py:handle_jira_start",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [],
+      "note": "Composite of four verbs. Kept because it is the documented surface; the runner should call the four verbs, not re-exec at.py as today."
+    },
+    "create": {
+      "source": "commands/jira/ticket.py:handle_jira_create -> jira_manager.create_ticket",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "project key is implicit in config (becomes a binding; it IS a project argument in disguise)"
+      ],
+      "note": "A proposal card dated 2026-09-16 (DVPS-6622 s-30) recorded that create took only summary and description, and s-43 records a fix in automation_tools; both cards are deleted in the working tree, so re-verify the other inputs before trusting them."
+    },
+    "board": {
+      "source": "commands/jira/ticket.py:handle_jira_board",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--project (Jira project key; named project_key here because the schema reserves project for GitLab)"
+      ],
+      "note": "Bootstrap: feeds a binding, so it belongs with the evaluator."
+    },
+    "sprint-fetch": {
+      "source": "commands/jira/reporting.py:handle_jira_sprint",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [],
+      "note": "50 results, no paging."
+    },
+    "meeting": {
+      "source": "commands/jira/reporting.py:handle_jira_meeting",
+      "status": "in use, human only",
+      "free_args_today_that_become_bindings": [],
+      "note": "No reason for the model to call it."
+    },
+    "duplicate": {
+      "source": "commands/jira/ticket.py:handle_jira_duplicate -> jira_manager.duplicate_ticket",
+      "status": "in use, human only",
+      "free_args_today_that_become_bindings": [],
+      "note": "SIDE EFFECT A NAIVE READER MISSES: also comments on and transitions the SOURCE ticket to Ready for Review."
+    },
+    "delete": {
+      "source": "commands/jira/ticket.py:handle_jira_delete",
+      "status": "in use, human only",
+      "free_args_today_that_become_bindings": [],
+      "note": "Today has NO confirm flag. The confirm input is a required addition, listed as a deviation."
+    },
+    "archive": {
+      "source": "commands/jira/archive.py:handle_jira_archive",
+      "status": "in use, human only",
+      "free_args_today_that_become_bindings": [],
+      "note": "Local file moves in 00workdir plus a Jira search."
+    },
+    "search": {
+      "source": "commands/context_search.py:cmd_context_search (at context search)",
+      "status": "in use; local index only, no network",
+      "free_args_today_that_become_bindings": [],
+      "note": "Overlaps with the generated index in the target design; candidate for deletion once the index exists."
+    }
+  }
+}

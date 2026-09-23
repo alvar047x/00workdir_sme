@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Gate Manifest Schema",
+  "description": "Gate approval manifest for Tier 3 operations",
+  "type": "object",
+  "required": ["version", "gate_id", "ticket_id", "requested_action", "tier", "precondition_checks", "status", "created_at"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "gate_id": {
+      "type": "string",
+      "description": "Unique gate identifier"
+    },
+    "ticket_id": {
+      "type": "string",
+      "description": "Jira ticket ID"
+    },
+    "requested_action": {
+      "type": "string",
+      "description": "Name of requested action"
+    },
+    "tier": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "changes": {
+      "type": "object",
+      "properties": {
+        "files_modified": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "lines_added": { "type": "integer" },
+        "lines_removed": { "type": "integer" },
+        "commit_message": { "type": "string" }
+      }
+    },
+    "precondition_checks": {
+      "type": "object",
+      "additionalProperties": { "type": "boolean" },
+      "description": "Results of precondition checks"
+    },
+    "approval_required": {
+      "type": "boolean"
+    },
+    "approvers": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "approval_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "approved", "rejected", "expired"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "result": {
+      "type": "object",
+      "description": "Execution result after approval"
+    },
+    "signature": {
+      "type": "string",
+      "description": "HMAC-SHA256 signature for integrity verification"
+    }
+  },
+  "additionalProperties": false
+}

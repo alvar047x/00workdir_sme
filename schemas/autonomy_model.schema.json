@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Autonomy Model Schema",
+  "description": "Decision tree defining tier levels and actions for autonomous execution",
+  "type": "object",
+  "required": ["version", "actions"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of autonomy model"
+    },
+    "actions": {
+      "type": "object",
+      "description": "Named actions with tier levels and metadata",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["tier", "command"],
+        "properties": {
+          "tier": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4,
+            "description": "Autonomy tier: 1=auto-execute, 2=conditional-auto, 3=gate-required, 4=hard-stop"
+          },
+          "command": {
+            "type": "string",
+            "description": "Template command (e.g., 'at.py jira sprint {sprint_name}')"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of action"
+          },
+          "parameters": {
+            "type": "object",
+            "description": "Expected parameters extracted from intent"
+          },
+          "preconditions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of precondition validator names required before execution"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

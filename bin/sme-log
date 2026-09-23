@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+# sme-script
+# purpose: Append one JSON line per Kiro prompt or tool call to the session evidence log
+# inputs: arg:kind, stdin:hook payload, env:KIRO_SESSION_ID
+# outputs: file:.sme/state/kiro-prompts.jsonl, file:.sme/state/kiro-tools.jsonl, exit:0=always
+# side_effects: none
+# end-sme-script
+"""The target of the two A5 logging hooks. Never blocks, never fails.
+
+    sme-log prompt  < payload    ->  .sme/state/kiro-prompts.jsonl
+    sme-log tool    < payload    ->  .sme/state/kiro-tools.jsonl
+
+Prompt lines record the LENGTH of the prompt and the first ticket id in it,
+never the prompt text. Tool lines record the tool name and either the target
+path or the first 80 characters of the command.
+
+Every failure path is swallowed and the exit is always 0: a logging hook that
+errors would interfere with the session it is only meant to observe. If the
+payload cannot be parsed, the line is still written with nulls, so a missing
+line always means the hook did not fire.
+"""
+
+import json
+import os
+import re
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+TICKET = re.compile(r"\b[A-Z][A-Z0-9]{1,9}-\d+\b")
+FIELDS = {"prompt": "kiro-prompts.jsonl", "tool": "kiro-tools.jsonl"}
+
+
+def state_dir():
+    """.sme/state next to this script's workspace; created if absent."""
+    root = Path(os.path.realpath(__file__)).parent.parent.parent
+    d = root / ".sme" / "state"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def dig(payload, *names):
+    """First matching key anywhere in the payload, top level first, then nested."""
+    if not isinstance(payload, dict):
+        return None
+    for n in names:
+        v = payload.get(n)
+        if isinstance(v, (str, int)) and str(v).strip():
+            return v
+    for v in payload.values():
+        if isinstance(v, dict):
+            got = dig(v, *names)
+            if got is not None:
+                return got
+    return None
+
+
+def line_for(kind, payload):
+    row = {
+        "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "session": dig(payload, "session_id", "sessionId", "session")
+        or os.environ.get("KIRO_SESSION_ID"),
+    }
+    if kind == "prompt":
+        text = dig(payload, "prompt", "message", "text") or ""
+        text = str(text)
+        found = TICKET.search(text)
+        row["chars"] = len(text)
+        row["ticket"] = found.group(0) if found else None
+    else:
+        row["tool"] = dig(payload, "tool_name", "toolName", "tool") or "unknown"
+        target = dig(payload, "path", "file_path", "filePath")
+        if not target:
+            cmd = dig(payload, "command", "cmd")
+            target = str(cmd)[:80] if cmd else None
+        row["target"] = target
+    return row
+
+
+def main(argv):
+    kind = argv[1] if len(argv) > 1 else ""
+    if kind not in FIELDS:
+        # Nothing sane to write; stay silent and stay out of the way.
+        return 0
+
+    payload = {}
+    try:
+        raw = sys.stdin.read() if not sys.stdin.isatty() else ""
+        if raw.strip():
+            payload = json.loads(raw)
+    except Exception:
+        payload = {}
+
+    try:
+        row = line_for(kind, payload)
+    except Exception:
+        row = {"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+               "session": None, "error": "unparsed"}
+
+    try:
+        with open(state_dir() / FIELDS[kind], "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv))
+    except Exception:
+        sys.exit(0)

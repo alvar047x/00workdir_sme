@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TicketPattern",
+  "description": "Canonical schema for ticket-pattern.json (Reusable post-mortem pattern definition)",
+  "type": "object",
+  "required": ["pattern_id", "title", "source_ticket", "domain", "anti_pattern", "recommended_solution", "blast_radius_rating", "reusable_validation"],
+  "properties": {
+    "pattern_id": {
+      "type": "string",
+      "pattern": "^PAT-[A-Z0-9-]+$"
+    },
+    "title": { "type": "string" },
+    "source_ticket": {
+      "type": "string",
+      "pattern": "^[A-Z]+-[0-9]+$"
+    },
+    "domain": {
+      "type": "string",
+      "enum": ["azure_networking", "aws_ecr", "kubernetes", "database", "terraform", "sso_auth", "general"]
+    },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "anti_pattern": {
+      "type": "object",
+      "required": ["description", "why_it_fails"],
+      "properties": {
+        "description": { "type": "string" },
+        "tool_used": { "type": "string" },
+        "observed_error": { "type": "string" },
+        "why_it_fails": { "type": "string" }
+      }
+    },
+    "recommended_solution": {
+      "type": "object",
+      "required": ["description", "mechanism", "execution_template"],
+      "properties": {
+        "description": { "type": "string" },
+        "mechanism": { "type": "string" },
+        "execution_template": { "type": "string" },
+        "vendor_documentation_url": { "type": "string", "format": "uri" },
+        "typical_duration_seconds": { "type": "number" }
+      }
+    },
+    "blast_radius_rating": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+    },
+    "reusable_validation": {
+      "type": "object",
+      "required": ["pre_check", "post_check"],
+      "properties": {
+        "pre_check": { "type": "string" },
+        "post_check": { "type": "string" },
+        "verification_expected_regex": { "type": "string" }
+      }
+    }
+  }
+}

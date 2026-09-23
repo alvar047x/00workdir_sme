@@ -1,0 +1,119 @@
+{
+  "version": "1.0",
+  "created": "2026-09-01T08:00:00Z",
+  "description": "Default test manifest for Kiro system validation",
+  "tests": [
+    {
+      "name": "hook_json_git_state",
+      "type": "json_validity",
+      "description": "git-state-auto-capture.json is valid JSON",
+      "severity": "critical",
+      "target": ".kiro/hooks/git-state-auto-capture.json"
+    },
+    {
+      "name": "hook_json_post_terraform",
+      "type": "json_validity",
+      "description": "post-terraform-verify.json is valid JSON",
+      "severity": "critical",
+      "target": ".kiro/hooks/post-terraform-verify.json"
+    },
+    {
+      "name": "hook_json_pre_shell",
+      "type": "json_validity",
+      "description": "pre-shell-guard.json is valid JSON",
+      "severity": "critical",
+      "target": ".kiro/hooks/pre-shell-guard.json"
+    },
+    {
+      "name": "hook_json_pre_write",
+      "type": "json_validity",
+      "description": "pre-write-guard.json is valid JSON",
+      "severity": "critical",
+      "target": ".kiro/hooks/pre-write-guard.json"
+    },
+    {
+      "name": "hook_json_session_log",
+      "type": "json_validity",
+      "description": "session-end-log.json is valid JSON",
+      "severity": "critical",
+      "target": ".kiro/hooks/session-end-log.json"
+    },
+    {
+      "name": "hook_type_git_state",
+      "type": "hook_type_check",
+      "description": "git-state-auto-capture must be command-type",
+      "severity": "critical",
+      "hook_name": "git-state-auto-capture.json",
+      "expected_type": "command"
+    },
+    {
+      "name": "hook_type_post_terraform",
+      "type": "hook_type_check",
+      "description": "post-terraform-verify must be command-type",
+      "severity": "critical",
+      "hook_name": "post-terraform-verify.json",
+      "expected_type": "command"
+    },
+    {
+      "name": "hook_type_session_log",
+      "type": "hook_type_check",
+      "description": "session-end-log must be command-type",
+      "severity": "critical",
+      "hook_name": "session-end-log.json",
+      "expected_type": "command"
+    },
+    {
+      "name": "hook_type_pre_write",
+      "type": "hook_type_check",
+      "description": "pre-write-guard must be command-type",
+      "severity": "critical",
+      "hook_name": "pre-write-guard.json",
+      "expected_type": "command"
+    },
+    {
+      "name": "handler_session_log",
+      "type": "handler_callable",
+      "description": "cmd_session_log handler is callable",
+      "severity": "high",
+      "target": "session-log",
+      "input": "{}"
+    },
+    {
+      "name": "handler_tf_verify",
+      "type": "handler_callable",
+      "description": "cmd_tf_verify handler is callable",
+      "severity": "high",
+      "target": "tf-verify",
+      "input": "{\"tool_input\": {\"command\": \"ls\"}}"
+    },
+    {
+      "name": "handler_write_check",
+      "type": "handler_callable",
+      "description": "cmd_write_check handler is callable",
+      "severity": "high",
+      "target": "write-check",
+      "input": "{\"tool_input\": {\"path\": \"/tmp/test\"}}"
+    },
+    {
+      "name": "handler_git_capture",
+      "type": "handler_callable",
+      "description": "cmd_git_capture handler is callable",
+      "severity": "high",
+      "target": "git-capture",
+      "input": "{}"
+    },
+    {
+      "name": "file_steering_exists",
+      "type": "file_exists",
+      "description": "Steering directory exists",
+      "severity": "high",
+      "target": ".kiro/steering"
+    },
+    {
+      "type": "file_exists",
+      "description": "context-manifest.yaml exists",
+      "severity": "medium",
+      "target": "automation_tools/.kiro/context-manifest.yaml"
+    }
+  ]
+}

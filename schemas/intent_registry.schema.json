@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Intent Registry Schema",
+  "description": "Maps user phrases and embeddings to intents and actions",
+  "type": "object",
+  "required": ["version", "intents"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "intents": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["phrases", "embedding", "tier", "command"],
+        "properties": {
+          "phrases": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1,
+            "description": "Example phrases user might say"
+          },
+          "embedding": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 1,
+            "description": "Pre-computed semantic embedding (e.g., sentence-transformers output)"
+          },
+          "tier": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "command": {
+            "type": "string",
+            "description": "Template command to execute for this intent"
+          },
+          "preconditions": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TicketPlan",
+  "description": "Canonical schema for ticket-plan.json (Tier 1 execution plan with verification bounds)",
+  "type": "object",
+  "required": ["ticket_key", "version", "status", "objective", "blast_radius", "verification_plan", "steps"],
+  "properties": {
+    "ticket_key": {
+      "type": "string",
+      "pattern": "^[A-Z]+-[0-9]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "approved", "in_progress", "verified", "failed", "completed"]
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 10
+    },
+    "target_repositories": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "blast_radius": {
+      "type": "object",
+      "required": ["risk_tier", "cloud_provider", "downtime_expected"],
+      "properties": {
+        "risk_tier": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "cloud_provider": { "type": "string", "enum": ["azure", "aws", "none", "hybrid"] },
+        "environments": { "type": "array", "items": { "type": "string" } },
+        "downtime_expected": { "type": "boolean" },
+        "forces_replacement": { "type": "boolean" },
+        "network_interruption": { "type": "boolean" }
+      }
+    },
+    "architectural_safety": {
+      "type": "object",
+      "properties": {
+        "vendor_doc_url": { "type": "string", "format": "uri" },
+        "replacement_justification": { "type": "string" },
+        "simpler_mechanism_considered": { "type": "string" }
+      }
+    },
+    "verification_plan": {
+      "type": "object",
+      "required": ["pre_checks", "post_checks"],
+      "properties": {
+        "pre_checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "command", "expected_pattern"],
+            "properties": {
+              "name": { "type": "string" },
+              "command": { "type": "string" },
+              "expected_pattern": { "type": "string" }
+            }
+          }
+        },
+        "post_checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "command", "expected_pattern"],
+            "properties": {
+              "name": { "type": "string" },
+              "command": { "type": "string" },
+              "expected_pattern": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["step_number", "description", "mechanism"],
+        "properties": {
+          "step_number": { "type": "integer" },
+          "description": { "type": "string" },
+          "mechanism": { "type": "string", "enum": ["az_cli", "aws_cli", "terraform", "kubectl", "code_edit", "manual"] },
+          "command": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ticket Validation Schema",
+  "description": "Defines required structure and validations for tickets",
+  "type": "object",
+  "required": ["version", "required_files", "validations"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version"
+    },
+    "required_files": {
+      "type": "array",
+      "description": "Files that must exist in every ticket directory",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "type": {"type": "string", "enum": ["file", "directory"]},
+          "description": {"type": "string"},
+          "required": {"type": "boolean", "default": true}
+        }
+      }
+    },
+    "file_validations": {
+      "type": "array",
+      "description": "Content validations for specific files",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {"type": "string"},
+          "type": {"type": "string", "enum": ["json_valid", "markdown_valid", "contains", "yaml_valid"]},
+          "description": {"type": "string"},
+          "required_content": {"type": "array"},
+          "must_not_contain": {"type": "array"}
+        }
+      }
+    },
+    "directory_structure": {
+      "type": "object",
+      "description": "Expected subdirectories",
+      "properties": {
+        "sessions": {"type": "boolean"},
+        "artifacts": {"type": "boolean"},
+        "implementation": {"type": "boolean"}
+      }
+    }
+  }
+}

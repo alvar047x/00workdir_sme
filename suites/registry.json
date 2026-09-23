@@ -1,0 +1,185 @@
+{
+  "suite": "registry",
+  "schema": "schemas/suite-verb.schema.json",
+  "evidence": "reports/audit-2026-09-18/01-atpy-inventory.md",
+  "verbs": [
+    {
+      "name": "precheck",
+      "suite": "registry",
+      "description": "Compare image tags running in an environment against the new ECR path and report which are missing.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "env": {
+            "type": "string",
+            "description": "Environment key from the aws system manifest"
+          },
+          "old_path": {
+            "type": "string",
+            "description": "Old ECR repository path"
+          },
+          "new_path": {
+            "type": "string",
+            "description": "New ECR repository path"
+          }
+        },
+        "required": [
+          "env",
+          "old_path",
+          "new_path"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "system.aws.environments",
+        "system.registry.host",
+        "system.registry.profile",
+        "system.registry.region"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "running": {
+          "type": "array",
+          "description": "image tags running"
+        },
+        "missing": {
+          "type": "array",
+          "description": "tags absent at new_path"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0 when nothing is missing"
+      }
+    },
+    {
+      "name": "copy-missing",
+      "suite": "registry",
+      "description": "Copy the tags precheck found missing from the old path to the new path in the central registry.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "env": {
+            "type": "string",
+            "description": "Environment key"
+          },
+          "old_path": {
+            "type": "string",
+            "description": "Old ECR repository path"
+          },
+          "new_path": {
+            "type": "string",
+            "description": "New ECR repository path"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "description": "Show what would be copied"
+          }
+        },
+        "required": [
+          "env",
+          "old_path",
+          "new_path"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "deploy",
+      "required_bindings": [
+        "system.aws.environments",
+        "system.registry.host",
+        "system.registry.profile",
+        "system.registry.region"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "copied": {
+          "type": "array",
+          "description": "tags copied"
+        }
+      },
+      "validator": {
+        "kind": "follow_up_read",
+        "pass_when": "registry.precheck reports nothing missing",
+        "follow_up_verb": "registry.precheck"
+      }
+    },
+    {
+      "name": "verify-ready",
+      "suite": "registry",
+      "description": "Quick yes or no: is the environment ready for the ECR path migration apply.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "env": {
+            "type": "string",
+            "description": "Environment key"
+          },
+          "new_path": {
+            "type": "string",
+            "description": "New ECR repository path"
+          }
+        },
+        "required": [
+          "env",
+          "new_path"
+        ],
+        "additionalProperties": false
+      },
+      "side_effect_class": "read",
+      "required_bindings": [
+        "system.aws.environments",
+        "system.registry.host",
+        "system.registry.profile",
+        "system.registry.region"
+      ],
+      "outputs": {
+        "verdict": {
+          "type": "string",
+          "description": "PASS, FAIL, HUMAN or RUNNING; always the first key"
+        },
+        "ready": {
+          "type": "boolean",
+          "description": "true when every running tag exists at new_path"
+        }
+      },
+      "validator": {
+        "kind": "exit_code",
+        "pass_when": "exit 0 when ready"
+      }
+    }
+  ],
+  "annotations": {
+    "precheck": {
+      "source": "automation_tools/commands/ecr_precheck.py:handle_ecr_precheck (at ecr precheck)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--namespace (FREE NAMESPACE ARGUMENT: becomes system.aws.environments.<env>.namespace)",
+        "--env selects profile, region and kube context (stays an input, but as an enum of manifest keys)"
+      ],
+      "note": "Treats ANY aws error as tag missing; the verb must separate auth failure from absence. Reads the cluster with kubectl get pods, so it needs a kube context binding."
+    },
+    "copy-missing": {
+      "source": "automation_tools/commands/ecr_precheck.py:copy_image (at ecr precheck --copy-missing)",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--namespace"
+      ],
+      "note": "Today this is a FLAG on precheck, so one command spans read and deploy. Split so the class is decidable. Pushes images with skopeo, no confirmation. Denied in Kiro."
+    },
+    "verify-ready": {
+      "source": "automation_tools/commands/ecr_precheck.py:handle_ecr_verify_ready",
+      "status": "in use",
+      "free_args_today_that_become_bindings": [
+        "--namespace (FREE NAMESPACE ARGUMENT)"
+      ],
+      "note": ""
+    }
+  }
+}
