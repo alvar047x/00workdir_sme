@@ -15,3 +15,6 @@
 - source: base image amazon/aws-cli; git cannot see this  # docker/Dockerfile.cicd.tools.gc-awscliv2:1
 - source: base image <account-id>.dkr.ecr.us-east-1.amazonaws.com/aws-azure-cli:1.22.81_2.39.0; git cannot see this  # docker/Dockerfile.cicd.web.docker.aws.az.cli:1
 - source: base image docker; git cannot see this  # docker/Dockerfile.docker-cicd.build:7
+
+## Validate (what "done" looks like here)
+- ci check: job lint-yaml runs `yamllint -d "{extends: default, rules: {line-length: {max: 256}}}"`  # .gitlab-ci.yml:156
