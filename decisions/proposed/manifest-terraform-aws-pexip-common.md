@@ -12,6 +12,8 @@
 - layout: top-level dirs by tracked files: modules (37), python (11), go (4)  # git ls-files
 - source: CI variables used but not defined in the repo (GitLab settings, runner or includes): GL_TOKEN; git cannot see these  # .gitlab-ci.yml:34
 - source: terraform module terraform-aws-modules/vpc/aws; git cannot see this  # modules/network/main.tf:12
+- terraform process: module library, no root (no backend block); consumers pin it by source ref, a change ships as a new ref; newest tag 1.1.0-rc.3  # 37 .tf files
+- terraform version: required_version ~> 1.5.7 in 1 file(s)  # main.tf
 - changes together: modules/proxy_edge_set + modules/transcoding_set_asg (40 of 195 commits)  # git log origin/dev
 - changes together: modules/proxy_edge_set + python/init (26 of 195 commits)  # git log origin/dev
 - changes together: modules/transcoding_set_asg + python/init (22 of 195 commits)  # git log origin/dev
