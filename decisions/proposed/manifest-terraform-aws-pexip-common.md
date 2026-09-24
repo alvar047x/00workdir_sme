@@ -1,0 +1,19 @@
+## Environment
+- default branch: dev; protected: platinum
+- MR target: dev; branch pattern: feature/desc or fix/desc (topology.yaml)
+- contents: terraform
+- pipeline: .gitlab-ci.yml
+- terraform module repo, not a deployment; provider aliases mean validation runs in the consumer (infra-central)
+- pipeline stages: lint (MR only, echo placeholder) and release (semantic-release on dev and platinum); no plan or apply here
+- versioning: semantic-release from conventional commits, see VERSIONING.md; consumers pin by tag; rc tags on dev (1.1.0-rc.3 latest seen), full releases on platinum
+- intake dbcf23: 37 .tf files, 4 .tpl, lambda modules (AIMS cert renewal, FIPS endpoints enabled on all Lambda functions), go/ and python/ helper dirs, 4 committed .zip artifacts (59 MB, [inferred] lambda packages)
+- intake dbcf23: last 50 commits are 30 non-conventional, 11 fix, 8 feat; non-conventional commits are invisible to semantic-release
+- branch pattern: feature/DVPS-XXXX-desc (git branch -r: 3 of 8 recent team-key branches)
+- layout: top-level dirs by tracked files: modules (37), python (11), go (4)  # git ls-files
+- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): GL_TOKEN; git cannot see these  # .gitlab-ci.yml:34
+- source: terraform module terraform-aws-modules/vpc/aws; git cannot see this  # modules/network/main.tf:12
+- changes together: modules/proxy_edge_set + modules/transcoding_set_asg (40 of 195 commits)  # git log origin/dev
+- changes together: modules/proxy_edge_set + python/init (26 of 195 commits)  # git log origin/dev
+- changes together: modules/transcoding_set_asg + python/init (22 of 195 commits)  # git log origin/dev
+- changes together: modules/sync_lambda + modules/transcoding_set_asg (10 of 195 commits)  # git log origin/dev
+- changes together: modules/proxy_edge_set + modules/sync_lambda (8 of 195 commits)  # git log origin/dev
