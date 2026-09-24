@@ -1,10 +1,14 @@
 ## Environment
 - default branch: platinum; protected: platinum
 - contents: dockerfile image build
-- pipeline: .gitlab-ci.yml
+- pipeline: .gitlab-ci.yml; stages: lint, validations, auto lock update, pre-build, build, test, scan, prepare, release, pre-deploy verification, image validations, publish, ssm-parameters dyn env, migrate SCC secrets to SSM, argocd onboarding, prepare-iac-resources-file, argocd offboarding, push deployment artifacts, dynamic env iac deploy, dynamic env deploy, dev iac deploy, dev deploy, dev test automation, scheduler test notification, dev bg switch, dynamic bg switch, dev bg rollback, dynamic bg rollback, push production artifacts, staging deploy, staging test automation, production tag-pact, production deploy, production publish, clean up  # pipelines@stable:common/.stages.yml:1
 - layout: top-level dirs by tracked files: deployment (12), scripts (6), config (5)  # git ls-files
-- source: CI include project $CVG_PIPELINES_PROJECT file project/.ecr_image.yml ref stable; git cannot see this  # .gitlab-ci.yml:3
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): CVG_PIPELINES_PROJECT; git cannot see these  # .gitlab-ci.yml:3
-- source: base image fluent/fluentd-kubernetes-daemonset:v${BASE_IMAGE_VERSION}-debian-elasticsearch8-1.0; git cannot see this  # Dockerfile:8
-- source: base image ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}; git cannot see this  # Dockerfile:9
+- pipeline template: project/.ecr_image.yml from pipelines at stable (matched by file, the project is a CI variable)  # .gitlab-ci.yml:3
+- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): ARTIFACTORY_AWS_NPM_TOKEN, CVG_PIPELINES_PROJECT, CVG_PIPELINES_PROJECT_ID, CVG_RENOVATE_PROJECT, DEV_KEYCLOAK_URL, JAVA_HOME, M2_HOME, MAVEN_HOME, NODE_MODULES_CACHE_KEY, NVM_DIR, PIPELINES_ACCESS_TOKEN, PROJECT_DEPLOYMENT_NAME, +14 more; git cannot see these  # pipelines@stable:common/.extends.yml:233
+- image build: job `Build Docker Image` (kaniko) builds <ci_project_dir>/Dockerfile from <ci_project_dir>; pushes <team_ecr_url>/ci/<project_deployment_name>:<ci_commit_short_sha>; also <team_ecr_url>/ci/<project_deployment_name>:latest when [ $CI_COMMIT_BRANCH == "platinum" ]; also <team_ecr_url>/ci/<project_deployment_name>:<extra_destination_tag> when [ -n "$EXTRA_DESTINATION_TAG" ]  # .gitlab-ci.yml:5
+- image build rules: never when $CI_PIPELINE_SOURCE == "merge_request_event"; run when $CI_PIPELINE_SOURCE != "schedule"; never when $CI_PIPELINE_SOURCE == "schedule"  # .gitlab-ci.yml:5
+- image build args from CI: BASE_IMAGE_VERSION, KEYSTOREPASSWORD (override the Dockerfile ARG defaults)  # .gitlab-ci.yml:5
+- source: base image fluent/fluentd-kubernetes-daemonset:v1.18.0-debian-elasticsearch8-1.0 (CI overrides ARG BASE_IMAGE_VERSION); git cannot see this  # Dockerfile:8
+- source: base image <account-id>.dkr.ecr.us-east-2.amazonaws.com/ironbank/opensource/fluentd/fluentd-modified:${BASE_IMAGE_VERSION}-20250523163601; git cannot see this  # Dockerfile:9
 - source: base image fluent/fluentd-kubernetes-daemonset:v1.18.0-debian-elasticsearch8-1.0.arm64; git cannot see this  # Dockerfile.arm64:6
+- source: base image registry1.dso.mil/ironbank/opensource/fluentd/fluentd:1.18.0.arm64; git cannot see this  # Dockerfile.arm64:7
