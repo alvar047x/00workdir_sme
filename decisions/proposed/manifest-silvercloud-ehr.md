@@ -4,7 +4,7 @@
 - pipeline: .gitlab-ci.yml
 - MR target: main (git log origin/main: 46 of 46 merge commits); branch pattern: fix/DVPS-XXXX-desc (git branch -r: 1 of 3 recent team-key branches)
 - layout: top-level dirs by tracked files: src (8863), e2e_tests (16), ci (7), scripts (3), kustomize (2), ca-certs (1), docs (1)  # git ls-files
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): CICD_COMMON_RUNNER_TAGS; git cannot see these  # .gitlab-ci.yml:21
+- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AWS_ECR_REGISTRY, BASH_REMATCH, BUILD_AWS_ACCESS_KEY_ID, BUILD_AWS_ECR_REGISTRY, BUILD_AWS_EKS_NAME, BUILD_AWS_EKS_REGION, BUILD_AWS_ROLE_TO_ASSUME, BUILD_AWS_SECRET_ACCESS_KEY, CENTRAL_AWS_ECR_AUTH, CENTRAL_AWS_ECR_REGISTRY, CICD_COMMON_RUNNER_TAGS, CICD_DIND_RUNNER_TAGS, +38 more; git cannot see these  # ci/tag-build.gitlab-ci.yml:54
 - source: base image public.ecr.aws/docker/library/python:3.12-slim-bookworm; git cannot see this  # Dockerfile:2
 - source: base image ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}; git cannot see this  # Dockerfile.titan:8
 - values files, tracked: .env.test  # git ls-files
