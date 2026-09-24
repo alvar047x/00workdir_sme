@@ -1,7 +1,7 @@
 ## Environment
 - default branch: main; protected: main
 - MR target: main; branch pattern: DVPS-XXXX-desc (topology.yaml)
-- contents: terraform
+- contents: terraform (.tf) 70, yaml 2, python (.py) 2  # git ls-files
 - pipeline: none found
 - azure vpn gateway: VpnGw1 -> VpnGw1AZ resizes in place via `az network vnet-gateway update --sku`, zero downtime; never destroy the gateway or change its public IP for a SKU change (from archived infra-ops)
 - azure firewall: WindowsVirtualDesktop and AzureActiveDirectory service tags must bypass the firewall (from archived infra-ops)
