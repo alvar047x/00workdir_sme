@@ -22,3 +22,7 @@
 - changes together: common + single_page_applications (11 of 400 commits)  # git log origin/platinum
 - changes together: common + project (9 of 400 commits)  # git log origin/platinum
 - changes together: scripts + services (7 of 400 commits)  # git log origin/platinum
+
+## Validate (what "done" looks like here)
+- ci check: job yamllint runs `yamllint .`  # .gitlab-ci.yml:20
+- ci check: job yamllint runs `cd documentation && yamllint --config-file ../.yamllint .`  # .gitlab-ci.yml:21
