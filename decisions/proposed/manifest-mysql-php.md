@@ -1,8 +1,11 @@
 ## Environment
 - default branch: platinum; protected: main,platinum
 - contents: dockerfile image build
-- pipeline: .gitlab-ci.yml
+- pipeline: .gitlab-ci.yml; stages: lint, validations, auto lock update, pre-build, build, test, scan, prepare, release, pre-deploy verification, image validations, publish, ssm-parameters dyn env, migrate SCC secrets to SSM, argocd onboarding, prepare-iac-resources-file, argocd offboarding, push deployment artifacts, dynamic env iac deploy, dynamic env deploy, dev iac deploy, dev deploy, dev test automation, scheduler test notification, dev bg switch, dynamic bg switch, dev bg rollback, dynamic bg rollback, push production artifacts, staging deploy, staging test automation, production tag-pact, production deploy, production publish, clean up  # pipelines@stable:common/.stages.yml:1
 - MR target: platinum (git log origin/platinum: 6 of 6 merge commits); branch pattern: DVPS-XXXX-desc (git branch -r: 2 of 3 recent team-key branches)
-- source: CI include project $CVG_PIPELINES_PROJECT file project/.ecr_image.yml ref stable; git cannot see this  # .gitlab-ci.yml:3
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): CVG_PIPELINES_PROJECT; git cannot see these  # .gitlab-ci.yml:3
-- source: base image <account-id>.dkr.ecr.us-east-2.amazonaws.com/ironbank/opensource/mysql/mysql8:${BASE_IMAGE_VERSION}; git cannot see this  # Dockerfile:2
+- pipeline template: project/.ecr_image.yml from pipelines at stable (matched by file, the project is a CI variable)  # .gitlab-ci.yml:3
+- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): ARTIFACTORY_AWS_NPM_TOKEN, CVG_PIPELINES_PROJECT, CVG_PIPELINES_PROJECT_ID, CVG_RENOVATE_PROJECT, DEV_KEYCLOAK_URL, JAVA_HOME, M2_HOME, MAVEN_HOME, NODE_MODULES_CACHE_KEY, NVM_DIR, PHP_INTEGRATION_VERSION, PIPELINES_ACCESS_TOKEN, +13 more; git cannot see these  # pipelines@stable:common/.extends.yml:233
+- image build: job `Build Docker Image` (kaniko) builds <ci_project_dir>/Dockerfile from <ci_project_dir>; pushes <account-id>.dkr.ecr.us-east-2.amazonaws.com/ci/ironbank-base/mysql/mysql-php:<ci_commit_short_sha>; also <account-id>.dkr.ecr.us-east-2.amazonaws.com/ci/ironbank-base/mysql/mysql-php:latest when [ $CI_COMMIT_BRANCH == "platinum" ]; also <account-id>.dkr.ecr.us-east-2.amazonaws.com/ci/ironbank-base/mysql/mysql-php:<extra_destination_tag> when [ -n "$EXTRA_DESTINATION_TAG" ]  # .gitlab-ci.yml:11
+- image build rules: never when $CI_PIPELINE_SOURCE == "merge_request_event"; run when $CI_PIPELINE_SOURCE != "schedule"; never when $CI_PIPELINE_SOURCE == "schedule"  # .gitlab-ci.yml:11
+- image build args from CI: BASE_IMAGE_VERSION, KEYSTOREPASSWORD (override the Dockerfile ARG defaults)  # .gitlab-ci.yml:11
+- source: base image <account-id>.dkr.ecr.us-east-2.amazonaws.com/ironbank/opensource/mysql/mysql8:8.4.5-<account-id> (CI overrides ARG BASE_IMAGE_VERSION); git cannot see this  # Dockerfile:2
