@@ -7,7 +7,7 @@
 - source: CI include template Jobs/SAST.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:69
 - source: CI include template Jobs/SAST-IaC.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:72
 - source: CI include template Jobs/Secret-Detection.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:75
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY_ID_TEMP, AWS_ECR_PIPELINE_ACCESS_KEY_ID, AWS_ECR_PIPELINE_SECRET_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_SECRET_ACCESS_KEY_TEMP, BOLD_STYLE, BUILD_AWS_ECR_REGISTRY, COLOR_FORMAT, EXIT_CODE, LAYER_DIR, MESSAGE, +4 more; git cannot see these  # .gitlab-ci.yml:103
+- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AWS_ECR_PIPELINE_ACCESS_KEY_ID, AWS_ECR_PIPELINE_SECRET_ACCESS_KEY, BASH_REMATCH, BUILD_AWS_ACCESS_KEY_ID, BUILD_AWS_ECR_REGISTRY, BUILD_AWS_S3_NOT_TRACKED_ASSETS_BUCKET, BUILD_AWS_S3_VERSIONED_ASSETS_BUCKET, BUILD_AWS_SECRET_ACCESS_KEY, CICD_TOOLS_PIPELINE_JOB_IMAGE, EHR_APP_REPOSITORY, ENVS_REGEX, MYSQL_IMAGE, +4 more; git cannot see these  # .gitlab-ci.yml:103
 - source: terraform state in a s3 backend; git cannot see this  # deploy/00-aws-pre-reqs/versions.tf:15
 - source: terraform remote state `secrets` read from another stack; git cannot see this  # deploy/10-aws-secrets/main.tf:11
 - source: terraform module terraform-aws-modules/kms/aws; git cannot see this  # modules/terraform-aws-eks-20.36.0/main.tf:303
