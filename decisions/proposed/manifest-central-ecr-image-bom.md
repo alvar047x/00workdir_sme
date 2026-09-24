@@ -1,6 +1,6 @@
 ## Environment
 - default branch: platinum; protected: platinum
-- pipeline: .gitlab-ci.yml
+- pipeline: .gitlab-ci.yml; stages: pull  # .gitlab-ci.yml:6
 - MR target: platinum (git log origin/platinum: 208 of 208 merge commits); branch pattern: DVPS-XXXX (git branch -r: 3 of 6 recent team-key branches)
 - contents: yaml 2, python (.py) 1  # git ls-files
 - layout: top-level dirs by tracked files: config (1), src (1)  # git ls-files
