@@ -2,7 +2,7 @@
 - default branch: platinum; protected: platinum
 - MR target: platinum; branch pattern: titan/DVPS-XXXX (git branch -r: 32 of 61 recent team-key branches)
 - contents: terraform, kubernetes manifests or helm
-- pipeline: .gitlab-ci.yml
+- pipeline: .gitlab-ci.yml, pipelines/.aidbox.yml, pipelines/.application.yml, pipelines/.applications.yml, pipelines/.bento.yml, pipelines/.common.yml, pipelines/.config.yml, pipelines/.core.yml, pipelines/.data_platform.yml, pipelines/.destroy.yml, pipelines/.observability.yml, pipelines/.prepare.yml, pipelines/.push.yml, pipelines/.rhapsody.yml, pipelines/.service.yml, pipelines/.services.yml, pipelines/.shared.yml, pipelines/.stable_env.yml, pipelines/.stackrox.yml, pipelines/environments/.tsnbx4.yml, pipelines/environments/.tsnbx5.yml, pipelines/environments/.tsnbx6.yml, pipelines/environments/.tsnbx7.yml, pipelines/environments/.stable.yml; stages: prepare, core, shared, aidbox, stackrox, data_platform, rhapsody, services, pull, deploy, deploy_stable, push, shared_destroy, core_destroy  # pipelines/.common.yml:1
 - titan data may be CUI; treat all repo content as sensitive
 - layout (intake 2026-09-14): numbered stack dirs per domain: core/00_bootstrap .. 99_aws_backup (networking, ssm, eks shared/cdr, keycloak 31, webhosting prereqs, dns), aidbox/00..10, applications/11 and 90, data_platform/iac/00..30 (looker, dp), observability/11..31 (kafka, eks, elastic), rhapsody/01, bento/, general_modules/ (vendored eks and kms modules), general_helm_charts/, stackrox/, dr/, shared/
 - account: titan-sandbox <aws-account-3> (47 references); the customer (Titan) deploys production from manifest.all.yaml plus scripts; there is no direct production access (D-0017)
