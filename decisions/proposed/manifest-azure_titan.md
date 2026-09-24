@@ -21,3 +21,7 @@
 - changes together: layers/azure + scripts (5 of 78 commits)  # git log origin/main
 - changes together: layers/aws-networking + layers/aws-pexip (4 of 78 commits)  # git log origin/main
 - changes together: layers/aws-pexip + layers/azure (3 of 78 commits)  # git log origin/main
+
+## Validate (what "done" looks like here)
+- plan through ./deploy.sh <layer> plan; destroys == 0 unless the ticket says otherwise; SKU changes in place per the environment note above
+- local: `terraform fmt -check -recursive`  # .tf files tracked
