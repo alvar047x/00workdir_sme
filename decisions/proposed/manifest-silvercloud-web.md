@@ -6,12 +6,29 @@
 - branch pattern: DVPS-XXXX-desc (git branch -r: 5 of 5 recent team-key branches)
 - layout: top-level dirs by tracked files: content (30642), apps (5201), static (4324), vue (715), custom_templates (693), e2e_tests (362), templates (41), locale (33), content_data (19), site_media (19), docs (15), i18n (14)  # git ls-files
 - source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AWS_ECR_REGISTRY, BASH_REMATCH, BUILD_AWS_ACCESS_KEY_ID, BUILD_AWS_ECR_REGISTRY, BUILD_AWS_EKS_NAME, BUILD_AWS_EKS_REGION, BUILD_AWS_ROLE_TO_ASSUME, BUILD_AWS_S3_STATIC_ASSETS_BUCKET, BUILD_AWS_SECRET_ACCESS_KEY, BUILD_PIPELINE_TIME_ALLOWED_SECS, CENTRAL_AWS_ECR_AUTH, CENTRAL_AWS_ECR_REGISTRY, +63 more; git cannot see these  # ci/tag-build.gitlab-ci.yml:176
+- image build: job `prebuild-web` (docker) builds Dockerfile from .; pushes <ci_registry_image>:<run_tag>, <ci_registry_image>:<web_tag>  # ci/common.gitlab-ci.yml:39
+- image build rules: manual when $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/; run when $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TITLE !~ /^Draft:/; run when $CI_PIPELINE_SOURCE == 'push' && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH; run when $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "development"  # ci/common.gitlab-ci.yml:39
+- image build args from CI: GIT_COMMIT_SHA, RUNTIME, STATIC_GENERATOR_PHASE (override the Dockerfile ARG defaults)  # ci/common.gitlab-ci.yml:39
+- image build: job `build-db` (docker) builds ci/db.Dockerfile from .; pushes <ci_registry_image>:<db_tag>  # ci/common.gitlab-ci.yml:246
+- image build rules: run when $CI_PIPELINE_SOURCE == 'merge_request_event'; run when $CI_PIPELINE_SOURCE == 'push' && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH  # ci/common.gitlab-ci.yml:246
+- image build: job `build-image-gitlab-registry` (docker) builds Dockerfile from .; pushes <ci_registry_image>:<image_tag>  # ci/tag-build.gitlab-ci.yml:2
+- image build rules: never when $SKIP_AWS_BUILD == "1"; run when $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+\-build$/  # ci/tag-build.gitlab-ci.yml:2
+- image build args from CI: GIT_COMMIT_SHA, STATIC_GENERATOR_PHASE (override the Dockerfile ARG defaults)  # ci/tag-build.gitlab-ci.yml:2
+- image build: job `build-static-assets-aws` (docker) builds Dockerfile from .; pushes silvercloud-web:collectstatic  # ci/tag-build.gitlab-ci.yml:31
+- image build rules: never when $SKIP_AWS_BUILD == "1"; run when $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+\-build$/  # ci/tag-build.gitlab-ci.yml:31
+- image build args from CI: GIT_COMMIT_SHA, STATIC_GENERATOR_PHASE (override the Dockerfile ARG defaults)  # ci/tag-build.gitlab-ci.yml:31
+- image build: job `build-image-aws` (docker) builds Dockerfile from .; pushes <central_aws_ecr_registry>/silvercloud/silvercloud-web:<image_tag>  # ci/tag-build.gitlab-ci.yml:89
+- image build rules: never when $SKIP_AWS_BUILD == "1"; run when $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+\-build$/  # ci/tag-build.gitlab-ci.yml:89
+- image build args from CI: GIT_COMMIT_SHA (override the Dockerfile ARG defaults)  # ci/tag-build.gitlab-ci.yml:89
+- image build: job `build-titan-image-aws` (docker) builds Dockerfile.titan from .; pushes <central_aws_ecr_registry>/silvercloud/silvercloud-web:<ci_commit_tag>  # ci/tag-build-titan.gitlab-ci.yml:2
+- image build rules: never when $SKIP_AWS_BUILD == "1"; run when $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+\-(titanrc|titan)$/  # ci/tag-build-titan.gitlab-ci.yml:2
+- image build args from CI: BASE_IMAGE, BASE_REGISTRY, BASE_TAG (override the Dockerfile ARG defaults)  # ci/tag-build-titan.gitlab-ci.yml:2
 - source: base image public.ecr.aws/docker/library/python:3.12-slim-bookworm; git cannot see this  # Dockerfile:4
-- source: base image ${STATIC_GENERATOR_PHASE}-final; git cannot see this  # Dockerfile:111
-- source: base image ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}; git cannot see this  # Dockerfile.titan:8
-- source: base image amazonlinux:latest; git cannot see this  # batch_scripts/Dockerfile:1
+- source: base image pythongenerator-final (CI overrides ARG STATIC_GENERATOR_PHASE; moving tag); git cannot see this  # Dockerfile:111
+- source: base image <account-id>.dkr.ecr.us-east-1.amazonaws.com/silvercloud-web:${BASE_TAG} (CI overrides ARG BASE_REGISTRY, BASE_IMAGE, BASE_TAG; ARG BASE_TAG has no default); git cannot see this  # Dockerfile.titan:8
+- source: base image amazonlinux:latest (moving tag); git cannot see this  # batch_scripts/Dockerfile:1
 - source: base image public.ecr.aws/docker/library/mysql:8.0; git cannot see this  # ci/db.Dockerfile:1
-- source: base image $RUNTIME; git cannot see this  # ci/web.Dockerfile:2
+- source: base image $RUNTIME (CI overrides ARG RUNTIME; ARG RUNTIME has no default); git cannot see this  # ci/web.Dockerfile:2
 - values files, tracked: .env  # git ls-files
 - changes together: content/modules + content/tools (37 of 400 commits)  # git log origin/main
 - changes together: content/dynamic-content + content/modules (33 of 400 commits)  # git log origin/main
