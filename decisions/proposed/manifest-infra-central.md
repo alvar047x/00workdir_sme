@@ -1,0 +1,52 @@
+## Environment
+- default branch: main; protected: develop,main
+- contents: terraform, kubernetes manifests or helm
+- pipeline: .gitlab-ci.yml
+- consumer of terraform-aws-pexip-common; terraform plan and apply pipelines live here
+- pipeline: .gitlab-ci.yml includes .gitlab/ci/platform.yml (platform/ layers) and .gitlab/ci/accounts.yml (accounts/*); accounts.yml extends amwell/platform/ci-templates terraform.yml
+- stages: validate (terraform fmt -check -recursive, terraform validate per layer with -backend=false) -> plan (terraform plan -out=plan.tfplan per TF_DIR, artifact kept) -> apply (extends .terraform:apply, needs the plan job, when: manual)
+- variables: TF_VERSION 1.12.0, TF_IN_AUTOMATION, TF_INPUT=false, AWS_ROLE_ARN (plan role), AWS_ROLE_ARN_APPLY (per-account apply role), TF_DIR per job
+- jobs run on merge_request_event with path changes, on push to the default branch, and on web (manual pipeline) source
+- accounts managed: shared-services, development, converge-staging, caretalks-prod, converge-prod, log-archive; each has backend-bootstrap and oidc layers
+- layout (intake 2026-09-14): one stack per directory; top level = accounts/, platform/, pexip/, titan/, devops/, development/, cvg-production/, cvg-staging/, caretalks-production/, converge/, shared-services/, networking/, log-archive/, amplar/, rhapsody/, central-registry/
+- pexip/titan: numbered stacks 00_prereqs 01_domain 10_vpc 11_tgw 12_bastion 21_endpoint 22_kms 23_syslog 29_certs 30_pexip_platform 40_int 41_preprod 42_prod; every stack reads pexip/titan/tfvars/<stack>.tfvars
+- pexip/titan security rules: SG for ssh in 21_endpoint/ssh_sg.tf, ingress allow list in tfvars/30_pexip_platform.tfvars, NACL rules in tfvars/10_vpc.tfvars (tfvars win over the module's nacl.tf locals), ssh_enabled maintenance flag in 30_pexip_platform
+- pexip/dev, pexip/stg, pexip/prod: commercial Pexip; pexip/prod/api holds bootstrap and maintenance scripts
+- titan/sandbox/platform: the Titan sandbox platform stack
+- accounts by stack (from permissions_boundary and role ARNs): Titan Pexip enclave <aws-account-4> (pexip/titan/12_bastion, 23_syslog, tfvars; no local profile), shared-services <aws-account-5>, development <aws-account-6>, converge-prod <aws-account-7>, converge-staging <aws-account-8>, caretalks-prod <aws-account-9>, plus <aws-account-10> and <aws-account-11> (unmapped, intake candidate)
+- git: Richard Morley's pexip SSH removal is commit dde6b63a on main (2026-05-29); merged is not applied, apply state is only visible from inside <aws-account-4>
+- branch pattern: DVPS-XXXX-desc (git branch -r: 13 of 27 recent team-key branches)
+- layout: top-level dirs by tracked files: amplar (505), pexip (289), converge (264), platform-archive (231), devops (186), development (168), cvg-production (70), accounts (49), caretalks-production (42), cvg-staging (41), log-archive (17), platform (14)  # git ls-files
+- source: CI include project amwell/platform/ci-templates file terraform.yml; git cannot see this  # .gitlab/ci/accounts.yml:25
+- source: terraform state in a s3 backend; git cannot see this  # accounts/caretalks-prod/backend-bootstrap/versions.tf:8
+- source: terraform remote state `cvges_prod` read from another stack; git cannot see this  # caretalks-production/infra/data.tf:6
+- source: terraform remote state `cvges_prod_config` read from another stack; git cannot see this  # caretalks-production/infra/data.tf:18
+- source: terraform remote state `cvges_dev` read from another stack; git cannot see this  # cvg-staging/infra/data.tf:156
+- source: terraform remote state `cvges_dev_config` read from another stack; git cannot see this  # cvg-staging/infra/data.tf:168
+- source: terraform remote state `kubernetes` read from another stack; git cannot see this  # development/dev-next/converge/data.tf:32
+- source: terraform remote state `vpc` read from another stack; git cannot see this  # development/gitlab-runner/data.tf:1
+- source: terraform remote state `gitlab` read from another stack; git cannot see this  # devops/atlantis/data.tf:1
+- source: terraform remote state `shared_devops_vpc` read from another stack; git cannot see this  # devops/gitlab/data.tf:1
+- source: terraform remote state `shared_devops_infra` read from another stack; git cannot see this  # devops/shared-devops/artifactoryha/data.tf:12
+- source: terraform remote state `dev` read from another stack; git cannot see this  # networking/dns/data.tf:1
+- source: terraform remote state `staging` read from another stack; git cannot see this  # networking/dns/data.tf:13
+- source: terraform remote state `cvgproduction` read from another stack; git cannot see this  # networking/dns/data.tf:26
+- source: terraform module git::https://gitlab.com/amwell/platform/infrastructure/terraform-modules.git//gitlab-oidc?ref=v2.12.0; git cannot see this  # accounts/caretalks-prod/oidc/main.tf:30
+- source: terraform module terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks; git cannot see this  # amplar/prod/looker/23_eks/iam.tf:2
+- source: terraform module terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc; git cannot see this  # amplar/prod/looker/23_eks/iam.tf:78
+- source: terraform module terraform-aws-modules/vpc/aws; git cannot see this  # amplar/prod/looker/modules/amplar-vpc/main.tf:2
+- source: terraform module terraform-aws-modules/vpc/aws//modules/vpc-endpoints; git cannot see this  # amplar/prod/looker/modules/amplar-vpc/main.tf:41
+- source: terraform module terraform-aws-modules/kms/aws; git cannot see this  # amplar/prod/looker/modules/prereqs/kms.tf:2
+- source: terraform module terraform-aws-modules/security-group/aws; git cannot see this  # caretalks-production/infra/apigateway.tf:67
+- source: terraform module terraform-aws-modules/acm/aws; git cannot see this  # caretalks-production/infra/argocd.tf:2
+- source: terraform module terraform-aws-modules/security-group/aws//modules/https-443; git cannot see this  # caretalks-production/infra/argocd.tf:15
+- source: terraform module git::https://gitlab.com/amwell/terraform-modules/sre/terraform-aws-converge-elastic-beats.git?ref=v1.4.2; git cannot see this  # caretalks-production/infra/beats.tf:2
+- source: terraform module git::https://gitlab.com/amwell/terraform-modules/sre/terraform-aws-converge-apigateway.git?ref=v1.7.0; git cannot see this  # caretalks-production/infra/converge.tf:30
+- source: terraform module terraform-aws-modules/eks/aws; git cannot see this  # caretalks-production/infra/eks.tf:21
+- source: base image public.ecr.aws/amazonlinux/amazonlinux:latest; git cannot see this  # central-registry/test/Dockerfile:1
+- source: base image public.ecr.aws/docker/library/ruby:3.2-alpine; git cannot see this  # pexip/titan/23_syslog/Dockerfile:2
+- values files, tracked: amplar/data_platform/iac/environment/amplar-prod/00_looker_pre_reqs.tfvars, amplar/data_platform/iac/environment/amplar-prod/10_looker_infra.tfvars, amplar/data_platform/iac/environment/amplar-prod/11_looker_db_config.tfvars, amplar/data_platform/iac/environment/amplar-prod/30_looker_k8s.tfvars, amplar/data_platform/iac/environment/amplar-prod/backend.tfvars, amplar/data_platform/iac/environment/amplar-stage/00_looker_pre_reqs.tfvars, amplar/data_platform/iac/environment/amplar-stage/10_looker_infra.tfvars, amplar/data_platform/iac/environment/amplar-stage/11_looker_db_config.tfvars, amplar/data_platform/iac/environment/amplar-stage/30_looker_k8s.tfvars, amplar/data_platform/iac/environment/amplar-stage/backend.tfvars, caretalks-production/infra/vars/prod.backend.tfvars, caretalks-production/infra/vars/prod.tfvars, +128 more  # git ls-files
+- changes together: cvg-production/infra + cvg-staging/infra (6 of 400 commits)  # git log origin/main
+- changes together: cvg-staging/infra + development/dev-next (5 of 400 commits)  # git log origin/main
+- changes together: pexip/dev + pexip/prod (4 of 400 commits)  # git log origin/main
+- changes together: cvg-production/infra + development/dev-next (3 of 400 commits)  # git log origin/main
