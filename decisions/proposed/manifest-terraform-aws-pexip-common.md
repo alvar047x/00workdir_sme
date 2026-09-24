@@ -1,8 +1,8 @@
 ## Environment
 - default branch: dev; protected: platinum
 - MR target: dev; branch pattern: feature/desc or fix/desc (topology.yaml)
-- contents: terraform
-- pipeline: .gitlab-ci.yml
+- contents: terraform (.tf) 37, python (.py) 2, yaml 1  # git ls-files
+- pipeline: .gitlab-ci.yml; stages: lint, release  # .gitlab-ci.yml:11
 - terraform module repo, not a deployment; provider aliases mean validation runs in the consumer (infra-central)
 - pipeline stages: lint (MR only, echo placeholder) and release (semantic-release on dev and platinum); no plan or apply here
 - versioning: semantic-release from conventional commits, see VERSIONING.md; consumers pin by tag; rc tags on dev (1.1.0-rc.3 latest seen), full releases on platinum
