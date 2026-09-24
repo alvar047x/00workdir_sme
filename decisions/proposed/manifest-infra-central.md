@@ -71,6 +71,7 @@
 - MR: validate and plan jobs green for every changed layer; plan artifact reviewed; destroys == 0 unless the ticket says otherwise
 - apply is a manual job on the default branch after merge; never triggered by the agent (Reaper Gate, human step)
 - local: `pre-commit run --from-ref origin/main --to-ref HEAD`  # .pre-commit-config.yaml (hooks: terraform_fmt, terraform_docs, terraform_providers_lock)
+- rule: helm_release diffs a local chart only when its Chart.yaml version changes (no manifest experiment); a template-only edit needs the version bumped or the plan shows nothing  # helm provider config
 - ci check: job terraform:fmt runs `terraform fmt -check -recursive -diff platform/`  # .gitlab/ci/platform.yml:51
 - ci check: job terraform:validate:shared-services:00-bootstrap runs `terraform validate`  # .gitlab/ci/platform.yml:69
 - ci check: job terraform:validate:shared-services:10-network runs `terraform validate`  # .gitlab/ci/platform.yml:69
