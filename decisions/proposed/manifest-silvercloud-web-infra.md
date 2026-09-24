@@ -7,7 +7,7 @@
 - source: CI include template Jobs/SAST.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:105
 - source: CI include template Jobs/SAST-IaC.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:106
 - source: CI include template Jobs/Secret-Detection.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:107
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): BOLD_STYLE, BUILD_AWS_ECR_REGISTRY, CICD_JOB_IMAGE, CICD_MEDIUM_RUNNER_TAGS, COLOR_FORMAT, COMBINED, DESC, MESSAGE, MESSAGE_TYPE, RESET_STYLE, TICKET, TITLE; git cannot see these  # .gitlab-ci.yml:143
+- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): BUILD_AWS_ECR_REGISTRY, CICD_JOB_IMAGE, CICD_MEDIUM_RUNNER_TAGS; git cannot see these  # .gitlab-ci.yml:170
 - source: terraform state in a s3 backend; git cannot see this  # deploy/00-aws-pre-reqs/versions.tf:15
 - source: terraform module terraform-aws-modules/iam/aws//modules/iam-user; git cannot see this  # modules/aws/base-sch-web/user-avatar.tf:3
 - source: terraform module terraform-aws-modules/iam/aws//modules/iam-policy; git cannot see this  # modules/aws/base-sch-web/user-avatar.tf:13
