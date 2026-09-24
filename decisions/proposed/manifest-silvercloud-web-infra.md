@@ -21,7 +21,7 @@
 - terraform grid gaps: 16 of 81 <deployment> x <phase> pairs have no var file: prod-au/24-matomo-pre-reqs, prod-au/25-matomo-infra, prod-au/26-matomo-db-config, prod-au/35-matomo-k8s, prod-ca/24-matomo-pre-reqs, prod-ca/25-matomo-infra, prod-ca/26-matomo-db-config, prod-ca/35-matomo-k8s, +8 more; the script finds no var file there, so that pair is not deployed or plans on defaults  # deploy/$PHASE x var-file template
 - terraform roots: 9 dirs hold a backend block  # backend blocks
 - terraform version: required_version = 1.12.2 in 9 file(s)  # deploy/00-aws-pre-reqs/versions.tf
-- terraform variables: 9 roots declare 49 required (no default); 65 root x env var files checked, 1 leave required variables unset; 1 var file(s) come from run time, so these are upper bounds  # hcl2 over .tf and var files
+- terraform variables: 9 roots declare 49 required (no default); 65 root x env var files checked, 1 leave required variables unset by anything in git; a TF_VAR_<name> in GitLab project CI settings would still supply them, and git cannot see those; 1 var file(s) come from run time, so these are upper bounds  # hcl2 over .tf and var files
 - terraform variables unset: deploy/30-aws-k8s @ prod-de_DECOMMISIONED: 2 (istio_config, rapid7_config)  # atpy repo map <slug> --vars
 - terraform variables set but not declared: 7 key(s) in 7 var file(s), e.g. aws_auth_rapid7_role; terraform ignores them with a warning: stale or a typo  # config/prod-au/20-aws-infra.tfvars
 - source: terraform var file tfvars.json is written at run time by `aws secretsmanager get-secret-value --secret-id "deployments/$DEPLOYME`; git cannot see which variables it supplies  # run.sh:111
