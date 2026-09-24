@@ -15,7 +15,7 @@ TAGS: titan, pipeline
 - titan data may be CUI; treat all repo content as sensitive
 
 - layout (intake 2026-09-14): numbered stack dirs per domain: core/00_bootstrap .. 99_aws_backup (networking, ssm, eks shared/cdr, keycloak 31, webhosting prereqs, dns), aidbox/00..10, applications/11 and 90, data_platform/iac/00..30 (looker, dp), observability/11..31 (kafka, eks, elastic), rhapsody/01, bento/, general_modules/ (vendored eks and kms modules), general_helm_charts/, stackrox/, dr/, shared/
-- account: titan-sandbox <aws-account-3> (47 references); the customer (DHA) deploys production from manifest.all.yaml plus scripts; there is no direct production access (D-0017)
+- account: titan-sandbox <aws-account-3> (47 references); the customer (Titan) deploys production from manifest.all.yaml plus scripts; there is no direct production access (D-0017)
 - manifests: manifest.input.yaml (what Amwell hands over) and manifest.all.yaml (everything deployed together); README explains commercial vs Titan deployment differences
 - RDS clusters: aidbox/10_aidbox (has rds.force_ssl=1 parameter group), core/31_keycloak and shared/10_centralised_rds_postgres_infra (no cluster parameter group as of DVPS-6804 review)
 - pipelines: pipelines/environments and pipelines/scripts copy artifacts from commercial into the sandbox; nothing builds here directly
