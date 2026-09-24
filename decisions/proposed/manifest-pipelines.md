@@ -1,6 +1,6 @@
 ## Environment
 - default branch: platinum; protected: platinum
-- pipeline: .gitlab-ci.yml
+- pipeline: .gitlab-ci.yml, common/.extends.yml, common/.stages.yml, test/.test_pipeline.yml, common/.semantic-release.yml, common/.pipeline_scripts.yml, common/.rules.yml; stages: lint, validations, auto lock update, pre-build, build, test, scan, prepare, release, pre-deploy verification, image validations, publish, ssm-parameters dyn env, migrate SCC secrets to SSM, argocd onboarding, prepare-iac-resources-file, argocd offboarding, push deployment artifacts, dynamic env iac deploy, dynamic env deploy, dev iac deploy, dev deploy, dev test automation, scheduler test notification, dev bg switch, dynamic bg switch, dev bg rollback, dynamic bg rollback, push production artifacts, staging deploy, staging test automation, production tag-pact, production deploy, production publish, clean up  # common/.stages.yml:1
 - branch pattern: feature/DVPS-XXXX (git branch -r: 19 of 31 recent team-key branches)
 - contents: yaml 63, docker (Dockerfile) 19, python (.py) 9  # git ls-files
 - layout: top-level dirs by tracked files: scripts (24), assets (20), common (18), project (18), libraries (9), single_page_applications (8), documentation (4), services (4), single_page_application_components (2), test (1)  # git ls-files
