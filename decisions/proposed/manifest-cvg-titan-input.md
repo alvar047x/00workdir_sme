@@ -29,6 +29,26 @@
 - terraform guard: if [[ "${CI_COMMIT_BRANCH}" != "platinum" && "$(echo ${CI_COMMIT_BRANCH} | grep -c workspace)" -eq 0 ]]; then  # services/deploy.sh:103
 - terraform roots: 64 dirs hold a backend block  # backend blocks
 - terraform version: required_version ~>1.5.7 in 52 file(s), >= 1.3.2 in 3 file(s), ~> 1.5.7 in 1 file(s), >= 1.0 in 1 file(s)  # aidbox/00_aidbox_prereqs/versions.tf
+- terraform variables: 64 roots declare 397 required (no default); 158 root x env var files checked, 47 leave required variables unset  # hcl2 over .tf and var files
+- terraform variables unset: core/22_shared_prereqs @ gsnbx1: 14 (allowed_principals, contact_tag, eks_read_only_arns, elasticache_ingress_cidr_blocks, ...); core/22_shared_prereqs @ tsnbx5: 14 (allowed_principals, contact_tag, eks_read_only_arns, elasticache_ingress_cidr_blocks, ...); core/22_shared_prereqs @ tsnbx6: 14 (allowed_principals, contact_tag, eks_read_only_arns, elasticache_ingress_cidr_blocks, ...); core/22_shared_prereqs @ tsnbx7: 14 (allowed_principals, contact_tag, eks_read_only_arns, elasticache_ingress_cidr_blocks, ...); applications/11_webhosting @ tsnbx5: 10 (KEYCLOAK_BASE_URL, TOD_POST_LOGOUT_REDIRECT_URL, admin_ui_domain, consumer_domain, ...); applications/11_webhosting @ tsnbx6: 10 (KEYCLOAK_BASE_URL, TOD_POST_LOGOUT_REDIRECT_URL, admin_ui_domain, consumer_domain, ...); +41 more  # atpy repo map <slug> --vars
+- terraform variables set but not declared: 49 key(s) in 22 var file(s), e.g. ingress_nginx_admission_webhooks_image; terraform ignores them with a warning: stale or a typo  # aidbox/environments/stable/01_aidbox_infra.tfvars
+- terraform helm: 47 helm_release resource(s); 8 install a chart from this repo, 5 from a chart repository, 34 from a path built at plan time  # helm_release
+- terraform helm chart: aidbox/10_aidbox installs aidbox/10_aidbox/helm-charts/aidbox-0.2.8  # aidbox/10_aidbox/main.tf:147
+- terraform helm chart: core/91_dns installs core/91_dns/helm-charts/cert-manager-1.16.1  # core/91_dns/cert_manager.tf:1
+- terraform helm chart: core/modules/titan-keycloak/modules/app installs core/modules/titan-keycloak/modules/app/helm-charts/keycloak-1.0.0.tgz  # core/modules/titan-keycloak/modules/app/main.tf:119
+- terraform helm chart: stackrox/10_stackrox_infra installs general_helm_charts/cluster-autoscaler-9.50.1.tgz  # stackrox/10_stackrox_infra/eks.tf:179
+- terraform helm chart: stackrox/10_stackrox_infra installs general_helm_charts/metrics-server-3.13.0.tgz  # stackrox/10_stackrox_infra/eks.tf:227
+- terraform helm chart: stackrox/10_stackrox_infra installs general_helm_charts/aws-load-balancer-controller-3.1.0  # stackrox/10_stackrox_infra/eks.tf:254
+- terraform helm chart: stackrox/20_stackrox_k8s installs stackrox/20_stackrox_k8s/helm_charts/stackrox-central-services-400.5.5.tgz  # stackrox/20_stackrox_k8s/central_services.tf:8
+- terraform helm chart: stackrox/22_stackrox_secured_cluster_services installs general_helm_charts/stackrox-secured-cluster-services-400.5.5.tgz  # stackrox/22_stackrox_secured_cluster_services/cluster_services.tf:1
+- terraform helm chart: aidbox/01_aidbox_infra installs `${format("%s-%s", var.amwell_specific_chart_path, local.manifest.helm[var.helm_chart_layer]["amwell-specific-r` (built at plan time)  # aidbox/01_aidbox_infra/main.tf:151
+- terraform helm chart: core/23_eks_shared installs `${format("%s-%s", var.external_secrets_chart_path, local.manifest.helm[var.helm_chart_layer]["external-secrets` (built at plan time)  # core/23_eks_shared/addons.tf:1
+- terraform helm chart: core/23_eks_shared installs `${format("%s-%s", var.aws_load_balancer_controller_chart_path, local.manifest.helm[var.helm_chart_layer]["aws-` (built at plan time)  # core/23_eks_shared/addons.tf:99
+- terraform helm chart: core/23_eks_shared installs `${format("%s-%s", var.metrics_server_chart_path, local.manifest.helm[var.helm_chart_layer]["metrics-server-rev` (built at plan time)  # core/23_eks_shared/addons.tf:205
+- source: helm chart ${var.rapid7_helmchart_name} from ${var.rapid7_helmchart_repo}, installed by core/23_eks_shared; git cannot see this  # core/23_eks_shared/addons.tf:421
+- source: helm chart ${var.rapid7_helmchart_name} from ${var.rapid7_helmchart_repo}, installed by core/25_eks_cdr; git cannot see this  # core/25_eks_cdr/addons.tf:421
+- source: helm chart ${each.value.chart} from ${try(each.value.repository, null)}, installed by core/modules/eks.eks_blueprints_addons-1.14; git cannot see this  # core/modules/eks.eks_blueprints_addons-1.14/helm.tf:5
+- source: helm chart ${var.rapid7_helmchart_name} from ${var.rapid7_helmchart_repo}, installed by core/modules/titan-eks; git cannot see this  # core/modules/titan-eks/addons.tf:538
 - changes together: core/environments + core/modules (6 of 400 commits)  # git log origin/platinum
 - changes together: core/25_eks_cdr + core/modules (6 of 400 commits)  # git log origin/platinum
 - changes together: core/23_eks_shared + core/25_eks_cdr (5 of 400 commits)  # git log origin/platinum
