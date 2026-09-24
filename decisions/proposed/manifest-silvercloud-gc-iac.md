@@ -1,7 +1,7 @@
 ## Environment
 - default branch: main; protected: main
 - contents: terraform, kubernetes manifests or helm
-- pipeline: .gitlab-ci.yml
+- pipeline: .gitlab-ci.yml, ci/tag-deployment.gitlab-ci.yml, ci/rotate-passwords.gitlab-ci.yml; stages: prepare, lint, test, security, check-tag, deploy, fvt, gitlab, push, plan, apply  # .gitlab-ci.yml:1
 - MR target: main (git log origin/main: 99 of 99 merge commits); branch pattern: DVPS-XXXX (git branch -r: 13 of 27 recent team-key branches)
 - layout: top-level dirs by tracked files: modules (249), helm-charts (78), deploy (63), manifest (21), config (14), ci (11), kustomize (11), scripts (8)  # git ls-files
 - source: CI include template Jobs/SAST.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:69
