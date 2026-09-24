@@ -22,10 +22,10 @@
 - terraform by hand: `terraform -chdir=layers/azure plan -var-file=environments/prod/terraform.tfvars`; the var file is below the root, so terraform does not load it unless named  # layers/azure/environments/prod/terraform.tfvars
 - terraform version: required_version >= 1.12.0 in 7 file(s), >= 1.7.0 in 2 file(s)  # layers/aws-networking/backend-bootstrap/main.tf
 - terraform variables: 9 roots declare 10 required (no default); 8 root x env var files checked, 0 leave required variables unset by anything in git; a TF_VAR_<name> in GitLab project CI settings would still supply them, and git cannot see those  # hcl2 over .tf and var files
-- changes together: layers/aws-networking + layers/azure (6 of 78 commits)  # git log origin/main
-- changes together: layers/azure + scripts (5 of 78 commits)  # git log origin/main
-- changes together: layers/aws-networking + layers/aws-pexip (4 of 78 commits)  # git log origin/main
-- changes together: layers/aws-pexip + layers/azure (3 of 78 commits)  # git log origin/main
+- changes together: layers/aws-networking + layers/azure (6 of 81 commits)  # git log origin/main
+- changes together: layers/azure + scripts (5 of 81 commits)  # git log origin/main
+- changes together: layers/aws-networking + layers/aws-pexip (4 of 81 commits)  # git log origin/main
+- changes together: layers/aws-pexip + layers/azure (3 of 81 commits)  # git log origin/main
 
 ## Validate (what "done" looks like here)
 - plan through ./deploy.sh <layer> plan; destroys == 0 unless the ticket says otherwise; SKU changes in place per the environment note above
