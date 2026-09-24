@@ -1,0 +1,26 @@
+## Environment
+- default branch: platinum; protected: platinum
+- MR target: platinum; branch pattern: titan/DVPS-XXXX (git branch -r: 32 of 61 recent team-key branches)
+- contents: terraform, kubernetes manifests or helm
+- pipeline: .gitlab-ci.yml
+- titan data may be CUI; treat all repo content as sensitive
+- layout (intake 2026-09-14): numbered stack dirs per domain: core/00_bootstrap .. 99_aws_backup (networking, ssm, eks shared/cdr, keycloak 31, webhosting prereqs, dns), aidbox/00..10, applications/11 and 90, data_platform/iac/00..30 (looker, dp), observability/11..31 (kafka, eks, elastic), rhapsody/01, bento/, general_modules/ (vendored eks and kms modules), general_helm_charts/, stackrox/, dr/, shared/
+- account: titan-sandbox <aws-account-3> (47 references); the customer (Titan) deploys production from manifest.all.yaml plus scripts; there is no direct production access (D-0017)
+- manifests: manifest.input.yaml (what Amwell hands over) and manifest.all.yaml (everything deployed together); README explains commercial vs Titan deployment differences
+- RDS clusters: aidbox/10_aidbox (has rds.force_ssl=1 parameter group), core/31_keycloak and shared/10_centralised_rds_postgres_infra (no cluster parameter group as of DVPS-6804 review)
+- pipelines: pipelines/environments and pipelines/scripts copy artifacts from commercial into the sandbox; nothing builds here directly
+- terraform/terraform.tfvars is the single tfvars; amazon-aurora.pem is the RDS CA bundle
+- layout: top-level dirs by tracked files: data_platform (1299), general_helm_charts (527), services (393), core (370), general_modules (324), shared (192), observability (86), aidbox (74), stackrox (52), applications (30), dr (28), pipelines (26)  # git ls-files
+- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): APP_IN_MANIFEST, BENTO_PLUGIN_JFROG_REPO_URL, BOLD_STYLE, CENTRAL_SUPPORT_GROUP, CHUNK, COLOR_FORMAT, CONDITION, CURRENT_WD, CVG_TITAN_CHARTS_AUTO_COMMIT_ACCESS_TOKEN, CVG_TITAN_CHARTS_AUTO_COMMIT_BOT_EMAIL, CVG_TITAN_CHARTS_AUTO_COMMIT_BOT_NAME, CVG_TITAN_CHARTS_REPO_URL, +22 more; git cannot see these  # pipelines/.application.yml:22
+- source: terraform state in a s3 backend; git cannot see this  # aidbox/00_aidbox_prereqs/versions.tf:16
+- source: terraform module terraform-aws-modules/vpc/aws//modules/vpc-endpoints; git cannot see this  # core/10_networking/main.tf:136
+- source: terraform module terraform-aws-modules/vpc/aws; git cannot see this  # core/modules/titan-vpc/main.tf:2
+- source: terraform module terraform-aws-modules/s3-bucket/aws; git cannot see this  # terraform/s3.tf:37
+- source: helm dependency repository https://dandydeveloper.github.io/charts/; git cannot see this  # general_helm_charts/argo-cd-7.9.1/Chart.yaml:13
+- source: helm dependency repository oci://ghcr.io/external-secrets/charts; git cannot see this  # general_helm_charts/external-secrets-2.2.0/Chart.yaml:6
+- values files, tracked: aidbox/environments/stable/00_aidbox_prereqs.tfvars, aidbox/environments/stable/01_aidbox_infra.tfvars, aidbox/environments/stable/10_aidbox.tfvars, aidbox/environments/tsnbx4/00_aidbox_prereqs.tfvars, aidbox/environments/tsnbx4/01_aidbox_infra.tfvars, aidbox/environments/tsnbx4/10_aidbox.tfvars, aidbox/environments/tsnbx7/00_aidbox_prereqs.tfvars, aidbox/environments/tsnbx7/01_aidbox_infra.tfvars, aidbox/environments/tsnbx7/10_aidbox.tfvars, applications/environments/stable/11_webhosting.tfvars, applications/environments/stable/90_webhosting_dns.tfvars, applications/environments/tsnbx4/11_webhosting.tfvars, +168 more  # git ls-files
+- changes together: core/environments + core/modules (6 of 400 commits)  # git log origin/platinum
+- changes together: core/25_eks_cdr + core/modules (6 of 400 commits)  # git log origin/platinum
+- changes together: core/23_eks_shared + core/25_eks_cdr (5 of 400 commits)  # git log origin/platinum
+- changes together: core/23_eks_shared + core/modules (5 of 400 commits)  # git log origin/platinum
+- changes together: aidbox/10_aidbox + aidbox/environments (4 of 400 commits)  # git log origin/platinum
