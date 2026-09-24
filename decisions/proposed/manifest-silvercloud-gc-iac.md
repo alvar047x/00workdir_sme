@@ -18,6 +18,22 @@
 - terraform grid gaps: 14 of 21 <deployment> x <target_module> pairs have no var file: security-validation_DEPRECATED/00-aws-pre-reqs, security-validation_DEPRECATED/10-aws-secrets, security-validation_DEPRECATED/20-aws-infra, security-validation_DEPRECATED/30-aws-k8s, security-validation_DEPRECATED/40-aws-post-k8s-deployment, security-validation_DEPRECATED/90-aws-dns-prereqs, security-validation_DEPRECATED/91-aws-dns, test-commercial_DEPRECATED/00-aws-pre-reqs, +6 more; the script finds no var file there, so that pair is not deployed or plans on defaults  # deploy/$TARGET_MODULE x var-file template
 - terraform roots: 7 dirs hold a backend block  # backend blocks
 - terraform version: .terraform-version 1.5.7 (.terraform-version); required_version = 1.5.7 in 6 file(s), 1.5.7 in 1 file(s)  # deploy/00-aws-pre-reqs/versions.tf
+- terraform variables: 7 roots declare 41 required (no default); 7 root x env var files checked, 1 leave required variables unset; 1 var file(s) come from run time, so these are upper bounds  # hcl2 over .tf and var files
+- terraform variables unset: deploy/30-aws-k8s @ test-govcloud: 2 (db_root_password, web_db_app_password)  # atpy repo map <slug> --vars
+- terraform variables set but not declared: 1 key(s) in 1 var file(s), e.g. gc_aws_adfs_role_aws_auth_username; terraform ignores them with a warning: stale or a typo  # config/test-govcloud/20-aws-infra.tfvars
+- source: terraform var file tfvars.json is written at run time by `aws secretsmanager get-secret-value --secret-id "$SECRET_NAME" --regio`; git cannot see which variables it supplies  # run.sh:153
+- terraform helm: 11 helm_release resource(s); 8 install a chart from this repo, 0 from a chart repository, 3 from a path built at plan time  # helm_release
+- terraform helm chart: deploy/91-aws-dns installs deploy/91-aws-dns/helm-charts/cert-manager-1.16.1.tgz  # deploy/91-aws-dns/cert_manager.tf:1
+- terraform helm chart: modules/aws/cluster installs helm-charts/cluster-autoscaler-9.43.1.tgz  # modules/aws/cluster/autoscaler.tf:1
+- terraform helm chart: modules/k8s/kube-cleanup installs helm-charts/kube-cleanup-operator-1.0.1.tgz  # modules/k8s/kube-cleanup/main.tf:1
+- terraform helm chart: modules/k8s/metrics-server installs helm-charts/metrics-server-3.12.0.tgz  # modules/k8s/metrics-server/main.tf:4
+- terraform helm chart: modules/k8s/monitoring installs helm-charts/eck-operator-2.16.1.tgz  # modules/k8s/monitoring/main.tf:84
+- terraform helm chart: modules/k8s/monitoring installs helm-charts/efk  # modules/k8s/monitoring/main.tf:204
+- terraform helm chart: modules/k8s/sch-ehr-helm installs helm-charts/sch-ehr  # modules/k8s/sch-ehr-helm/main.tf:6
+- terraform helm chart: modules/k8s/sch-web-helm installs helm-charts/sch-web  # modules/k8s/sch-web-helm/main.tf:11
+- terraform helm chart: modules/aws/cluster installs `helm-charts/${var.aws_load_balancer_controller_chart}` (built at plan time)  # modules/aws/cluster/albc.tf:28
+- terraform helm chart: modules/k8s/ingress-nginx installs `helm-charts/${var.ingress_nginx_chart}` (built at plan time)  # modules/k8s/ingress-nginx/main.tf:9
+- terraform helm chart: modules/k8s/monitoring installs `helm-charts/${var.kube_prometheus_stack_chart}` (built at plan time)  # modules/k8s/monitoring/main.tf:12
 - changes together: config/test-govcloud + modules/k8s (34 of 400 commits)  # git log origin/main
 - changes together: config/test-govcloud + modules/aws (30 of 400 commits)  # git log origin/main
 - changes together: config/test-commercial + config/test-govcloud (22 of 400 commits)  # git log origin/main
