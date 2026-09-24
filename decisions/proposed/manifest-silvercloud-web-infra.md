@@ -15,6 +15,12 @@
 - source: base image docker.io/library/caddy:2.11.1-builder-alpine; git cannot see this  # modules/k8s/istio/coraza-caddy/Dockerfile:2
 - source: base image docker.io/library/caddy:2.11.1-alpine; git cannot see this  # modules/k8s/istio/coraza-caddy/Dockerfile:7
 - values files, tracked: config/build/00-aws-pre-reqs.tfvars, config/build/10-aws-parent-acc.tfvars, config/build/20-aws-infra.tfvars, config/build/24-matomo-pre-reqs.tfvars, config/build/25-matomo-infra.tfvars, config/build/26-matomo-db-config.tfvars, config/build/30-aws-k8s.tfvars, config/build/35-matomo-k8s.tfvars, config/build/40-aws-post-k8s-deployment.tfvars, config/prod-au/00-aws-pre-reqs.tfvars, config/prod-au/10-aws-parent-acc.tfvars, config/prod-au/20-aws-infra.tfvars, +53 more  # git ls-files
+- terraform process: CI runs `./run.sh -d <deployment> -c plan -p <phase> (+3 call(s) with other flags)` from 11 job(s); arguments: -b tfstate_bucket, -c command, -d deployment, -p phase, -r aws_region  # .gitlab-ci.yml:267
+- terraform layout: runs in deploy/<phase> (run.sh:101); state key <deployment>/<phase> (run.sh:105); vars config/<deployment>/<phase>.tfvars<suffix> (run.sh:200)  # run.sh
+- terraform grid: 65 var files; <deployment> 9: build, prod-au, prod-ca, prod-de_DECOMMISIONED, prod-ie, prod-uk, prod-us, qa-aws, stage-aws; <phase> 9: 00-aws-pre-reqs, 10-aws-parent-acc, 20-aws-infra, 24-matomo-pre-reqs, 25-matomo-infra, 26-matomo-db-config, 30-aws-k8s, 35-matomo-k8s, 40-aws-post-k8s-deployment  # run.sh:200
+- terraform grid gaps: 16 of 81 <deployment> x <phase> pairs have no var file: prod-au/24-matomo-pre-reqs, prod-au/25-matomo-infra, prod-au/26-matomo-db-config, prod-au/35-matomo-k8s, prod-ca/24-matomo-pre-reqs, prod-ca/25-matomo-infra, prod-ca/26-matomo-db-config, prod-ca/35-matomo-k8s, +8 more; the script finds no var file there, so that pair is not deployed or plans on defaults  # deploy/$PHASE x var-file template
+- terraform roots: 9 dirs hold a backend block  # backend blocks
+- terraform version: required_version = 1.12.2 in 9 file(s)  # deploy/00-aws-pre-reqs/versions.tf
 - changes together: deploy/20-aws-infra + modules/aws (26 of 400 commits)  # git log origin/main
 - changes together: config/build + config/qa-aws (23 of 400 commits)  # git log origin/main
 - changes together: deploy/30-aws-k8s + modules/k8s (23 of 400 commits)  # git log origin/main
