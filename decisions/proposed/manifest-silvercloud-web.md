@@ -2,7 +2,7 @@
 - default branch: main; protected: development,main
 - MR target: development; branch pattern: DVPS-XXXX-desc (topology.yaml)
 - contents: dockerfile image build
-- pipeline: .gitlab-ci.yml
+- pipeline: .gitlab-ci.yml, ci/common.gitlab-ci.yml, ci/development-branch.gitlab-ci.yml, ci/tag-build.gitlab-ci.yml, ci/tag-build-titan.gitlab-ci.yml, ci/tag-deployment.gitlab-ci.yml; stages: scheduled_pipeline, tag, prebuild, build, build-titan, wait, test, deploy, deploy-titan, fvt, create_tag, release, static-tarball, notifications  # .gitlab-ci.yml:3
 - branch pattern: DVPS-XXXX-desc (git branch -r: 5 of 5 recent team-key branches)
 - layout: top-level dirs by tracked files: content (30642), apps (5201), static (4324), vue (715), custom_templates (693), e2e_tests (362), templates (41), locale (33), content_data (19), site_media (19), docs (15), i18n (14)  # git ls-files
 - source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AWS_ECR_REGISTRY, BASH_REMATCH, BUILD_AWS_ACCESS_KEY_ID, BUILD_AWS_ECR_REGISTRY, BUILD_AWS_EKS_NAME, BUILD_AWS_EKS_REGION, BUILD_AWS_ROLE_TO_ASSUME, BUILD_AWS_S3_STATIC_ASSETS_BUCKET, BUILD_AWS_SECRET_ACCESS_KEY, BUILD_PIPELINE_TIME_ALLOWED_SECS, CENTRAL_AWS_ECR_AUTH, CENTRAL_AWS_ECR_REGISTRY, +63 more; git cannot see these  # ci/tag-build.gitlab-ci.yml:176
