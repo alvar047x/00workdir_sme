@@ -21,6 +21,24 @@
 - terraform grid gaps: 16 of 81 <deployment> x <phase> pairs have no var file: prod-au/24-matomo-pre-reqs, prod-au/25-matomo-infra, prod-au/26-matomo-db-config, prod-au/35-matomo-k8s, prod-ca/24-matomo-pre-reqs, prod-ca/25-matomo-infra, prod-ca/26-matomo-db-config, prod-ca/35-matomo-k8s, +8 more; the script finds no var file there, so that pair is not deployed or plans on defaults  # deploy/$PHASE x var-file template
 - terraform roots: 9 dirs hold a backend block  # backend blocks
 - terraform version: required_version = 1.12.2 in 9 file(s)  # deploy/00-aws-pre-reqs/versions.tf
+- terraform variables: 9 roots declare 49 required (no default); 65 root x env var files checked, 1 leave required variables unset; 1 var file(s) come from run time, so these are upper bounds  # hcl2 over .tf and var files
+- terraform variables unset: deploy/30-aws-k8s @ prod-de_DECOMMISIONED: 2 (istio_config, rapid7_config)  # atpy repo map <slug> --vars
+- terraform variables set but not declared: 7 key(s) in 7 var file(s), e.g. aws_auth_rapid7_role; terraform ignores them with a warning: stale or a typo  # config/prod-au/20-aws-infra.tfvars
+- source: terraform var file tfvars.json is written at run time by `aws secretsmanager get-secret-value --secret-id "deployments/$DEPLOYME`; git cannot see which variables it supplies  # run.sh:111
+- terraform helm: 17 helm_release resource(s); 8 install a chart from this repo, 1 from a chart repository, 8 from a path built at plan time  # helm_release
+- terraform helm chart: modules/aws/eks-addons installs helm-charts/cluster-autoscaler-9.49.0.tgz  # modules/aws/eks-addons/autoscaler.tf:64
+- terraform helm chart: modules/k8s/kube-cleanup installs helm-charts/kube-cleanup-operator-1.0.1.tgz  # modules/k8s/kube-cleanup/main.tf:1
+- terraform helm chart: modules/k8s/monitoring installs helm-charts/efk  # modules/k8s/monitoring/efk.tf:1
+- terraform helm chart: modules/k8s/monitoring installs helm-charts/eck-operator-3.1.0.tgz  # modules/k8s/monitoring/elastic.tf:1
+- terraform helm chart: modules/k8s/monitoring installs helm-charts/falco-4.17.0.tgz  # modules/k8s/monitoring/falco.tf:1
+- terraform helm chart: modules/k8s/monitoring installs helm-charts/falco-exporter-0.12.1.tgz  # modules/k8s/monitoring/falco.tf:76
+- terraform helm chart: modules/k8s/sch-ehr-helm installs helm-charts/sch-ehr  # modules/k8s/sch-ehr-helm/main.tf:6
+- terraform helm chart: modules/k8s/sch-web-helm installs helm-charts/sch-web  # modules/k8s/sch-web-helm/main.tf:19
+- terraform helm chart: modules/aws/eks-addons installs `helm-charts/${var.aws_load_balancer_controller_chart}` (built at plan time)  # modules/aws/eks-addons/albc.tf:27
+- terraform helm chart: modules/k8s/cert-manager installs `helm-charts/${var.cert_manager_config.chart}` (built at plan time)  # modules/k8s/cert-manager/main.tf:1
+- terraform helm chart: modules/k8s/istio installs `helm-charts/istio/${var.chart_base}` (built at plan time)  # modules/k8s/istio/helm_release.tf:1
+- terraform helm chart: modules/k8s/istio installs `helm-charts/istio/${var.chart_istiod}` (built at plan time)  # modules/k8s/istio/helm_release.tf:13
+- source: helm chart metrics-server from https://kubernetes-sigs.github.io/metrics-server/, installed by modules/k8s/metrics-server; git cannot see this  # modules/k8s/metrics-server/main.tf:1
 - changes together: deploy/20-aws-infra + modules/aws (26 of 400 commits)  # git log origin/main
 - changes together: config/build + config/qa-aws (23 of 400 commits)  # git log origin/main
 - changes together: deploy/30-aws-k8s + modules/k8s (23 of 400 commits)  # git log origin/main
