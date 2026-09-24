@@ -19,6 +19,7 @@ last_intake: 2026-09-24
   - `atpy gitlab diff|comments <mr url>`
   - `atpy jira fetch|comments KEY`
   - `atpy wiki search|fetch`
+  - `atpy repo map <slug> [--check | --write]`: the one repo evaluation tool; drafts Environment, Validate and Watch from the clone and its git history, every line cited; `--check` compares branch, MR target, pattern, project and layers with the manifest; `--write` stages only missing lines for `approve --section <slug>`
 - plan evaluation:
   - `atpy sme plan --draft KEY`: the planner brief, which carries the tag vocabulary
   - `atpy sme plan --ticket KEY --from -`: the scout writes the plan with it; its body must hold one `TAGS:` line, confirmed once by the approve
@@ -64,7 +65,6 @@ last_intake: 2026-09-24
   - `atpy jira board --project <key>`: the board line to approve into sys-atlassian
   - `atpy jira start|transitions|set-fields|comment-edit|comment-delete|sprint`
   - `atpy gate check|classify|status|mint|approve|clear|doctor`
-  - `atpy repo index|map`
   - `atpy sprint analyze`
 - covered-by: watch = atpy gitlab pipeline, atpy gitlab job, atpy gitlab monitor, at gitlab pipeline, at gitlab job, curl *gitlab.com/api/v4/projects/*/pipelines*, curl *gitlab.com/api/v4/projects/*/jobs*
 - covered-by: gather = atpy gitlab pipelines, at gitlab pipelines, git ls-remote, git log origin/*, git branch -r, curl *gitlab.com/api/v4/projects/*/merge_requests*
