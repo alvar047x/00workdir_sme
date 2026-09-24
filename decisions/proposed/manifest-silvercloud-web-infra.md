@@ -1,0 +1,22 @@
+## Environment
+- default branch: main; protected: main
+- MR target: main; branch pattern: feature/DVPS-XXXX-desc (topology.yaml)
+- contents: terraform, kubernetes manifests or helm
+- pipeline: .gitlab-ci.yml
+- layout: top-level dirs by tracked files: modules (683), deploy (95), helm-charts (80), config (65), docs (30), tools (7), scripts (4), manifest (3)  # git ls-files
+- source: CI include template Jobs/SAST.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:105
+- source: CI include template Jobs/SAST-IaC.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:106
+- source: CI include template Jobs/Secret-Detection.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:107
+- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): BOLD_STYLE, BUILD_AWS_ECR_REGISTRY, CICD_JOB_IMAGE, CICD_MEDIUM_RUNNER_TAGS, COLOR_FORMAT, COMBINED, DESC, MESSAGE, MESSAGE_TYPE, RESET_STYLE, TICKET, TITLE; git cannot see these  # .gitlab-ci.yml:143
+- source: terraform state in a s3 backend; git cannot see this  # deploy/00-aws-pre-reqs/versions.tf:15
+- source: terraform module terraform-aws-modules/iam/aws//modules/iam-user; git cannot see this  # modules/aws/base-sch-web/user-avatar.tf:3
+- source: terraform module terraform-aws-modules/iam/aws//modules/iam-policy; git cannot see this  # modules/aws/base-sch-web/user-avatar.tf:13
+- source: terraform module terraform-aws-modules/kms/aws; git cannot see this  # modules/terraform-aws-eks-20.36.0/main.tf:303
+- source: base image docker.io/library/caddy:2.11.1-builder-alpine; git cannot see this  # modules/k8s/istio/coraza-caddy/Dockerfile:2
+- source: base image docker.io/library/caddy:2.11.1-alpine; git cannot see this  # modules/k8s/istio/coraza-caddy/Dockerfile:7
+- values files, tracked: config/build/00-aws-pre-reqs.tfvars, config/build/10-aws-parent-acc.tfvars, config/build/20-aws-infra.tfvars, config/build/24-matomo-pre-reqs.tfvars, config/build/25-matomo-infra.tfvars, config/build/26-matomo-db-config.tfvars, config/build/30-aws-k8s.tfvars, config/build/35-matomo-k8s.tfvars, config/build/40-aws-post-k8s-deployment.tfvars, config/prod-au/00-aws-pre-reqs.tfvars, config/prod-au/10-aws-parent-acc.tfvars, config/prod-au/20-aws-infra.tfvars, +53 more  # git ls-files
+- changes together: deploy/20-aws-infra + modules/aws (26 of 400 commits)  # git log origin/main
+- changes together: config/build + config/qa-aws (23 of 400 commits)  # git log origin/main
+- changes together: deploy/30-aws-k8s + modules/k8s (23 of 400 commits)  # git log origin/main
+- changes together: config/prod-ie + config/prod-uk (23 of 400 commits)  # git log origin/main
+- changes together: helm-charts/sch-web + modules/k8s (17 of 400 commits)  # git log origin/main
