@@ -68,6 +68,7 @@
 - plan, pipeline: the layer's plan_* job (Watch below); jobs on platinum target tsnbx4
 - helm charts: general_helm_charts/<chart>-<rev> is picked by the manifest revision, but helm_release (helm 2.13.0, no manifest experiment) only diffs when Chart.yaml `version:` changes, so a template-only edit needs the version bumped; proof is `helm_release.<chart>` with `~ version` in the plan (DVPS-6622: `1.0.8 -> 1.0.11` shown locally)
 - done means: plan reviewed, destroys == 0 unless stated, and the change is reflected in manifest.all.yaml if the customer needs it
+- rule: helm_release diffs a local chart only when its Chart.yaml version changes (no manifest experiment); a template-only edit needs the version bumped or the plan shows nothing  # helm provider config
 - ci check: job 03_looker_02_spectacles_tests runs `./data_platform/looker/run_spectacles_tests.sh $ENVIRONMENT`  # pipelines/.data_platform.yml:243
 - ci check: job pin_manifest runs `./scripts/checkplatinumhead.sh`  # pipelines/.prepare.yml:7
 - rule: chart template edits came with a Chart.yaml change in 8 of 14 commits  # git log origin/platinum
