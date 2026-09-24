@@ -1,0 +1,14 @@
+## Environment
+- default branch: main; protected: main
+- contents: dockerfile image build
+- pipeline: none found
+- layout: top-level dirs by tracked files: base (71), elasticsearch (8), python (8), silvercloud-ehr (2), silvercloud-web (2), golang (1), ingress-nginx-controller (1), kibana (1), repos (1), scripts (1), test-image (1)  # git ls-files
+- source: base image ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}; git cannot see this  # base/debian/12.x-slim/Dockerfile:5
+- source: base image alpine:3.18; git cannot see this  # elasticsearch/8.11.3/Dockerfile:1
+- source: base image ubuntu:20.04; git cannot see this  # elasticsearch/8.11.3/Dockerfile.prev:12
+- source: base image ${BASE_IMAGE}; git cannot see this  # ingress-nginx-controller/Dockerfile:17
+- source: base image <account-id>.dkr.ecr.us-east-1.amazonaws.com/kibana:7.11.2; git cannot see this  # kibana/Dockerfile:1
+- source: base image ${BASE_REGISTRY}/${BASE_IMAGE}:v${BASE_TAG}; git cannot see this  # silvercloud-ehr/Dockerfile:8
+- source: base image debian:bookworm-20231120-amd64; git cannot see this  # test-image/Dockerfile:1
+- changes together: silvercloud-ehr + silvercloud-web (7 of 49 commits)  # git log origin/main
+- changes together: fluentd-kubernetes-daemonset + nginx (3 of 49 commits)  # git log origin/main
