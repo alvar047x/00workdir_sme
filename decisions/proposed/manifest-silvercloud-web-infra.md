@@ -2,7 +2,7 @@
 - default branch: main; protected: main
 - MR target: main; branch pattern: feature/DVPS-XXXX-desc (topology.yaml)
 - contents: terraform, kubernetes manifests or helm
-- pipeline: .gitlab-ci.yml
+- pipeline: .gitlab-ci.yml; stages: prepare, lint, review, test, plan, apply  # .gitlab-ci.yml:14
 - layout: top-level dirs by tracked files: modules (683), deploy (95), helm-charts (80), config (65), docs (30), tools (7), scripts (4), manifest (3)  # git ls-files
 - source: CI include template Jobs/SAST.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:105
 - source: CI include template Jobs/SAST-IaC.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:106
