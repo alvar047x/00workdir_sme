@@ -17,6 +17,8 @@
 - source: terraform remote state `transit_gateway` read from another stack; git cannot see this  # layers/aws-networking/network-manager/main.tf:46
 - source: terraform remote state `ipam` read from another stack; git cannot see this  # layers/aws-networking/ram-shares/main.tf:57
 - values files, tracked: layers/aws-networking/environments/prod/terraform.tfvars, layers/aws-networking/iam/terraform.tfvars, layers/aws-networking/ipam/terraform.tfvars, layers/aws-networking/network-manager/terraform.tfvars, layers/aws-networking/ram-shares/terraform.tfvars, layers/aws-networking/route53/terraform.tfvars, layers/aws-networking/transit-gateway/terraform.tfvars, layers/aws-pexip/environments/prod/terraform.tfvars, layers/azure/environments/prod/terraform.tfvars  # git ls-files
+- terraform process: no runner in atlantis.yaml, CI or a CI-called script; 9 roots are run by hand: layers (9)  # backend blocks
+- terraform version: required_version >= 1.12.0 in 7 file(s), >= 1.7.0 in 2 file(s)  # layers/aws-networking/backend-bootstrap/main.tf
 - changes together: layers/aws-networking + layers/azure (6 of 78 commits)  # git log origin/main
 - changes together: layers/azure + scripts (5 of 78 commits)  # git log origin/main
 - changes together: layers/aws-networking + layers/aws-pexip (4 of 78 commits)  # git log origin/main
