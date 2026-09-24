@@ -19,6 +19,16 @@
 - source: helm dependency repository https://dandydeveloper.github.io/charts/; git cannot see this  # general_helm_charts/argo-cd-7.9.1/Chart.yaml:13
 - source: helm dependency repository oci://ghcr.io/external-secrets/charts; git cannot see this  # general_helm_charts/external-secrets-2.2.0/Chart.yaml:6
 - values files, tracked: aidbox/environments/stable/00_aidbox_prereqs.tfvars, aidbox/environments/stable/01_aidbox_infra.tfvars, aidbox/environments/stable/10_aidbox.tfvars, aidbox/environments/tsnbx4/00_aidbox_prereqs.tfvars, aidbox/environments/tsnbx4/01_aidbox_infra.tfvars, aidbox/environments/tsnbx4/10_aidbox.tfvars, aidbox/environments/tsnbx7/00_aidbox_prereqs.tfvars, aidbox/environments/tsnbx7/01_aidbox_infra.tfvars, aidbox/environments/tsnbx7/10_aidbox.tfvars, applications/environments/stable/11_webhosting.tfvars, applications/environments/stable/90_webhosting_dns.tfvars, applications/environments/tsnbx4/11_webhosting.tfvars, +168 more  # git ls-files
+- terraform process: CI runs `./scripts/deploy.sh <layer> <environment> <action>` from 162 job(s); arguments: $1 layer, $2 environment, $3 action  # pipelines/.aidbox.yml:20
+- terraform layout: runs in <current_wd>/<layer_path> (scripts/deploy.sh:157); state key <environment>/<layer>/terraform.tfstate (scripts/deploy.sh:192); vars <current_wd>/environments/<environment>/<layer>.tfvars (scripts/deploy.sh:178)  # scripts/deploy.sh
+- terraform grid: 179 var files; <environment> 8: gsnbx1, stable, tsnbx2, tsnbx3, tsnbx4, tsnbx5, tsnbx6, tsnbx7; <layer> 72: 00_aidbox_prereqs, 00_bootstrap, 00_centralised_rds_postgres_prereqs, 00_looker_pre_reqs, 00_stackrox_prereqs, 01_aidbox_infra, 01_clamav_prereqs, 01_cms_cdn, 01_rhapsody_prereqs, 02_rhapsody, +62 more  # scripts/deploy.sh:178
+- terraform guard: if [[ "${CI_COMMIT_BRANCH}" != "platinum" && "$(echo ${CI_COMMIT_BRANCH} | grep -c workspace)" -eq 0 ]]; then  # scripts/deploy.sh:93
+- terraform process: CI runs `./services/deploy.sh <manifest> <layer> <environment> <action> (+4 call(s) with other flags)` from 10 job(s); arguments: $1 manifest, $2 layer, $3 environment, $4 action, $5 single_service_name  # pipelines/.destroy.yml:36
+- terraform layout: runs in <current_wd>/stacks/<service>/<layer> (services/deploy.sh:190); state key <tfstate_bucket_key> (services/deploy.sh:202); vars <current_wd>/environments/<environment>/common.tfvars (services/deploy.sh:192)  # services/deploy.sh
+- terraform grid: 3 var files; <environment> 3: stable, tsnbx4, tsnbx7  # services/deploy.sh:192
+- terraform guard: if [[ "${CI_COMMIT_BRANCH}" != "platinum" && "$(echo ${CI_COMMIT_BRANCH} | grep -c workspace)" -eq 0 ]]; then  # services/deploy.sh:103
+- terraform roots: 64 dirs hold a backend block  # backend blocks
+- terraform version: required_version ~>1.5.7 in 52 file(s), >= 1.3.2 in 3 file(s), ~> 1.5.7 in 1 file(s), >= 1.0 in 1 file(s)  # aidbox/00_aidbox_prereqs/versions.tf
 - changes together: core/environments + core/modules (6 of 400 commits)  # git log origin/platinum
 - changes together: core/25_eks_cdr + core/modules (6 of 400 commits)  # git log origin/platinum
 - changes together: core/23_eks_shared + core/25_eks_cdr (5 of 400 commits)  # git log origin/platinum
