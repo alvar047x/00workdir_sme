@@ -20,3 +20,13 @@
 - changes together: deploy/30-aws-k8s + modules/k8s (23 of 400 commits)  # git log origin/main
 - changes together: config/prod-ie + config/prod-uk (23 of 400 commits)  # git log origin/main
 - changes together: helm-charts/sch-web + modules/k8s (17 of 400 commits)  # git log origin/main
+
+## Validate (what "done" looks like here)
+- local: `terraform fmt -check -recursive`  # .tf files tracked
+- local: `helm lint helm-charts/efk`  # helm-charts/efk/Chart.yaml
+- local: `helm lint helm-charts/sch-ehr`  # helm-charts/sch-ehr/Chart.yaml
+- local: `helm lint helm-charts/sch-web`  # helm-charts/sch-web/Chart.yaml
+- ci check: job check_latest_code runs `./scripts/checkplatinumhead.sh`  # .gitlab-ci.yml:159
+- ci check: job lint-yaml runs `yamllint -d "{extends: default, rules: {line-length: {max: 256}}}" $(find ./ -iname "*.yml" -or -iname "*.yaml")`  # .gitlab-ci.yml:179
+- ci check: job terraform-fmt runs `terraform fmt -diff -recursive -check .`  # .gitlab-ci.yml:192
+- rule: chart template edits came with a Chart.yaml change in 60 of 99 commits  # git log origin/main
