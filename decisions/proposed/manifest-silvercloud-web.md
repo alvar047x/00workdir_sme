@@ -1,0 +1,20 @@
+## Environment
+- default branch: main; protected: development,main
+- MR target: development; branch pattern: DVPS-XXXX-desc (topology.yaml)
+- contents: dockerfile image build
+- pipeline: .gitlab-ci.yml
+- branch pattern: DVPS-XXXX-desc (git branch -r: 5 of 5 recent team-key branches)
+- layout: top-level dirs by tracked files: content (30642), apps (5201), static (4324), vue (715), custom_templates (693), e2e_tests (362), templates (41), locale (33), content_data (19), site_media (19), docs (15), i18n (14)  # git ls-files
+- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): BASH_REMATCH, BUILD_AWS_ECR_REGISTRY, CICD_COMMON_RUNNER_TAGS, SCHEDULED_PIPELINE_TYPE; git cannot see these  # .gitlab-ci.yml:78
+- source: base image public.ecr.aws/docker/library/python:3.12-slim-bookworm; git cannot see this  # Dockerfile:4
+- source: base image ${STATIC_GENERATOR_PHASE}-final; git cannot see this  # Dockerfile:111
+- source: base image ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}; git cannot see this  # Dockerfile.titan:8
+- source: base image amazonlinux:latest; git cannot see this  # batch_scripts/Dockerfile:1
+- source: base image public.ecr.aws/docker/library/mysql:8.0; git cannot see this  # ci/db.Dockerfile:1
+- source: base image $RUNTIME; git cannot see this  # ci/web.Dockerfile:2
+- values files, tracked: .env  # git ls-files
+- changes together: content/modules + content/tools (37 of 400 commits)  # git log origin/main
+- changes together: content/dynamic-content + content/modules (33 of 400 commits)  # git log origin/main
+- changes together: content/dynamic-content + content/tools (20 of 400 commits)  # git log origin/main
+- changes together: content/modules + locale/da (20 of 400 commits)  # git log origin/main
+- changes together: content/modules + static/docs (18 of 400 commits)  # git log origin/main
