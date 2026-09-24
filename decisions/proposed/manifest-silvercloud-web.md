@@ -18,3 +18,19 @@
 - changes together: content/dynamic-content + content/tools (20 of 400 commits)  # git log origin/main
 - changes together: content/modules + locale/da (20 of 400 commits)  # git log origin/main
 - changes together: content/modules + static/docs (18 of 400 commits)  # git log origin/main
+
+## Validate (what "done" looks like here)
+- local: `npm run lint`  # package.json scripts.lint
+- local: `npm run test`  # package.json scripts.test
+- ci check: job lint-py-html runs `pip install djlint==1.30.1`  # ci/common.gitlab-ci.yml:93
+- ci check: job lint-py-html runs `pip install pylint`  # ci/common.gitlab-ci.yml:94
+- ci check: job lint-py-html runs `djlint templates/* --lint --profile=django --use-gitignore`  # ci/common.gitlab-ci.yml:96
+- ci check: job lint-py-html runs `djlint apps/dsg/templates/* --lint --profile=django --use-gitignore`  # ci/common.gitlab-ci.yml:97
+- ci check: job lint-py-html runs `djlint apps/help/templates/* --lint --profile=django --use-gitignore --ignore=T002,H006,H014,H017,H026,H031,D018`  # ci/common.gitlab-ci.yml:99
+- ci check: job lint-py-html runs `djlint apps/account/templates/* --lint --profile=django --use-gitignore`  # ci/common.gitlab-ci.yml:100
+- ci check: job lint-py-html runs `djlint apps/therapy/content/templates/therapy/content/detail2.html --lint --profile=django`  # ci/common.gitlab-ci.yml:101
+- ci check: job lint-py-html runs `djlint apps/therapy/content/templates/therapy/content/module.html --lint --profile=django`  # ci/common.gitlab-ci.yml:101
+- ci check: job lint-py-html runs `djlint apps/signup/templates/signup/new/* --lint --profile=django`  # ci/common.gitlab-ci.yml:103
+- ci check: job lint-py-html runs `djlint apps/basic_profiles/templates/basic_profiles/* --lint --profile=django --ignore=H021,T002,H006,H014,H017,H026,H03`  # ci/common.gitlab-ci.yml:104
+- ci check: job lint-py-html runs `djlint apps/therapy/review/templates/therapy/review/* --lint --profile=django --use-gitignore`  # ci/common.gitlab-ci.yml:107
+- ci check: job lint-py-html runs `djlint apps/therapy/tools/templates/therapy/tools/* --lint --profile=django --use-gitignore`  # ci/common.gitlab-ci.yml:109
