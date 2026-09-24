@@ -1,7 +1,7 @@
 ## Environment
 - default branch: main; protected: main
 - contents: dockerfile image build
-- pipeline: .gitlab-ci.yml
+- pipeline: .gitlab-ci.yml, ci/common.gitlab-ci.yml, ci/tag-build.gitlab-ci.yml, ci/tag-build-titan.gitlab-ci.yml, ci/tag-deployment.gitlab-ci.yml, ci/scheduled-sec-scan.gitlab-ci.yml; stages: scheduled_pipeline, prepping_common_pipeline, test, tag, build, build-titan, deploy, deploy-titan, fvt, create_tag, release, notifications  # .gitlab-ci.yml:2
 - MR target: main (git log origin/main: 46 of 46 merge commits); branch pattern: fix/DVPS-XXXX-desc (git branch -r: 1 of 3 recent team-key branches)
 - layout: top-level dirs by tracked files: src (8863), e2e_tests (16), ci (7), scripts (3), kustomize (2), ca-certs (1), docs (1)  # git ls-files
 - source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AWS_ECR_REGISTRY, BASH_REMATCH, BUILD_AWS_ACCESS_KEY_ID, BUILD_AWS_ECR_REGISTRY, BUILD_AWS_EKS_NAME, BUILD_AWS_EKS_REGION, BUILD_AWS_ROLE_TO_ASSUME, BUILD_AWS_SECRET_ACCESS_KEY, CENTRAL_AWS_ECR_AUTH, CENTRAL_AWS_ECR_REGISTRY, CICD_COMMON_RUNNER_TAGS, CICD_DIND_RUNNER_TAGS, +38 more; git cannot see these  # ci/tag-build.gitlab-ci.yml:54
