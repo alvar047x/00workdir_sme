@@ -19,10 +19,7 @@
 - changes together: deploy/aws-infra + modules/aws (21 of 400 commits)  # git log origin/main
 
 ## Validate (what "done" looks like here)
-- local: `terraform fmt -check -recursive`  # .tf files tracked
-- local: `helm lint helm-charts/efk`  # helm-charts/efk/Chart.yaml
-- local: `helm lint helm-charts/sch-ehr`  # helm-charts/sch-ehr/Chart.yaml
-- local: `helm lint helm-charts/sch-web`  # helm-charts/sch-web/Chart.yaml
+- local: `pre-commit run --from-ref origin/main --to-ref HEAD`  # .pre-commit-config.yaml (hooks: terraform_fmt, terraform_docs, terraform_providers_lock)
 - ci check: job check_latest_code runs `./scripts/checkplatinumhead.sh`  # .gitlab-ci.yml:141
 - ci check: job lint-yaml runs `yamllint -d "{extends: default, rules: {line-length: {max: 256}}}" $(find ./ -iname "*.yml" -or -iname "*.yaml")`  # .gitlab-ci.yml:156
 - ci check: job terraform-fmt runs `terraform fmt -diff -recursive -check .`  # .gitlab-ci.yml:169
