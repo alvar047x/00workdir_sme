@@ -19,3 +19,10 @@
 - plan through `./deploy.sh <layer> plan` (or `aws-networking/<sub> plan`); destroys == 0 unless the ticket says otherwise; SKU changes in place per the Environment note
 - the plan summary prints after the plan; the binary plan is .plans/<layer>-<env>.tfplan and apply uses it (deploy.sh:470)
 - the repo's own check is `./deploy.sh test`: the upload-installers unit tests, then terraform validate and trivy per layer, failing on any CRITICAL or HIGH (deploy.sh:672). Not a `local:` line: validate needs each layer init'd, and whether trivy is clean today is unknown
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/sandbox/ex-machina/azure_titan
+- shape: none
+- ci: none; no .gitlab-ci.yml on origin/main
+- apply: a person runs `./deploy.sh <layer> apply`, which waits for a typed yes (destroy waits for the layer name); the agent never runs apply (D-0028; deploy.sh:568, :598)
+- pass: the agent reads the plan output of `./deploy.sh <layer> plan`; there is no pipeline to poll
