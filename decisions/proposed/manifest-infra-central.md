@@ -1,7 +1,7 @@
 ## Environment
 - default branch: main; protected: develop,main
 - contents: terraform, kubernetes manifests or helm
-- pipeline: .gitlab-ci.yml
+- pipeline: .gitlab-ci.yml, .gitlab/ci/accounts.yml, .gitlab/ci/platform.yml; stages: validate, plan  # .gitlab/ci/platform.yml:8
 - consumer of terraform-aws-pexip-common; terraform plan and apply pipelines live here
 - pipeline: .gitlab-ci.yml includes .gitlab/ci/platform.yml (platform/ layers) and .gitlab/ci/accounts.yml (accounts/*); accounts.yml extends amwell/platform/ci-templates terraform.yml
 - stages: validate (terraform fmt -check -recursive, terraform validate per layer with -backend=false) -> plan (terraform plan -out=plan.tfplan per TF_DIR, artifact kept) -> apply (extends .terraform:apply, needs the plan job, when: manual)
