@@ -1,31 +1,19 @@
 ## Environment
-- default branch: main; protected: main
-- MR target: main; branch pattern: DVPS-XXXX-desc (topology.yaml)
-- contents: terraform (.tf) 70, yaml 2, python (.py) 2  # git ls-files
-- pipeline: none found
+- default branch: main; protected: main (protection is a GitLab setting git cannot show; from intake 2026-09-14)
+- MR target: main; branch pattern: DVPS-XXXX-desc (git: 22 of 22 merges land on main; the pattern on 4 of 22 merged branches)
+- contents: terraform only, 9 roots under layers/; no CI file, no Dockerfile (repo map 2026-09-24 at 53c6541)
+- layers: azure (AVD in the awgov subscription, eastus2, azurerm state); aws-networking/ sub-layers backend-bootstrap, transit-gateway, ipam, ram-shares, network-manager, iam, route53 (s3 state); aws-pexip (peering and return routes to the Pexip Titan enclave, its own AWS account)
+- runner: `./deploy.sh <step> <init|plan|apply|output|destroy> [--dry-run]`, run by a person; nothing in CI runs terraform (deploy.sh:5)
+- runner detail: `terraform -chdir=layers/<layer>`; var file layers/<layer>/terraform.tfvars, else layers/<layer>/environments/$TF_ENV/terraform.tfvars; TF_ENV defaults to prod (deploy.sh:48, :477-486)
+- `./deploy.sh aws-networking <action>` runs the action on all 7 sub-layers in order; for one sub-layer use `./deploy.sh aws-networking/<sub> <action>` (deploy.sh:827). No step reads layers/aws-networking/environments/prod/.
+- order: transit-gateway before network-manager and ipam before ram-shares (remote state, network-manager/main.tf:46, ram-shares/main.tf:57); aws_peer_ip in the azure tfvars comes from the AWS VPN output, so azure is re-applied after aws-networking (HOWTO.md:23)
+- credentials: `az login`; AWS_PROFILE=awgov for aws-networking, awgov-pexip for aws-pexip (HOWTO.md:16, :24); deploy.sh only checks that some AWS identity is set (deploy.sh:157)
+- outside terraform, human steps only: seed-secrets (Key Vault), seed-vpn-key (SSM and Key Vault), upload-installers (storage blob); init creates the state bucket or storage account when a backend.hcl exists (deploy.sh:222-431, :510-512)
+- terraform version: required_version >= 1.12.0 in 7 roots, >= 1.7.0 in 2
 - azure vpn gateway: VpnGw1 -> VpnGw1AZ resizes in place via `az network vnet-gateway update --sku`, zero downtime; never destroy the gateway or change its public IP for a SKU change (from archived infra-ops)
 - azure firewall: WindowsVirtualDesktop and AzureActiveDirectory service tags must bypass the firewall (from archived infra-ops)
-- titan data may be CUI; treat all repo content as sensitive
-- layout (intake 2026-09-14): layers/azure (AVD in awgov subscription, eastus2, environments/ tfvars), layers/aws-networking (backend-bootstrap, iam, ipam, network-manager, ram-shares, route53, transit-gateway), layers/aws-pexip (cross-cloud connectivity to the Pexip Titan enclave)
-- deploy: ./deploy.sh <layer> init|plan|apply after `az login` and AWS_PROFILE=awgov; seed-secrets, seed-vpn-key, upload-installers are one-time steps (HOWTO.md)
-- account: <aws-account-4> referenced (Pexip Titan enclave); Azure side is the awgov subscription, profile awgov is expected by deploy.sh
 - compliance: every resource tagged compliance-framework 800-171, CMMC L2; NETWORK.md and ONBOARDING.md are the reference docs
-- stale artifacts committed: dvps6517*.tfplan and errored.tfstate under layers/azure (cleanup candidate)
-- layout: top-level dirs by tracked files: layers (94), scripts (2)  # git ls-files
-- source: terraform state in a s3 backend; git cannot see this  # layers/aws-networking/backend-bootstrap/main.tf:19
-- source: terraform state in a azurerm backend; git cannot see this  # layers/azure/versions.tf:15
-- source: terraform remote state `transit_gateway` read from another stack; git cannot see this  # layers/aws-networking/network-manager/main.tf:46
-- source: terraform remote state `ipam` read from another stack; git cannot see this  # layers/aws-networking/ram-shares/main.tf:57
-- values files, tracked: layers/aws-networking/environments/prod/terraform.tfvars, layers/aws-networking/iam/terraform.tfvars, layers/aws-networking/ipam/terraform.tfvars, layers/aws-networking/network-manager/terraform.tfvars, layers/aws-networking/ram-shares/terraform.tfvars, layers/aws-networking/route53/terraform.tfvars, layers/aws-networking/transit-gateway/terraform.tfvars, layers/aws-pexip/environments/prod/terraform.tfvars, layers/azure/environments/prod/terraform.tfvars  # git ls-files
-- terraform process: no runner in atlantis.yaml, CI or a CI-called script; 9 roots are run by hand: layers (9)  # backend blocks
-- terraform by hand: `terraform -chdir=layers/aws-pexip plan -var-file=environments/prod/terraform.tfvars`; the var file is below the root, so terraform does not load it unless named  # layers/aws-pexip/environments/prod/terraform.tfvars
-- terraform by hand: `terraform -chdir=layers/azure plan -var-file=environments/prod/terraform.tfvars`; the var file is below the root, so terraform does not load it unless named  # layers/azure/environments/prod/terraform.tfvars
-- terraform version: required_version >= 1.12.0 in 7 file(s), >= 1.7.0 in 2 file(s)  # layers/aws-networking/backend-bootstrap/main.tf
-- terraform variables: 9 roots declare 10 required (no default); 8 root x env var files checked, 0 leave required variables unset by anything in git; a TF_VAR_<name> in GitLab project CI settings would still supply them, and git cannot see those  # hcl2 over .tf and var files
-- changes together: layers/aws-networking + layers/azure (6 of 81 commits)  # git log origin/main
-- changes together: layers/azure + scripts (5 of 81 commits)  # git log origin/main
-- changes together: layers/aws-networking + layers/aws-pexip (4 of 81 commits)  # git log origin/main
-- changes together: layers/aws-pexip + layers/azure (3 of 81 commits)  # git log origin/main
+- titan data may be CUI; treat all repo content as sensitive
 
 ## Validate (what "done" looks like here)
 - plan through ./deploy.sh <layer> plan; destroys == 0 unless the ticket says otherwise; SKU changes in place per the environment note above
