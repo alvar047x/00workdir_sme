@@ -24,3 +24,43 @@
 - changes together: core/23_eks_shared + core/25_eks_cdr (5 of 400 commits)  # git log origin/platinum
 - changes together: core/23_eks_shared + core/modules (5 of 400 commits)  # git log origin/platinum
 - changes together: aidbox/10_aidbox + aidbox/environments (4 of 400 commits)  # git log origin/platinum
+
+## Validate (what "done" looks like here)
+- "run the plan locally" / "local plan" in this repo means a real terraform plan against tsnbx4, never validate-local (that is only fmt, and terraform/terraform.tfvars already fails it on platinum)
+- local plan, run from the repo root; recipe verified end to end 2026-09-17 (DVPS-6622, ~5 min, no retries needed):
+  1. `aws sts get-caller-identity --profile titan-admin` (D-0015; titan-sandbox is the same account <aws-account-3> but is denied credentials)
+  2. manifest.all.yaml is gitignored and the local copy is stale; terraform reads it for chart revisions and image tags. Replace it with the pin_manifest artifact of the newest platinum pipeline: GitLab API `pipelines?ref=platinum`, job `pin_manifest`, `jobs/<id>/artifacts/manifest.all.yaml` (token from 00workdir/.env). Without this the plan fails on missing general_helm_charts/<chart>-<rev> dirs
+  3. `eval "$(aws configure export-credentials --profile titan-admin --format env)"`
+  4. `export AWS_REGION=us-east-2 TERRAFORM_PROVIDERS_BUCKET=tsnbx4-deployment-artifacts CI_COMMIT_BRANCH=platinum TFENV_TERRAFORM_VERSION=1.5.7 DOWNLOAD_PROVIDERS=true`. CI_COMMIT_BRANCH=platinum or the providers key is providers-.tar.gz (404); the S3 providers mirror is linux_amd64 only, so DOWNLOAD_PROVIDERS=true on this Mac; required_version is ~>1.5.7 and the default tfenv is 1.9.0
+  5. `./scripts/deploy.sh ./observability/30_obs_eks tsnbx4 plan > <scratchpad>/plan.log 2>&1` in the background, one wait, then grep the log for `will be`, `Plan:` and `Error`; never poll with sleep
+  - if an earlier failed run left an empty `<domain>/providers` dir or a lock file from the linux mirror, remove `<domain>/providers` and `<layer>/.terraform.lock.hcl` first
+  - env settings come from pipelines/environments/.tsnbx4.yml (dotfiles: `ls -a`); CI runs the same script as role CrossAccountGitlabRunner after the pin_manifest and generate_core_providers jobs
+- plan, pipeline: the layer's plan_* job (Watch below); jobs on platinum target tsnbx4
+- helm charts: general_helm_charts/<chart>-<rev> is picked by the manifest revision, but helm_release (helm 2.13.0, no manifest experiment) only diffs when Chart.yaml `version:` changes, so a template-only edit needs the version bumped; proof is `helm_release.<chart>` with `~ version` in the plan (DVPS-6622: `1.0.8 -> 1.0.11` shown locally)
+- done means: plan reviewed, destroys == 0 unless stated, and the change is reflected in manifest.all.yaml if the customer needs it
+- local: `terraform fmt -check -recursive`  # .tf files tracked
+- local: `helm lint aidbox/10_aidbox/helm-charts/aidbox-0.2.8`  # aidbox/10_aidbox/helm-charts/aidbox-0.2.8/Chart.yaml
+- local: `helm lint core/91_dns/helm-charts/cert-manager-1.16.1`  # core/91_dns/helm-charts/cert-manager-1.16.1/Chart.yaml
+- local: `helm lint general_helm_charts/amwell-specific-1.0.2`  # general_helm_charts/amwell-specific-1.0.2/Chart.yaml
+- local: `helm lint general_helm_charts/argo-cd-7.9.1`  # general_helm_charts/argo-cd-7.9.1/Chart.yaml
+- local: `helm lint general_helm_charts/argo-cd-7.9.1/charts/redis-ha`  # general_helm_charts/argo-cd-7.9.1/charts/redis-ha/Chart.yaml
+- local: `helm lint general_helm_charts/aws-load-balancer-controller-3.1.0`  # general_helm_charts/aws-load-balancer-controller-3.1.0/Chart.yaml
+- local: `helm lint general_helm_charts/cluster-autoscaler-9.56.0`  # general_helm_charts/cluster-autoscaler-9.56.0/Chart.yaml
+- local: `helm lint general_helm_charts/elasticstack-1.0.11`  # general_helm_charts/elasticstack-1.0.11/Chart.yaml
+- local: `helm lint general_helm_charts/elasticstack-agents-1.7.14`  # general_helm_charts/elasticstack-agents-1.7.14/Chart.yaml
+- local: `helm lint general_helm_charts/elasticstack-operator-3.4.0`  # general_helm_charts/elasticstack-operator-3.4.0/Chart.yaml
+- local: `helm lint general_helm_charts/elasticstack-operator-3.4.0/charts/eck-operator-crds`  # general_helm_charts/elasticstack-operator-3.4.0/charts/eck-operator-crds/Chart.yaml
+- local: `helm lint general_helm_charts/external-secrets-2.2.0`  # general_helm_charts/external-secrets-2.2.0/Chart.yaml
+- local: `helm lint general_helm_charts/external-secrets-2.2.0/charts/bitwarden-sdk-server`  # general_helm_charts/external-secrets-2.2.0/charts/bitwarden-sdk-server/Chart.yaml
+- local: `helm lint general_helm_charts/gateway-crds-1.0.0`  # general_helm_charts/gateway-crds-1.0.0/Chart.yaml
+- local: `helm lint general_helm_charts/istio-base-1.29.3`  # general_helm_charts/istio-base-1.29.3/Chart.yaml
+- local: `helm lint general_helm_charts/istio-gateway-1.29.3`  # general_helm_charts/istio-gateway-1.29.3/Chart.yaml
+- local: `helm lint general_helm_charts/istiod-1.29.3`  # general_helm_charts/istiod-1.29.3/Chart.yaml
+- local: `helm lint general_helm_charts/kube-state-metrics-7.0.0`  # general_helm_charts/kube-state-metrics-7.0.0/Chart.yaml
+- local: `helm lint general_helm_charts/metrics-server-3.13.0-custom`  # general_helm_charts/metrics-server-3.13.0-custom/Chart.yaml
+- local: `helm lint general_helm_charts/metrics-server-3.13.0`  # general_helm_charts/metrics-server-3.13.0/Chart.yaml
+- local: `helm lint services/helm/amwell-lib`  # services/helm/amwell-lib/Chart.yaml
+- local: `helm lint services/helm/template`  # services/helm/template/Chart.yaml
+- ci check: job 03_looker_02_spectacles_tests runs `./data_platform/looker/run_spectacles_tests.sh $ENVIRONMENT`  # pipelines/.data_platform.yml:243
+- ci check: job pin_manifest runs `./scripts/checkplatinumhead.sh`  # pipelines/.prepare.yml:7
+- rule: chart template edits came with a Chart.yaml change in 8 of 14 commits  # git log origin/platinum
