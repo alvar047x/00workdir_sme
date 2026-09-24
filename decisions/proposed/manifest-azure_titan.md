@@ -24,4 +24,3 @@
 
 ## Validate (what "done" looks like here)
 - plan through ./deploy.sh <layer> plan; destroys == 0 unless the ticket says otherwise; SKU changes in place per the environment note above
-- local: `terraform fmt -check -recursive`  # .tf files tracked
