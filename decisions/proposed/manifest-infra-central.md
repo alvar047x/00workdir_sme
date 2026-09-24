@@ -56,9 +56,7 @@
 - validate: `terraform init -backend=false && terraform validate` in the changed layer is a plan step, not a local line, because it runs per layer
 - MR: validate and plan jobs green for every changed layer; plan artifact reviewed; destroys == 0 unless the ticket says otherwise
 - apply is a manual job on the default branch after merge; never triggered by the agent (Reaper Gate, human step)
-- local: `terraform fmt -check -recursive`  # .tf files tracked
-- local: `helm lint amplar/prod/looker/23_eks/helm-charts/aws-load-balancer-controller`  # amplar/prod/looker/23_eks/helm-charts/aws-load-balancer-controller/Chart.yaml
-- local: `helm lint amplar/stg/looker/23_eks/helm-charts/aws-load-balancer-controller`  # amplar/stg/looker/23_eks/helm-charts/aws-load-balancer-controller/Chart.yaml
+- local: `pre-commit run --from-ref origin/main --to-ref HEAD`  # .pre-commit-config.yaml (hooks: terraform_fmt, terraform_docs, terraform_providers_lock)
 - ci check: job terraform:fmt runs `terraform fmt -check -recursive -diff platform/`  # .gitlab/ci/platform.yml:51
 - ci check: job terraform:validate:shared-services:00-bootstrap runs `terraform validate`  # .gitlab/ci/platform.yml:69
 - ci check: job terraform:validate:shared-services:10-network runs `terraform validate`  # .gitlab/ci/platform.yml:69
