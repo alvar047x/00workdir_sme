@@ -3,7 +3,7 @@
 - contents: dockerfile image build
 - pipeline: .gitlab-ci.yml
 - layout: top-level dirs by tracked files: docker (14), scripts (1)  # git ls-files
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AUTH, AWS_CONFIG_FILE, AWS_ECR_ASSUME_PROFILE, AWS_ECR_REGISTRY, AWS_SHARED_CREDENTIALS_FILE, BUILD_AWS_CREDS, BUILD_AWS_ECR_CONFIG, BUILD_AWS_ECR_REGION, CENTRAL_AWS_ECR_REGION, CENTRAL_AWS_ECR_ROLE_ARN, DOCKER_CLEANUP_ANTI_PATTERN_AMWELL, DOCKER_CLEANUP_LIFESPAN_AMWELL, +7 more; git cannot see these  # .gitlab-ci.yml:32
+- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AWS_ECR_ASSUME_PROFILE, AWS_ECR_REGISTRY, BUILD_AWS_CREDS, BUILD_AWS_ECR_CONFIG, BUILD_AWS_ECR_REGION, CENTRAL_AWS_ECR_REGION, CENTRAL_AWS_ECR_ROLE_ARN, DOCKER_CLEANUP_ANTI_PATTERN_AMWELL, DOCKER_CLEANUP_LIFESPAN_AMWELL, DOCKER_CLEANUP_LIFESPAN_SILVERCLOUD, DOCKER_CLEANUP_PATTERN_SILVERCLOUD, DOCKER_CLEANUP_PRUNE_IMAGES_AMWELL, +3 more; git cannot see these  # .gitlab-ci.yml:67
 - source: base image public.ecr.aws/aws-cli/aws-cli:latest; git cannot see this  # docker/Dockerfile.awscli.mysql8:1
 - source: base image public.ecr.aws/aws-cli/aws-cli:2.13.24; git cannot see this  # docker/Dockerfile.cicd.awscli.terraform-1.4.2:1
 - source: base image public.ecr.aws/aws-cli/aws-cli:2.24.10; git cannot see this  # docker/Dockerfile.cicd.awscli.terraform-1.5.7:1
