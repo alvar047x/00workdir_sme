@@ -7,3 +7,11 @@
 - re-auth before dispatching a scout that touches AWS; a scout that meets an expired token reports it in one line and stops, the main agent re-auths and re-dispatches
 - the session name, the start page and the profile list are read from ~/.aws/config and topology.yaml, never typed from memory; a new account or session needs no edit here
 - describe, list, get calls need no gate; apply, destroy, push go through `atpy gate check` (D-0021)
+
+## Environment (facts; source automation_tools/config/topology.yaml and ~/.aws/config)
+- sso session `amwell` (portal d-90676584ef.awsapps.com); a second session `Amwell-stg` exists for stage profiles; a third session `awgov` (directory d-9a67541a80, us-east-2) covers the Pexip Titan enclave and awgov networking. Tokens live in ~/.aws/sso/cache; the resolve hook prints an `AWS:` line with the session state every prompt, so the token state is known before anything runs
+- silvercloud: build, qa, stage, prod-au, prod-ca, prod-ie, prod-uk, prod-us; profile silvercloud-<env>; regions and cluster names in topology.yaml; rollout order build -> qa-aws -> stage-aws -> prod-au -> prod-ca -> prod-ie -> prod-uk -> prod-us; prod-ie and prod-uk deploy at 15:00 EST only
+- ecr: profile amwell-container-registry, us-east-2, registry host in topology.yaml
+- titan: titan-sandbox and titan-admin are the same account, <aws-account-3> (us-west-2 tsnbx7, us-east-2 tsnbx4; mirrors Titan production); use titan-admin (titan-sandbox was denied GetRoleCredentials on DevOps-ECR-Management, DVPS-6804 S-01). Titan production is air-gapped; never search for an AWS account for it (D-0017)
+- pexip titan (the awgov accounts, sso session `awgov`, us-east-2): profile titan-pexip-prod (role DevOpsPexipAdmin) and titan-pexip-devopsadmin (role DevOpsAdmin) reach the Pexip Titan enclave; awgov-networking (role NetworkAdmin) is the networking account. We have access: read and verify inside the enclave ourselves, do not ask who has access (DVPS-6798 S-10, DVPS-6797 S-19). The azure_titan repo's HOWTO expects profile names awgov and awgov-pexip, which do not exist locally; map them to the profiles above
+- other profiles present: silvercloud-image-validation, silvercloud-prod-de, silvercloud-prod-dr, silvercloud-technical-services, hospital-prod (purpose not yet recorded; intake candidate)
