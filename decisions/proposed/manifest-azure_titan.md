@@ -10,8 +10,6 @@
 - credentials: `az login`; AWS_PROFILE=awgov for aws-networking, awgov-pexip for aws-pexip (HOWTO.md:16, :24); deploy.sh only checks that some AWS identity is set (deploy.sh:157)
 - outside terraform, human steps only: seed-secrets (Key Vault), seed-vpn-key (SSM and Key Vault), upload-installers (storage blob); init creates the state bucket or storage account when a backend.hcl exists (deploy.sh:222-431, :510-512)
 - terraform version: required_version >= 1.12.0 in 7 roots, >= 1.7.0 in 2
-- azure vpn gateway: VpnGw1 -> VpnGw1AZ resizes in place via `az network vnet-gateway update --sku`, zero downtime; never destroy the gateway or change its public IP for a SKU change (from archived infra-ops)
-- azure firewall: WindowsVirtualDesktop and AzureActiveDirectory service tags must bypass the firewall (from archived infra-ops)
 - compliance: every resource tagged compliance-framework 800-171, CMMC L2; NETWORK.md and ONBOARDING.md are the reference docs
 - titan data may be CUI; treat all repo content as sensitive
 
