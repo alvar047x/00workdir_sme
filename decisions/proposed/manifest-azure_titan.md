@@ -1,7 +1,7 @@
 ## Environment
 - default branch: main; protected: main (a GitLab setting git cannot show, from intake 2026-09-14)
-- MR target: main; branch pattern: DVPS-XXXX-desc (git: 22 of 22 merges land on main, the pattern on 4 of 22 merged branches)
-- contents: terraform only, 9 roots under layers/; no CI file, no Dockerfile (repo map 2026-09-24 at 53c6541)
+- MR target: main; branch pattern: DVPS-XXXX-desc (git merge history)
+- contents: terraform only, 9 roots under layers/; no CI file, no Dockerfile (repo map evaluated origin/main at 6f61997)
 - layers: azure (AVD in the awgov subscription, eastus2, azurerm state); aws-networking/ sub-layers backend-bootstrap, transit-gateway, ipam, ram-shares, network-manager, iam, route53 (s3 state); aws-pexip (peering and return routes to the Pexip Titan enclave, its own AWS account)
 - runner: `./deploy.sh <step> <init|plan|apply|output|destroy> [--dry-run]`, run by a person; nothing in CI runs terraform (deploy.sh:5)
 - runner detail: `terraform -chdir=layers/<layer>`; var file layers/<layer>/terraform.tfvars, else layers/<layer>/environments/$TF_ENV/terraform.tfvars; TF_ENV defaults to prod (deploy.sh:48, :477-486)
