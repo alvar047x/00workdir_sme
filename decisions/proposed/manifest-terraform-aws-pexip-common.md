@@ -29,3 +29,15 @@
 - pass: lint job success on the MR, then after the merge to dev or platinum the release job succeeds and a new tag exists
 - poll: 60s, cap 1h
 - consumer: watch the infra-central pipeline with --repo infra-central
+
+## Layout
+- main.tf, variables.tf, outputs.tf, iam.tf, domain.tf, nacl.tf at the root: the all-in-one module. main.tf calls each sub-module once per region and passes the provider alias
+- modules/<name>/: one sub-module each, always the same files: main.tf, variables.tf, outputs.tf, versions.tf, and lambda.tf where the module ships a lambda
+- modules/transcoding_set_asg and modules/proxy_edge_set: the conferencing node groups. These two take most of the changes
+- modules/network: VPC, subnets, security groups. modules/manager: the management node. modules/aims and modules/aims_cert_renew: AIMS and its certificate renewal. modules/sync_lambda: the credential sync lambda
+- python/init/: the lambda that configures a node as it comes up, with one <kind>.json.tpl per node kind. python/sync/: the sync lambda. go/aims_cert_renew/: the certificate renewal lambda
+- file types: terraform (.tf) in the root and modules. python and go lambda sources. json templates (.json.tpl) the init lambda fills in. committed lambda packages (.zip), one per lambda module. .releaserc and .gitlab-ci.yml for the release. VERSIONING.md and README.md are the docs
+- where to edit for a node group setting: modules/transcoding_set_asg/main.tf or modules/proxy_edge_set/main.tf, plus that module's variables.tf
+- where to edit for what a node is told at start: python/init/lambda_function.py and the .json.tpl of that node kind, then rebuild the zip
+- where to edit for a security rule: modules/network/security.tf, or nacl.tf at the root
+- a consumer's values are never here. They are in infra-central
