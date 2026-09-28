@@ -14,7 +14,7 @@
 - titan data may be CUI; treat all repo content as sensitive
 
 ## Validate (what "done" looks like here)
-- plan through `./deploy.sh <layer> plan` (or `aws-networking/<sub> plan`); destroys == 0 unless the ticket says otherwise; SKU changes in place per the Environment note
+- plan through `./deploy.sh <layer> plan` (or `aws-networking/<sub> plan`); destroys == 0 unless the ticket says otherwise
 - the plan summary prints after the plan; the binary plan is .plans/<layer>-<env>.tfplan and apply uses it (deploy.sh:470)
 - the repo's own check is `./deploy.sh test`: the upload-installers unit tests, then terraform validate and trivy per layer, failing on any CRITICAL or HIGH (deploy.sh:672). Not a `local:` line: validate needs each layer init'd, and whether trivy is clean today is unknown
 
