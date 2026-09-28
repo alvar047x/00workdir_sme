@@ -17,6 +17,7 @@
 ## Validate (what "done" looks like here)
 - no local check exists in the repo. A local `docker build` needs a login to the base image's registry, so the branch pipeline's build job is the check
 - Build Docker Image green on the branch pipeline, and its log names the pushed tags
+- a green build does not prove the modules load. When a version ARG moved, the image is started once and nginx -t is read, by whoever can pull the image
 - Scan Docker Image is allowed to fail, so the pipeline colour does not show its result. Read the scan job and say what it found
 - done for the ticket means the consumer pins the new tag. This repo's merge alone changes nothing that runs
 
