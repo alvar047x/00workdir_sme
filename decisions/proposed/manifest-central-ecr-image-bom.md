@@ -1,8 +1,11 @@
 ## Environment
-- default branch: platinum; protected: platinum
-- pipeline: .gitlab-ci.yml; stages: pull  # .gitlab-ci.yml:6
-- MR target: platinum (git log origin/platinum: 208 of 208 merge commits); branch pattern: DVPS-XXXX (git branch -r: 3 of 6 recent team-key branches)
-- contents: yaml 2, python (.py) 1  # git ls-files
-- layout: top-level dirs by tracked files: config (1), src (1)  # git ls-files
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AMWELL_CONTAINER_REGISTRY_AWS_ACCESS_KEY_ID, AMWELL_CONTAINER_REGISTRY_AWS_SECRET_ACCESS_KEY, AMWELL_CONTAINER_REGISTRY_ROLE_TO_ASSUME, IRONBANK_PASSWORD, IRONBANK_USER; git cannot see these  # .gitlab-ci.yml:38
-- changes together: config + src (8 of 319 commits)  # git log origin/platinum
+- default branch: platinum; protected: platinum (a GitLab setting git cannot show, from intake)
+- MR target: platinum (git merge history); branch pattern: DVPS-XXXX-desc (D-0002, half of the clone's team branches carry no desc)
+- contents: config/config.yaml is the list of images to copy, src/skopeo_copy.py is the script that copies them (repo map evaluated origin/platinum at 06e7dd8 of 2026-04-20, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- what it does: copies Iron Bank and public images into the central ECR registry with skopeo, and creates the ECR repository when it is missing (README.md, src/skopeo_copy.py:43, :245)
+- adding or bumping an image is one edit: an entry in config/config.yaml with IMAGE_REPOSITORY, IMAGE_NAME, IMAGE_TAG and PLATFORM, where PLATFORM is sch, cvg or both
+- test mode: the `-t` flag makes the script report what it would copy or create and change nothing (src/skopeo_copy.py:30, :53, :251)
+- renovate opens a branch per image that bumps IMAGE_TAG, so most merges here are tag bumps with no ticket (git branch -r)
+- a merge to platinum starts no job. The copy runs on the next scheduled pipeline, or when a person starts a pipeline on platinum from the web and plays the job (.gitlab-ci.yml:38 rules)
+- set outside the repo, so git cannot show them: the registry credentials and the role to assume, AMWELL_CONTAINER_REGISTRY_* and IRONBANK_USER, IRONBANK_PASSWORD
+- config/config.yaml and README.md hold registry hosts and an account id. Never copy those lines into a ticket, a comment or a reply (D-0031)
