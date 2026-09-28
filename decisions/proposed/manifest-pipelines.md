@@ -12,7 +12,7 @@
 - set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT, PIPELINES_ACCESS_TOKEN, PIPELINE_REPO_TOKEN and the many variables the templates read on the consumer's side
 
 ## Validate (what "done" looks like here)
-- the repo's own checks run in CI, on a push to any branch but platinum and on an MR: yamllint over the repo with .yamllint, and gitlab_ci_lint.sh (.gitlab-ci.yml:20, test/.test_pipeline.yml:117)
+- the repo's own checks run in CI, on a push to any branch but platinum and on an MR: yamllint over the repo with .yamllint, and gitlab_ci_lint.sh (.gitlab-ci.yml:20, test/.test_pipeline.yml:125)
 - no local check exists in the repo
 - the MR pipeline tests the templates for real. It creates a branch of the same name in six template projects, points each at this branch, triggers their pipelines and waits: Nodejs, Maven, SPA, SPA-C, IAC Only and Python (test/.test_pipeline.yml)
 - nothing in that test covers project/.ecr_image.yml or project/.lambda.yml. A change there is proven by pointing one consumer's include at the branch, running its pipeline, and pointing it back to stable
