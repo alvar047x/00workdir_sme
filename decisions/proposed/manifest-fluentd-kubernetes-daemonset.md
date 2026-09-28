@@ -5,7 +5,8 @@
 - pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
 - image: ironbank/opensource/fluentd/fluentd-kubernetes-daemonset-modified. The job overrides ECR_REPO, so the path has no ci/ prefix (.gitlab-ci.yml:9)
 - tag to pin: <BASE_IMAGE_VERSION>-<timestamp to the second>, BASE_IMAGE_VERSION is the fluentd version, set by hand in .gitlab-ci.yml
-- a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha and the tag above. On platinum the same build also moves the latest tag. It never runs on an MR pipeline or a schedule
+- a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha. On platinum the same build also moves the latest tag. It never runs on an MR pipeline or a schedule
+- the version tag from a work branch: the template at the stable tag read here (b1919b7a of 2026-06-08) writes it from every branch. The pipelines default branch already writes it from platinum only, and that arrives when stable is next cut, which may have happened since the last fetch
 - consumers: silvercloud-gc-iac lists this image in manifest/<version>/manifest.yml, so a new image reaches an environment only after an MR there
 - two stages: the public fluentd daemonset image gives the Gemfile, the Iron Bank fluentd-modified base is what ships (Dockerfile:8, :9)
 - the fluentd version is in three places that must agree: BASE_IMAGE_VERSION in .gitlab-ci.yml, the ARG default in the Dockerfile, and the base tag's timestamp suffix in ARG BASE_TAG (Dockerfile:1, :5)
