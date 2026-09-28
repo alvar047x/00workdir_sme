@@ -43,3 +43,33 @@
 - where to edit for when a job runs: add or change a named rule in common/.rules.yml, then reference it from the job. Rules are not written inline in a job
 - where to edit for a deploy flag or an environment trigger: common/.env_trigger.yml, and services/.env_trigger_services.yml for services
 - where to edit for a script a job runs: scripts/, and the job that calls it by the path ./pipelines/scripts/<name>
+
+## Patterns
+- to add a named rule: a key under .common_rules with an anchor of the same name. Copy common/.rules.yml:150-152
+    .<rule_name>: &<rule_name>
+      if: <condition on CI variables>
+      when: <never | manual>
+  or with a path filter, copy common/.rules.yml:159-162
+    .<rule_name>: &<rule_name>
+      if: <condition>
+      changes:
+        - <path glob>
+- to use a rule in a job: a reference line per rule, most specific first, because the first match wins. Copy the rules of Maven Testing Pipeline in test/.test_pipeline.yml
+    rules:
+      - !reference [.common_rules, .<rule_name>]
+      - !reference [.common_rules, .<rule_name>]
+- to add a project type: a new file in project/ that sets the type and lists its includes in pipeline order. Copy project/.node_service.yml
+    variables:
+      PROJECT_TYPE: <type>
+    include:
+      - "common/.extends.yml"
+      - "common/.workflow_rules.yml"
+      - "common/.stages.yml"
+      - "<type folder>/.<stage>.yml"
+- to add a Dockerfile for a new runtime version: copy the newest hardened file of that runtime in assets/docker/ and change the FROM tag. The tag is <version>-<timestamp> of the base image, taken from that base repo's platinum build. The registry part of the line is an address and stays as it is in the file
+    FROM <registry>/ci/titan/<base image>:<version>-<timestamp>
+- to run a script from a job: download the scripts first, then call the script by its path. Copy the Scan Docker Image job in project/.ecr_image.yml
+    script:
+      - !reference [.download_pipelines_scripts]
+      - python3 ./pipelines/scripts/<name>.py <arguments>
+- commit message: `<type>(<scope>): DVPS-XXXX <what changed>`. The type decides the release: fix is a patch, feat is a minor, and a commit with no type ships under no version. `[skip ci]` and `chore(release)` are the release job's own
