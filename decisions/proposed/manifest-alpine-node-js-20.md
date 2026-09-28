@@ -26,3 +26,14 @@
 - apply: none, there is no deploy job and nothing for a person to play
 - pass: Build Docker Image success on the branch pipeline. Watch the push pipeline, an MR pipeline has no build job
 - poll: 60s, cap 1h
+
+## Layout
+- Dockerfile: the whole image. The FROM line is the Iron Bank alpine base by tag, then one apk line installs nodejs and npm, two lines print their versions as a build check, and one line downloads a certificate bundle into the image
+- .gitlab-ci.yml: the include of the shared image template and the two values this repo sets, the image name and BASE_IMAGE_VERSION
+- README.md: the doc
+- file types: one Dockerfile, one CI yaml, one markdown file. No scripts, no tests, no terraform
+- where to edit for the alpine version: the tag on the FROM line, Dockerfile:1. Renovate moves it on its own, so a hand change is only for a jump Renovate does not make
+- where to edit for the node major version: `nodejs=~<major>` at Dockerfile:3 and BASE_IMAGE_VERSION at .gitlab-ci.yml:9, in the same commit. The first decides what is installed, the second decides what the tag says
+- where to edit for a package the image needs: the apk line, Dockerfile:3
+- where to edit for the image name: PROJECT_DEPLOYMENT_NAME at .gitlab-ci.yml:6
+- the jobs themselves are not here. They are in the pipelines repo, project/.ecr_image.yml, read at the tag stable
