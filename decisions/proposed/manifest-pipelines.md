@@ -73,3 +73,13 @@
       - !reference [.download_pipelines_scripts]
       - python3 ./pipelines/scripts/<name>.py <arguments>
 - commit message: `<type>(<scope>): DVPS-XXXX <what changed>`. The type decides the release: fix is a patch, feat is a minor, and a commit with no type ships under no version. `[skip ci]` and `chore(release)` are the release job's own
+
+## Branches
+- feature/DVPS-XXXX-desc, cut from platinum: the work branch the scripts make. Its MR goes to platinum
+- the feature/ prefix matters to consumers, not to this repo. The templates give a consumer's feature/ and review/ branches their own jobs, and platinum and hotfix/ branches others (common/.rules.yml)
+- here, a push to any branch but platinum runs yamllint and the CI lint. An MR also runs the downstream template pipelines, which create a branch of the same name in each template project and remove it after
+- feature/renovate-...: Renovate's branches for the Dockerfile pins. Their MRs run only the downstream test of the runtime whose Dockerfile changed. Never work on one (common/.rules.yml:150-162)
+- platinum: every push runs semantic-release, which writes the v tag and the release commit
+- stable: a tag, not a branch. A person deletes and recreates it on a platinum commit, and that is the moment consumers get the change. A clone keeps the old tag unless it fetches tags with force, which `atpy do gitlab-login --arg fetch=all` does
+- feature/next, which CONTRIBUTING.md names as the branch to cut from, is not on the remote. Cut from platinum
+- other shapes on the remote: hotfix/..., fix/..., feat/..., bugfix/..., and bare CP- keys
