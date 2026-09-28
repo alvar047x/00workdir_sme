@@ -55,3 +55,11 @@
     COPY --from=<stage> <path in that image> <path in this image>
 - to change the image path: the same two lines in both jobs of .gitlab-ci.yml. The registry part is an address and stays as it is in the file
 - commit message: `<type>(<scope>): DVPS-XXXX <what changed>`. Renovate writes `fix(deps): ...` on its own
+
+## Branches
+- DVPS-XXXX-desc, cut from platinum: the work branch the scripts make. Its MR goes to platinum
+- the name sets nothing off, but the push does. Every push to any branch runs Build Docker Image and publishes an image tagged with the short sha and with <BASE_IMAGE_VERSION>-<timestamp>. So a work branch already writes a tag that looks like a release
+- platinum: the same build also moves the tag latest, and the Renovate job runs after the build
+- renovate/...: Renovate's own branches. Its MRs move BASE_IMAGE_VERSION and are merged every few days. Never work on one. A work branch that touches the version ARGs is rebased on platinum before its MR
+- an MR pipeline has no build job. The build to read is the push pipeline of the branch
+- other shapes on the remote: feature/DVPS-XXXX, feat/DVPS-XXXX, chore/<desc>. They behave the same
