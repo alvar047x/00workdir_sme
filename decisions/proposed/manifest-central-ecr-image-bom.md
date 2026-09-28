@@ -15,3 +15,12 @@
 - no local check exists in the repo. A local run needs the registry credentials from the CI variables, so it is a person's step (README.md)
 - done means the real copy ran: python_run_script green on platinum, and its log shows "skopeo copy end" for the image
 - a consumer that needs the image pins the tag in its own repo. This repo only makes the image available
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/on-prem-migrated/devops/central-ecr-image-bom
+- shape: none
+- ci: .gitlab-ci.yml, one stage, pull
+- jobs: python_run_script_test on a work branch, python_run_script on platinum
+- apply: python_run_script is the step that changes the registry. The schedule runs it or a person plays it, the agent never does (D-0028)
+- pass: the job is green and its log names the image with "skopeo copy end", or in test mode with the test report
+- poll: 60s, cap 1h
