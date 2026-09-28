@@ -1,14 +1,14 @@
 ## Environment
 - default branch: platinum; protected: platinum (a GitLab setting git cannot show, from intake)
 - MR target: platinum (git merge history); branch pattern: DVPS-XXXX-desc (D-0002, the remote holds no team branch to read a pattern from)
-- contents: one Dockerfile on the titan alpine_jdk21 image, plus import_certs_script.sh and run.sh that the image carries (Dockerfile:1) (repo map evaluated origin/platinum at 45960d7 of 2026-06-10, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- contents: one Dockerfile on the titan alpine_jdk21 image, plus import_certs_script.sh and run.sh that the image carries (Dockerfile:1) (repo map evaluated origin/platinum at 3e3bc41 of 2026-09-16, fetched 2026-09-28)
 - pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
 - image: ci/titan/soa_docker_base_jdk_21, set by PROJECT_DEPLOYMENT_NAME (.gitlab-ci.yml:6)
 - tag to pin: <BASE_IMAGE_VERSION>-<timestamp to the second>, BASE_IMAGE_VERSION is "21" in .gitlab-ci.yml
 - a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha. On platinum the same build also moves the latest tag. It never runs on an MR pipeline or a schedule
-- the version tag from a work branch: the template at the stable tag read here (b1919b7a of 2026-06-08) writes it from every branch. The pipelines default branch already writes it from platinum only, and that arrives when stable is next cut, which may have happened since the last fetch
+- the version tag from a work branch: the template at the stable tag read here (b1919b7a of 2026-06-08) writes it from every branch. The pipelines default branch already writes it from platinum only, and that arrives when stable is next cut. On 2026-09-28 stable had not moved
 - consumers: the pipelines repo pins this image by that tag in assets/docker/jdk21.hardened.Dockerfile, so a new image reaches service builds only after an MR there
-- the keystore password is a build arg, KEYSTOREPASSWORD, passed from a CI variable set outside the repo (Dockerfile:15)
+- the keystore password is a build arg, KEYSTOREPASSWORD, passed from a CI variable set outside the repo. The Dockerfile also keeps it as an ENV in the image, and the import script prints it into the build log, so the log of Build Docker Image is never pasted anywhere (Dockerfile:15-16, import_certs_script.sh:5)
 - the last USER line is root (Dockerfile:49)
 - most of the merges on platinum came from renovate branches that bump the base tag, so expect the FROM line to move without a ticket (git log origin/platinum)
 - set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT, TEAM_ECR_URL and the other CI variables the template reads
