@@ -49,16 +49,16 @@
       type        = <string | number | bool | list(string)>
       default     = <value>
     }
-- to make a resource setting switchable: a bool input named enable_<thing>, read on the resource. Copy modules/transcoding_set_asg/main.tf:83, which is how scale-in protection is done
+- to make a resource setting switchable: a bool input named enable_<thing>, read on the resource. Copy modules/transcoding_set_asg/main.tf:84, which is how scale-in protection is done
     protect_from_scale_in = var.enable_scale_in_protection
-- to make a whole block optional: a dynamic block over a one-item list. Copy the warm_pool block in modules/transcoding_set_asg/main.tf
+- to make a whole block optional: a dynamic block over a one-item list. Copy the warm_pool block at modules/transcoding_set_asg/main.tf:98
     dynamic "<block>" {
       for_each = var.enable_<thing> ? [1] : []
       content {
         <settings>
       }
     }
-- to pass a new input through the all-in-one module: add the line to the module call in the root main.tf, one call per region, values aligned on the equals sign. Copy the transcoding_set_east call
+- to pass a new input through the all-in-one module: add the line to the module call in the root main.tf, one call per region, values aligned on the equals sign. Copy the transcoding_set_east call at main.tf:517
     enable_<thing> = <true | var.<root input>>
 - to add a lambda environment value: one line in the variables map of that module's lambda.tf, aligned. A secret is passed as the SSM parameter's reference, never as a literal
     environment {
