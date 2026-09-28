@@ -15,17 +15,7 @@
 - run by a person, outside CI: batch_scripts/scripts/build_staging_dbs.sh and export_anon_data.bash both write to a bucket
 
 ## Validate (what "done" looks like here)
-- local: `npm run lint`  # package.json scripts.lint
-- local: `npm run test`  # package.json scripts.test
-- ci check: job lint-py-html runs `pip install djlint==1.30.1`  # ci/common.gitlab-ci.yml:93
-- ci check: job lint-py-html runs `pip install pylint`  # ci/common.gitlab-ci.yml:94
-- ci check: job lint-py-html runs `djlint templates/* --lint --profile=django --use-gitignore`  # ci/common.gitlab-ci.yml:96
-- ci check: job lint-py-html runs `djlint apps/dsg/templates/* --lint --profile=django --use-gitignore`  # ci/common.gitlab-ci.yml:97
-- ci check: job lint-py-html runs `djlint apps/help/templates/* --lint --profile=django --use-gitignore --ignore=T002,H006,H014,H017,H026,H031,D018`  # ci/common.gitlab-ci.yml:99
-- ci check: job lint-py-html runs `djlint apps/account/templates/* --lint --profile=django --use-gitignore`  # ci/common.gitlab-ci.yml:100
-- ci check: job lint-py-html runs `djlint apps/therapy/content/templates/therapy/content/detail2.html --lint --profile=django`  # ci/common.gitlab-ci.yml:101
-- ci check: job lint-py-html runs `djlint apps/therapy/content/templates/therapy/content/module.html --lint --profile=django`  # ci/common.gitlab-ci.yml:101
-- ci check: job lint-py-html runs `djlint apps/signup/templates/signup/new/* --lint --profile=django`  # ci/common.gitlab-ci.yml:103
-- ci check: job lint-py-html runs `djlint apps/basic_profiles/templates/basic_profiles/* --lint --profile=django --ignore=H021,T002,H006,H014,H017,H026,H03`  # ci/common.gitlab-ci.yml:104
-- ci check: job lint-py-html runs `djlint apps/therapy/review/templates/therapy/review/* --lint --profile=django --use-gitignore`  # ci/common.gitlab-ci.yml:107
-- ci check: job lint-py-html runs `djlint apps/therapy/tools/templates/therapy/tools/* --lint --profile=django --use-gitignore`  # ci/common.gitlab-ci.yml:109
+- the MR pipeline is the check: lint-py-html with djlint, lint-web, django-tests, content-tests, unit-js-test, e2e-test-playwright, python-license-check, trivy-scan and sonarqube-check (ci/common.gitlab-ci.yml)
+- the front end has its own scripts in package.json: lint, test and typecheck, which CI runs through pnpm. They need the node modules installed, so they are a person's or the pipeline's step, not a `local:` line
+- content under content/ changes together with locale/ and static/docs in the history. A content change that leaves them behind is suspect
+- done for a code change is a green MR pipeline into development. Done for a release is the environment's tag pipeline green through deploy, which is a person's tag
