@@ -3,7 +3,7 @@
 - MR target: platinum (git merge history); branch pattern: feature/DVPS-XXXX-desc (pipelines/.common.yml, and see Branches)
 - titan data may be CUI. Treat all repo content as sensitive (D-0017)
 - what it is: the Titan deliverable. The sandbox is where it is tested, and the customer deploys production from the manifest and the scripts. There is no direct production access (README.md, D-0017)
-- read at: repo map evaluated origin/platinum at 5d67696e of 2026-09-18, and the fetch on 2026-09-28 was refused, so anything newer is unread
+- read at: repo map evaluated origin/platinum at c04ce0ee of 2026-09-28, fetched 2026-09-28
 - this repo is not changed often. Notes here grow ticket by ticket, so a gap is a gap, not a rule
 - runner: `./scripts/deploy.sh <layer> <environment> plan|apply`, and `./services/deploy.sh <manifest> <layer> <environment> <action>` for service stacks. State key <environment>/<layer>, vars <domain>/environments/<environment>/<layer>.tfvars (scripts/deploy.sh:157, :178, :192)
 - each environment file switches job groups on and off with RUN_..._JOBS variables (pipelines/environments/)
