@@ -1,11 +1,13 @@
 ## Environment
-- default branch: platinum; protected: platinum
-- contents: dockerfile image build
-- pipeline: .gitlab-ci.yml; stages: lint, validations, auto lock update, pre-build, build, test, scan, prepare, release, pre-deploy verification, image validations, publish, ssm-parameters dyn env, migrate SCC secrets to SSM, argocd onboarding, prepare-iac-resources-file, argocd offboarding, push deployment artifacts, dynamic env iac deploy, dynamic env deploy, dev iac deploy, dev deploy, dev test automation, scheduler test notification, dev bg switch, dynamic bg switch, dev bg rollback, dynamic bg rollback, push production artifacts, staging deploy, staging test automation, production tag-pact, production deploy, production publish, clean up  # pipelines@stable:common/.stages.yml:1
-- MR target: platinum (git log origin/platinum: 55 of 55 merge commits); branch pattern: renovate/<account-id>-dkr-ecr-us-EAST-XXXX-desc (26 of 55 merged branches)
-- pipeline template: project/.ecr_image.yml from pipelines at stable (matched by file, the project is a CI variable)  # .gitlab-ci.yml:3
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): ARTIFACTORY_AWS_NPM_TOKEN, CVG_PIPELINES_PROJECT, CVG_PIPELINES_PROJECT_ID, CVG_RENOVATE_PROJECT, DEV_KEYCLOAK_URL, JAVA_HOME, M2_HOME, MAVEN_HOME, NODE_MODULES_CACHE_KEY, NVM_DIR, PIPELINES_ACCESS_TOKEN, REGISTRY, +13 more; git cannot see these  # pipelines@stable:common/.extends.yml:233
-- image build: job `Build Docker Image` (kaniko) builds <ci_project_dir>/Dockerfile from <ci_project_dir>; pushes <team_ecr_url>/ci/titan/soa_docker_base_jdk_21:<ci_commit_short_sha>; also <team_ecr_url>/ci/titan/soa_docker_base_jdk_21:latest when [ $CI_COMMIT_BRANCH == "platinum" ]; also <team_ecr_url>/ci/titan/soa_docker_base_jdk_21:<extra_destination_tag> when [ -n "$EXTRA_DESTINATION_TAG" ]  # .gitlab-ci.yml:7
-- image build rules: never when $CI_PIPELINE_SOURCE == "merge_request_event"; run when $CI_PIPELINE_SOURCE != "schedule"; never when $CI_PIPELINE_SOURCE == "schedule"  # .gitlab-ci.yml:7
-- image build args from CI: BASE_IMAGE_VERSION, KEYSTOREPASSWORD (override the Dockerfile ARG defaults)  # .gitlab-ci.yml:7
-- source: base image <account-id>.dkr.ecr.us-east-2.amazonaws.com/ci/titan/alpine_jdk21:21-20260610205657; git cannot see this  # Dockerfile:1
+- default branch: platinum; protected: platinum (a GitLab setting git cannot show, from intake)
+- MR target: platinum (git merge history); branch pattern: DVPS-XXXX-desc (D-0002, the remote holds no team branch to read a pattern from)
+- contents: one Dockerfile on the titan alpine_jdk21 image, plus import_certs_script.sh and run.sh that the image carries (Dockerfile:1) (repo map evaluated origin/platinum at 45960d7 of 2026-06-10, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
+- image: ci/titan/soa_docker_base_jdk_21, set by PROJECT_DEPLOYMENT_NAME (.gitlab-ci.yml:6)
+- tag to pin: <BASE_IMAGE_VERSION>-<timestamp to the second>, BASE_IMAGE_VERSION is "21" in .gitlab-ci.yml
+- a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha and the tag above. On platinum the same build also moves the latest tag. It never runs on an MR pipeline or a schedule
+- consumers: the pipelines repo pins this image by that tag in assets/docker/jdk21.hardened.Dockerfile, so a new image reaches service builds only after an MR there
+- the keystore password is a build arg, KEYSTOREPASSWORD, passed from a CI variable set outside the repo (Dockerfile:15)
+- the last USER line is root (Dockerfile:49)
+- most of the merges on platinum came from renovate branches that bump the base tag, so expect the FROM line to move without a ticket (git log origin/platinum)
+- set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT, TEAM_ECR_URL and the other CI variables the template reads
