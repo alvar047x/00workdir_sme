@@ -28,3 +28,18 @@
 - apply: none. The one manual job is the clean up of test branches after a failure, and a person plays it (D-0028)
 - pass: lint jobs and all six downstream pipelines green on the MR, then after the merge semantic-release green with a new v tag
 - poll: 60s, cap 2h
+
+## Layout
+- project/: one entry file per project type. A consumer's .gitlab-ci.yml includes exactly one of them. An entry file sets PROJECT_TYPE and lists the includes that make up that pipeline. .ecr_image.yml and .lambda.yml hold their jobs themselves
+- common/: what every type shares. .stages.yml the stage order, .rules.yml the named rules, .workflow_rules.yml when a pipeline exists at all, .extends.yml the job bases, .build.yml, .test.yml, .validations.yml and .env_trigger.yml the shared jobs, .semantic-release.yml the release job
+- services/, libraries/, single_page_applications/, single_page_application_components/: the jobs of that project type, split by stage into files like .test.yml and .deploy.yml
+- assets/docker/: the Dockerfiles service builds use, one per runtime and version. A name with `hardened` builds on a titan base image, a name with `onephase` is the single stage variant
+- scripts/: the python and shell that jobs download and run at pipeline time. scripts/test_pipeline/ is for this repo's own test pipeline
+- test/.test_pipeline.yml: this repo's own MR test, the downstream template pipelines and the lint job
+- documentation/: CONTRIBUTING.md, the per-feature docs and CHANGELOG.yml. .releaserc: what semantic-release does. CODEOWNERS: who approves
+- file types: GitLab CI yaml, nearly all with a leading dot in the name. Dockerfiles named <runtime><version>[.onephase][.hardened].Dockerfile. python and shell scripts. markdown docs
+- where to edit for the image build every titan image repo uses: project/.ecr_image.yml
+- where to edit for a base image pin of service builds: the FROM line of assets/docker/<runtime><version>.hardened.Dockerfile. Renovate moves these on its own
+- where to edit for when a job runs: add or change a named rule in common/.rules.yml, then reference it from the job. Rules are not written inline in a job
+- where to edit for a deploy flag or an environment trigger: common/.env_trigger.yml, and services/.env_trigger_services.yml for services
+- where to edit for a script a job runs: scripts/, and the job that calls it by the path ./pipelines/scripts/<name>
