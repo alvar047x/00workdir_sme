@@ -2,7 +2,7 @@
 kind: system
 key: atpy
 report: none
-last_intake: 2026-09-24
+last_intake: 2026-09-28
 ---
 
 ## Environment
@@ -19,17 +19,17 @@ last_intake: 2026-09-24
   - `atpy gitlab diff|comments <mr url>`
   - `atpy jira fetch|comments KEY`
   - `atpy wiki search|fetch`
-  - `atpy repo map <slug> [--check | --write]`: the one repo evaluation tool; drafts Environment, Validate and Watch from the clone and its git history, every line cited; `--check` compares branch, MR target, pattern, project and layers with the manifest; `--write` stages only missing lines for `approve --section <slug>`
+  - `atpy repo map <slug> [--check | --write | --report | --vars]`: the one repo evaluation tool, run when a repo is (re)evaluated, never per ticket; `--report` is the complete cited fact base the manifest is authored from; `--vars` traces variables per root and env; `--check` compares branch, MR target, pattern, project and layers with the manifest; `--write` stages only missing lines for `approve --section <slug>`
 - plan evaluation:
   - `atpy sme plan --draft KEY`: the planner brief, which carries the tag vocabulary
-  - `atpy sme plan --ticket KEY --from -`: the scout writes the plan with it; its body must hold one `TAGS:` line, confirmed once by the approve
+  - `atpy sme plan --ticket KEY --from - [--template <slug>]`: the scout writes the plan with it; its body must hold one `TAGS:` line, confirmed once by the approve. With --template the body holds only `## Questions`, `## Changes`, `## Verify`, `## Validate`, `## Not doing`; the pull, branch, validate, push, watch, MR and post rows are filled from repo-<slug> (T-0001) and the brief shows the skeleton when the ticket names one repo
   - `atpy sme store write amendment W-nn --ticket KEY --from - --by "<their words>"`
   - `atpy sme approve W-nn --ticket KEY --by "<their words>"`
 - plan execution, through the executor:
   - `atpy do <classification> --words "<the prompt verbatim>" [--arg k=v ...] [--approval "<their words>"] [--ticket KEY]`: derives the record (ticket from the session set, repo from the ticket, manifests from the repo, decisions and five booleans from the table in do.py), writes it to sessions/KEY/intake-<n>.json for audit, and runs the script, VERDICT first
   - `atpy do <record.json> [--plan]`: a record path still works. Never hand-write a record and never read `--help` for its shape (SME-01 W-01)
   - scripts run by `atpy do`:
-    - `atpy repo pull <slug>`
+    - `atpy repo pull <slug>`: fetches the default branch and prints what changed since the last evaluation (report re-run, per-section diff)
     - `atpy repo branch-start KEY --repo <slug> --title "<plan title>"`
     - `atpy repo validate-local --repo <slug>`
     - `atpy repo push <slug> [--force]`: a non-fast-forward is VERDICT HUMAN with the exact force command; --force only with the approval words (D-0030)
