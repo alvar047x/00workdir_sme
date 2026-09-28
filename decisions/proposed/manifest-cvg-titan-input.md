@@ -126,3 +126,12 @@
       needs: [ generate_core_providers, plan_<layer> ]
       script: ./scripts/deploy.sh ./<domain>/<NN_layer> $ENVIRONMENT apply
   The rules lines under each job are copied as they stand. A new layer also needs its `- layer:` line under Watch, from `atpy gitlab watch --derive --repo cvg-titan-input`
+
+## Branches
+- the name decides the pipeline. A name the rules do not know gets no plan at all (pipelines/.common.yml)
+- feature/DVPS-XXXX-desc or review/...: the plan jobs and no apply job. pull_thirdparty_images and aidbox_config_push still run on their own and do change the sandbox. This is the shape the scripts make
+- titan/DVPS-XXXX-desc or platinum: every job platinum has. Plans run on the push, applies are manual, and the deploy and push jobs of the groups that are switched on run on their own. Most of the team's branches are this shape
+- titan/tsnbx5..., titan/tsnbx6..., titan/tsnbx7..., titan/stable...: the same, against that environment. Every other branch runs against tsnbx4 (pipelines/.config.yml)
+- service/..., app/..., bento/...: the single service, single app and bento pipelines, for a change to one deliverable
+- DVPS-XXXX-desc with no prefix: pin_manifest and check_compliance only. No plan exists to read, so the plan has to be run from this Mac
+- our own history here used all three: titan/ in 2025, feature/DVPS-XXXX until early 2026, then the bare key, which is why later tickets needed the local plan
