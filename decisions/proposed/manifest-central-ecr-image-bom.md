@@ -12,7 +12,7 @@
 - config/config.yaml and README.md hold registry hosts and an account id. Never copy those lines into a ticket, a comment or a reply (D-0031)
 
 ## Validate (what "done" looks like here)
-- on a work branch the job python_run_script_test runs the script with `-t`: it inspects every image and copies nothing. Green, with the changed image in its report, is the proof before the merge
+- the job python_run_script_test runs the script with `-t`: it inspects every image and copies nothing. It runs on its own in the MR pipeline, and waits as a manual job on a plain branch push. Green, with the changed image in its report, is the proof before the merge
 - no local check exists in the repo. A local run needs the registry credentials from the CI variables, so it is a person's step (README.md)
 - done means the real copy ran: python_run_script green on platinum, and its log shows "skopeo copy end" for the image
 - a consumer that needs the image pins the tag in its own repo. This repo only makes the image available
