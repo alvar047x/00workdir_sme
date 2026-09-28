@@ -102,3 +102,27 @@
 - pipelines/: the CI files, one per domain, .common.yml for stages and rules, environments/ for the per-environment variables. Every file name there starts with a dot
 - scripts/: deploy.sh and the push, pull and generate scripts the jobs call. dr/: recovery scripts and docs
 - file types: terraform (.tf) and its values (.tfvars). helm charts with Chart.yaml, values and templates. yaml for the manifest and the pipelines. python and shell for the scripts
+
+## Patterns
+- to change what ships: edit the entry in manifest.input.yaml, never manifest.all.yaml. An entry is a name, a revision and a phase, csv or cod
+    <name>:
+      revision: <version or short sha>
+      phase: <csv | cod>
+- to change a chart's templates: edit under general_helm_charts/<chart>-<rev>/ and raise `version:` in its Chart.yaml in the same commit. `atpy repo edit cvg-titan-input chart-bump <dir>` does the bump
+- to change a value for one environment: edit <domain>/environments/<environment>/<layer>.tfvars. A value every environment needs goes into each environment's file, and the variable is declared in the layer's variables.tf
+- to change both EKS clusters: make the change in core/modules/titan-eks, and add the input to variables.tf of core/23_eks_shared and core/25_eks_cdr
+- to write an ARN: `arn:${data.aws_partition.current.partition}:...`, never a literal partition. check_compliance fails the pipeline on a literal one
+- to give a new layer its jobs: copy the plan and apply pair at pipelines/.core.yml:37-56 into the domain's pipeline file, and change the job names and the layer path
+    plan_<layer>:
+      extends:
+        - .base_terraform
+        - .terraform_plan_drift_check
+      stage: <domain>
+      needs: [ generate_core_providers ]
+      script: ./scripts/deploy.sh ./<domain>/<NN_layer> $ENVIRONMENT plan
+    apply_<layer>:
+      extends: .base_terraform
+      stage: <domain>
+      needs: [ generate_core_providers, plan_<layer> ]
+      script: ./scripts/deploy.sh ./<domain>/<NN_layer> $ENVIRONMENT apply
+  The rules lines under each job are copied as they stand. A new layer also needs its `- layer:` line under Watch, from `atpy gitlab watch --derive --repo cvg-titan-input`
