@@ -5,7 +5,8 @@
 - pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
 - image: ironbank-base/mysql/mysql-php. The repo overrides ECR_REPO, so the path has no ci/ prefix (.gitlab-ci.yml:9)
 - tag to pin: two tags beside the short sha: <BASE_IMAGE_VERSION>-<timestamp to the second>, and <mysql version>-php-v<PHP_INTEGRATION_VERSION>-<date>. Both versions are set by hand in .gitlab-ci.yml, and its comments say to raise PHP_INTEGRATION_VERSION with every version change
-- a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha and the tag above. It never runs on an MR pipeline or a schedule
+- a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha. It never runs on an MR pipeline or a schedule
+- this repo's own build script writes the version tags from every branch, work branches included (.gitlab-ci.yml:19)
 - consumers: silvercloud-web-infra pins this image in config/<env>/26-matomo-db-config.tfvars and lists it in manifest/<version>/manifest.yml, so a new image reaches an environment only after an MR there
 - this repo replaces the template's build script with its own kaniko call, so the template's latest tag on platinum is NOT pushed here (.gitlab-ci.yml:19)
 - BASE_IMAGE_VERSION appears twice and both must change together: the ARG default in the Dockerfile and the CI variable (Dockerfile:1, .gitlab-ci.yml:13)
