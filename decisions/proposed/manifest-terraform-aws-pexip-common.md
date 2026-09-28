@@ -11,3 +11,12 @@
 - FIPS: AWS_USE_FIPS_ENDPOINT is "true" on the proxy_edge_set, sync_lambda and transcoding_set_asg lambdas. The aims_cert_renew lambda does not set it (modules/proxy_edge_set/lambda.tf:125, modules/sync_lambda/lambda.tf:98, modules/transcoding_set_asg/lambda.tf:93)
 - terraform version: required_version ~> 1.5.7 at the root, >= 1.5.0 in modules/aims_cert_renew (main.tf:2, modules/aims_cert_renew/versions.tf:2)
 - set outside the repo, so git cannot show it: the CI variable GL_TOKEN that the release job uses (.gitlab-ci.yml:34)
+
+## Validate (what "done" looks like here)
+- local: `terraform fmt -check -recursive`
+- not local: `terraform validate` and `terraform plan` fail here on their own, because the module needs provider aliases only a consumer has (D-0012)
+- the MR pipeline's lint job is an echo placeholder. Green there proves nothing about the change (.gitlab-ci.yml:15)
+- every commit that should ship uses a conventional type: feat, fix or chore (D-0010)
+- a lambda source change carries the rebuilt zip in the same commit, in every module its build script copies to
+- the proof is in the consumer: a plan in infra-central against the new tag shows the intended diff, destroys == 0 unless the ticket says otherwise
+- after the merge to dev the release job publishes an rc tag, and the consumer pins that tag (D-0011)
