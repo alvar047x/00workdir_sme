@@ -13,15 +13,7 @@
 - set outside the repo, so git cannot show them: the per-environment AWS keys, cluster names, registry variables and runner tags the ci/ files read
 
 ## Validate (what "done" looks like here)
-- ci check: job check-changes runs `UNIT_TEST=0`  # ci/common.gitlab-ci.yml:20
-- ci check: job lint-docker runs `if [ -z ${DOCKERFILE_CHANGE_LIST+x} ]; then echo "No files to check...";exit; fi`  # ci/common.gitlab-ci.yml:66
-- ci check: job lint-docker runs `hadolint $DOCKERFILE_CHANGE_LIST`  # ci/common.gitlab-ci.yml:70
-- ci check: job lint-python-black runs `if [ -z ${PYTHON_CHANGE_LIST+x} ]; then echo "No files to check...";exit; fi`  # ci/common.gitlab-ci.yml:90
-- ci check: job lint-python-black runs `black --check --diff --target-version py36 ./`  # ci/common.gitlab-ci.yml:95
-- ci check: job lint-yaml runs `if [ -z ${YAML_CHANGE_LIST+x} ]; then echo "No files to check..."; exit; fi`  # ci/common.gitlab-ci.yml:116
-- ci check: job unit-test-branch runs `docker build --no-cache -f Dockerfile -t $TEST_IMAGE .`  # ci/common.gitlab-ci.yml:147
-- ci check: job unit-test-branch runs `docker push $TEST_IMAGE`  # ci/common.gitlab-ci.yml:149
-- ci check: job unit-test-branch runs `docker run --name $TEST_CONTAINER --env-file=.env.test --entrypoint /bin/bash $TEST_IMAGE -c "coverage run manage.py tes`  # ci/common.gitlab-ci.yml:150
-- ci check: job unit-test-branch runs `docker cp $TEST_CONTAINER:/app/coverage .`  # ci/common.gitlab-ci.yml:151
-- ci check: job unit-test-branch runs `docker cp $TEST_CONTAINER:/app/.django-xml .`  # ci/common.gitlab-ci.yml:152
-- ci check: job functional-verification-test runs `if [ "$(curl --write-out '%{http_code}' --silent --output /dev/null https://ehr.build.silvercloudhealth.com/health_check`  # ci/tag-build.gitlab-ci.yml:69
+- the MR pipeline is the check: lint-docker with hadolint, lint-python-black, lint-yaml, unit-test-branch, which builds the image and runs the Django tests inside it with coverage, trivy-scan, sonarqube-check and e2e_tests (ci/common.gitlab-ci.yml)
+- the lint jobs look only at files the branch changed
+- no local check exists in the repo as a single command. The CI unit test is a docker build followed by `coverage run manage.py test` inside the image
+- done for a code change is a green MR pipeline. Done for a release is the environment's tag pipeline green through deploy, which is a person's tag
