@@ -51,3 +51,11 @@
 - to add a script option: one add_argument line beside the others, with a default. Copy src/skopeo_copy.py:30
     parser.add_argument('-<letter>', '--<name>', default=<value>)
 - commit message: `[<ticket key>] <what changed>` is what the team writes here, and Renovate writes `fix(deps): ...`. Nothing reads the message, so use `DVPS-XXXX: <what changed>`
+
+## Branches
+- DVPS-XXXX-desc, cut from platinum: the work branch the scripts make. Its MR goes to platinum
+- the name sets nothing off. What matters is platinum or not platinum (.gitlab-ci.yml:42-48, :62-66)
+- any branch but platinum: a push makes python_run_script_test wait as a manual job, and an MR runs it on its own. It inspects every image and copies nothing
+- platinum: a merge starts no job. The real copy runs on the next schedule, or when a person starts a pipeline from the web and plays it
+- renovate/...: Renovate's branches, one per image, each moving one IMAGE_TAG. Many are open at once. Never work on one, and expect a conflict in config/config.yaml when a work branch touches a block Renovate also moved
+- other shapes on the remote: feature/<desc> and bare keys
