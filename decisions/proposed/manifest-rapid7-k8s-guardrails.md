@@ -10,3 +10,11 @@
 - no local check exists in the repo
 - on main the only check is the secret_detection job. It proves nothing about an image
 - work that builds the image starts from the unmerged branch, and what proves it is whatever pipeline that branch carries. Read its .gitlab-ci.yml before planning
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/on-prem-migrated/devops/dockerfiles/rapid7-k8s-guardrails
+- shape: none
+- ci: .gitlab-ci.yml, stages test and secret-detection, one job from GitLab's Secret-Detection template
+- apply: none
+- pass: secret_detection success
+- poll: 60s, cap 30m
