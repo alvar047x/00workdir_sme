@@ -24,3 +24,20 @@
 - ci: none; no .gitlab-ci.yml on origin/main
 - apply: a person runs `./deploy.sh <layer> apply`, which waits for a typed yes (destroy waits for the layer name); the agent never runs apply (D-0028; deploy.sh:568, :598)
 - pass: the agent reads the plan output of `./deploy.sh <layer> plan`; there is no pipeline to poll
+
+## Layout
+- layers/azure/: the Azure root. AVD host pools, network, firewall, VPN, Key Vault, DNS, monitoring, budget and policy. main.tf calls the modules and holds the route resources, variables.tf declares, locals.tf names
+- layers/azure/modules/<name>/: one module per part, each with main.tf, variables.tf and outputs.tf. avd and avd-personal also hold session_hosts.tf, which is where the VMs are
+- layers/azure/environments/prod/terraform.tfvars: every Azure value. Most changes to this repo are one line here
+- layers/aws-networking/<sub-layer>/: one AWS root per folder: backend-bootstrap, transit-gateway, ipam, ram-shares, network-manager, iam, route53. Each holds its own terraform.tfvars beside main.tf, and accounts.tf where it needs the account list
+- layers/aws-networking/transit-gateway/: the gateway, peering.tf for the peerings and vpn.tf for the site-to-site VPN to Azure
+- layers/aws-pexip/: the peering and return routes to the Pexip Titan enclave, with its values under environments/prod/
+- deploy.sh at the root: the only runner. scripts/: the installer upload and its unit test
+- HOWTO.md: the order and the credentials. NETWORK.md and ONBOARDING.md: the reference docs. CODEOWNERS: who approves
+- trivy.yaml and .trivyignore.yaml: the scanner's settings and the accepted findings
+- file types: terraform (.tf), values (.tfvars), backend settings (backend.hcl), lock files committed per root, one powershell template for the host bootstrap (.ps1.tftpl), python for the upload script, markdown docs
+- where to edit for the number or size of AVD hosts: layers/azure/environments/prod/terraform.tfvars
+- where to edit for a route from the AVD subnets: layers/azure/main.tf, the azurerm_route resources
+- where to edit for a firewall rule: layers/azure/modules/firewall/main.tf, and the module call in layers/azure/main.tf when it needs a new input
+- where to edit for the AWS side of the VPN: layers/aws-networking/transit-gateway/vpn.tf and the terraform.tfvars beside it
+- where to edit for who may sign in: the group ids in layers/azure/environments/prod/terraform.tfvars, which are identifiers and are never quoted outside the file
