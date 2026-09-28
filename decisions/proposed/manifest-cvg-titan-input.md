@@ -90,3 +90,15 @@
 - layer: stackrox/20_stackrox_k8s = 20_plan_stackrox_k8s, 20_apply_stackrox_k8s
 - layer: stackrox/21_stackrox_init_bundle = 21_plan_stackrox_init_bundle, 21_apply_stackrox_init_bundle
 - layer: stackrox/22_stackrox_secured_cluster_services = 22_plan_stackrox_secured_cluster_services, 22_apply_stackrox_secured_cluster_services
+
+## Layout
+- <domain>/<NN_layer>/: one terraform root per numbered folder, applied in number order inside its domain. Domains: core, shared, aidbox, applications, data_platform/iac, observability, rhapsody, stackrox
+- <domain>/environments/<environment>/<layer>.tfvars: the values of that layer for that environment. Environments with pipeline files: tsnbx4, tsnbx5, tsnbx6, tsnbx7, stable
+- <domain>/modules/: what the layers of that domain call. core/modules/titan-eks is behind both EKS layers, core/23_eks_shared and core/25_eks_cdr, so a cluster change usually touches the module and both layers
+- general_modules/: vendored upstream terraform modules, kept with their version in the folder name
+- general_helm_charts/<chart>-<rev>/: the charts terraform installs. The manifest's revision picks the folder
+- services/: the per-service stacks and their own deploy.sh. applications/: web hosting and its DNS
+- manifest.input.yaml: what ships. One entry per application, service and bento plugin, with its revision
+- pipelines/: the CI files, one per domain, .common.yml for stages and rules, environments/ for the per-environment variables. Every file name there starts with a dot
+- scripts/: deploy.sh and the push, pull and generate scripts the jobs call. dr/: recovery scripts and docs
+- file types: terraform (.tf) and its values (.tfvars). helm charts with Chart.yaml, values and templates. yaml for the manifest and the pipelines. python and shell for the scripts
