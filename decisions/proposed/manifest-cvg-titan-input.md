@@ -25,19 +25,8 @@
 - account ids, host names and bucket names are written in pipelines/environments/ and in the tfvars. Never copy them into a ticket, a comment or a reply (D-0031)
 
 ## Validate (what "done" looks like here)
-- "run the plan locally" / "local plan" in this repo means a real terraform plan against tsnbx4, never validate-local (that is only fmt, and terraform/terraform.tfvars already fails it on platinum)
-- local plan, run from the repo root; recipe verified end to end 2026-09-17 (DVPS-6622, ~5 min, no retries needed):
-  1. `aws sts get-caller-identity --profile titan-admin` (D-0015; titan-sandbox is the same account <aws-account-3> but is denied credentials)
-  2. manifest.all.yaml is gitignored and the local copy is stale; terraform reads it for chart revisions and image tags. Replace it with the pin_manifest artifact of the newest platinum pipeline: GitLab API `pipelines?ref=platinum`, job `pin_manifest`, `jobs/<id>/artifacts/manifest.all.yaml` (token from 00workdir/.env). Without this the plan fails on missing general_helm_charts/<chart>-<rev> dirs
-  3. `eval "$(aws configure export-credentials --profile titan-admin --format env)"`
-  4. `export AWS_REGION=us-east-2 TERRAFORM_PROVIDERS_BUCKET=tsnbx4-deployment-artifacts CI_COMMIT_BRANCH=platinum TFENV_TERRAFORM_VERSION=1.5.7 DOWNLOAD_PROVIDERS=true`. CI_COMMIT_BRANCH=platinum or the providers key is providers-.tar.gz (404); the S3 providers mirror is linux_amd64 only, so DOWNLOAD_PROVIDERS=true on this Mac; required_version is ~>1.5.7 and the default tfenv is 1.9.0
-  5. `./scripts/deploy.sh ./observability/30_obs_eks tsnbx4 plan > <scratchpad>/plan.log 2>&1` in the background, one wait, then grep the log for `will be`, `Plan:` and `Error`; never poll with sleep
-  - if an earlier failed run left an empty `<domain>/providers` dir or a lock file from the linux mirror, remove `<domain>/providers` and `<layer>/.terraform.lock.hcl` first
-  - env settings come from pipelines/environments/.tsnbx4.yml (dotfiles: `ls -a`); CI runs the same script as role CrossAccountGitlabRunner after the pin_manifest and generate_core_providers jobs
-- plan, pipeline: the layer's plan_* job (Watch below); jobs on platinum target tsnbx4
-- helm charts: general_helm_charts/<chart>-<rev> is picked by the manifest revision, but helm_release (helm 2.13.0, no manifest experiment) only diffs when Chart.yaml `version:` changes, so a template-only edit needs the version bumped; proof is `helm_release.<chart>` with `~ version` in the plan (DVPS-6622: `1.0.8 -> 1.0.11` shown locally)
-- done means: plan reviewed, destroys == 0 unless stated, and the change is reflected in manifest.all.yaml if the customer needs it
-- rule: helm_release diffs a local chart only when its Chart.yaml version changes (no manifest experiment); a template-only edit needs the version bumped or the plan shows nothing  # helm provider config
-- ci check: job 03_looker_02_spectacles_tests runs `./data_platform/looker/run_spectacles_tests.sh $ENVIRONMENT`  # pipelines/.data_platform.yml:243
-- ci check: job pin_manifest runs `./scripts/checkplatinumhead.sh`  # pipelines/.prepare.yml:7
-- rule: chart template edits came with a Chart.yaml change in 8 of 14 commits  # git log origin/platinum
+- a plan is the proof, and a plan exists only on a branch whose name the pipeline knows. See Environment
+- plan in the pipeline: the layer's plan job, named under Watch
+- plan from this Mac: `atpy sme howto cvg-titan-local-plan`. "Run the plan locally" means that real plan against tsnbx4, never validate-local, which is fmt only
+- a chart change carries its Chart.yaml version bump. The proof is `helm_release.<chart>` with `~ version` in the plan
+- done means the plan was read, destroys == 0 unless the ticket says otherwise, and manifest.input.yaml carries the change when the customer needs it
