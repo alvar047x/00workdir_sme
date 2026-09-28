@@ -13,9 +13,10 @@ last_intake: 2026-09-28
 ## Operations (one line per family; if a verb is not here it does not exist, propose it instead of improvising)
 - intake, lookups (no record):
   - `atpy sme brief KEY...`: fetch, epic, delta, blocker, W step, log tail, state, next; appends the Repo section from gather_cmd
-  - `atpy sme pull --sprint | pull KEY...`
+  - `atpy sme pull --sprint | pull KEY... [--new]`: --new leaves a key already on hold or planned alone, names it once, fetches the rest
   - `atpy sme state [KEY...]`
-  - `atpy gather KEY [--repo <slug>] [--json]`: repo, MR and newest-pipeline state, verdict first
+  - `atpy sme howto [<slug>]`: how to get into or do a thing more than one ticket needs; no slug lists them, a slug prints one; the brief names the ones that match the ticket
+  - `atpy gather KEY [--repo <slug>] [--json | --closing]`: repo, MR and newest-pipeline state, verdict first; --closing prints the closing-comment skeleton from that state and the plan, `<...>` lines are the model's
   - `atpy gitlab diff|comments <mr url>`
   - `atpy jira fetch|comments KEY`
   - `atpy wiki search|fetch`
@@ -31,18 +32,20 @@ last_intake: 2026-09-28
   - scripts run by `atpy do`:
     - `atpy repo pull <slug>`: fetches the default branch and prints what changed since the last evaluation (report re-run, per-section diff)
     - `atpy repo branch-start KEY --repo <slug> --title "<plan title>"`
-    - `atpy repo validate-local --repo <slug>`
+    - `atpy repo validate-local --repo <slug>`: a failure origin/<default> also has is pre-existing, named once inside a PASS
+    - `atpy repo edit <slug> chart-bump <dir> [--to V] | tf-set <file.tf> <type.name> k=v... [--lifecycle k=v...] | ci-job --from - [--file .gitlab-ci.yml]`: one scripted edit on the ticket branch, VERDICT then the diff; `atpy do edit --arg shape=...` runs it with a record
     - `atpy repo push <slug> [--force]`: a non-fast-forward is VERDICT HUMAN with the exact force command; --force only with the approval words (D-0030)
     - `atpy gitlab watch <id> --repo <slug> [--layer|--paths|--mr] [--once] [--until plan|apply]` (D-0025)
     - `atpy gitlab watch --derive --repo <slug>`: layer lines to approve
-    - `atpy gitlab mr-prepare KEY --repo <slug> --from -`: mr.md, the new-MR link, the drafted comment; no MR is created
+    - `atpy gitlab mr-prepare KEY --repo <slug> --skeleton`: the MR body skeleton from the branch, its diff and the plan, nothing written; then `--from -` with the finished body: mr.md, the new-MR link, the drafted comment; no MR is created
 - end after merge:
   - `atpy gitlab watch <id> --repo <slug> --until apply`: the apply is a human play (D-0028)
   - the plan's verification lines
 - end execution, with the approval words in the record (D-0026):
   - `atpy jira comment KEY "<Markdown>"`
   - `atpy jira create "<summary>" [--assignee me] [--parent KEY] [--link KEY --link-type <name>] [--sprint next]`
-  - `atpy jira transition KEY --status "<name>"`: prints the moves read when the name is absent
+  - `atpy jira close KEY [--resolve]`: the whole close in one call: gate, every status in order to Closed, store close; VERDICT first, then the last comment. `atpy do close` runs it with the approval words
+  - `atpy jira transition KEY --status "<name>"`: one move; prints the moves read when the name is absent
   - `atpy sme close KEY`
 - store and protocol:
   - `atpy sme approve <P-file> [--replaces D-nnnn] [--manifest slug]`
@@ -51,11 +54,12 @@ last_intake: 2026-09-28
   - `atpy sme store write card <name> --from - [--tags a,b]`
   - `atpy sme store write section <slug> --section Name --from - [--tags a,b]`: also `--rename-from OLD` and `--drop`, both written at once, no approve
   - `atpy sme store write manifest <slug> --kind-of system|repo [--tags a,b]`: a new sys-/repo- file rendered from schemas/manifest-<kind>.json; the slug is the manifest key, `gitlab` not `sys-gitlab`
+  - `atpy sme store write howto <slug> --from - --tags a,b`: first line `# <what it gets you into>`; an address, URL, account id, instance id or ARN is refused (D-0031); `--drop --by "<their words>"` deletes
   - `atpy sme store write steering --section "<anchor>" --from -`
   - `atpy sme store write steering --replace "<fragment of the one rule>" --from -`
   - `atpy sme store write steering --drop-rule "<fragment>"`: all three steering writes stage into decisions/proposed/steering.md and land on `approve --steering`; an ambiguous fragment is refused, never guessed
   - `atpy sme mark-step KEY n --by "<their words>"`: the executor calls it on step_satisfied_by
-  - `atpy sme log add --ticket KEY --ref note|digest|D-nnnn|fail:D-nnnn|fail:none --text "..." [--tags a,b]`: there is no `none` ref; it was deleted, and `fail:none` is the only ref sme end drafts a card from
+  - `atpy sme log add --ticket KEY --ref note|digest|D-nnnn|fail:D-nnnn|fail:none --text "..." [--tags a,b] [--block | --unblock]`: there is no `none` ref; it was deleted, and `fail:none` is the only ref sme end drafts a card from. --block puts the ticket on hold locally (status.json, next=wait, Jira untouched); --unblock lifts it
   - `atpy sme log edit S-nn --ticket KEY [--text ...] [--ref ...] [--tags a,b]`
   - `atpy sme end`
   - `atpy sme close KEY`
