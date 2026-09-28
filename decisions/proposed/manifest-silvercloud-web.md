@@ -19,3 +19,11 @@
 - the front end has its own scripts in package.json: lint, test and typecheck, which CI runs through pnpm. They need the node modules installed, so they are a person's or the pipeline's step, not a `local:` line
 - content under content/ changes together with locale/ and static/docs in the history. A content change that leaves them behind is suspect
 - done for a code change is a green MR pipeline into development. Done for a release is the environment's tag pipeline green through deploy, which is a person's tag
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/on-prem-migrated/silvercloud/silvercloud-web
+- shape: image-build
+- ci: .gitlab-ci.yml includes five files under ci/: common, development-branch, tag-build, tag-build-titan, tag-deployment
+- apply: deploys start from tags. The agent never creates or pushes a release tag (D-0028)
+- pass: on an MR, every job in stages prebuild, build and test green. After the merge to development, expect three more pipelines: the push pipeline, the -qa tag pipeline and the -build tag pipeline it starts
+- poll: 60s, cap 3h
