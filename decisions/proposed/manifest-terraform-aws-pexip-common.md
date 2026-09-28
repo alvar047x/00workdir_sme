@@ -41,3 +41,35 @@
 - where to edit for what a node is told at start: python/init/lambda_function.py and the .json.tpl of that node kind, then rebuild the zip
 - where to edit for a security rule: modules/network/security.tf, or nacl.tf at the root
 - a consumer's values are never here. They are in infra-central
+
+## Patterns
+- to add an input to a module: copy modules/transcoding_set_asg/variables.tf:26-36. Description first, then type, then default. Give a new input a default, so a consumer that does not set it still plans clean
+    variable "<name>" {
+      description = "<one sentence, what it changes>"
+      type        = <string | number | bool | list(string)>
+      default     = <value>
+    }
+- to make a resource setting switchable: a bool input named enable_<thing>, read on the resource. Copy modules/transcoding_set_asg/main.tf:83, which is how scale-in protection is done
+    protect_from_scale_in = var.enable_scale_in_protection
+- to make a whole block optional: a dynamic block over a one-item list. Copy the warm_pool block in modules/transcoding_set_asg/main.tf
+    dynamic "<block>" {
+      for_each = var.enable_<thing> ? [1] : []
+      content {
+        <settings>
+      }
+    }
+- to pass a new input through the all-in-one module: add the line to the module call in the root main.tf, one call per region, values aligned on the equals sign. Copy the transcoding_set_east call
+    enable_<thing> = <true | var.<root input>>
+- to add a lambda environment value: one line in the variables map of that module's lambda.tf, aligned. A secret is passed as the SSM parameter's reference, never as a literal
+    environment {
+      variables = {
+        <NAME> = <var.x | "literal">
+      }
+    }
+- to add an output: copy modules/transcoding_set_asg/outputs.tf, the asg_arn block
+    output "<name>" {
+      description = "<what it is>"
+      value       = <resource>.<name>.<attribute>
+    }
+- to change lambda code: edit the source under python/ or go/, run that folder's build script, and commit the rebuilt zip in every module the script copies to, in the same commit
+- commit message: `<type>: DVPS-XXXX <what changed>`, type is feat, fix or chore. The type decides the version (D-0010)
