@@ -11,3 +11,9 @@
 - the last USER line is root (Dockerfile:49)
 - most of the merges on platinum came from renovate branches that bump the base tag, so expect the FROM line to move without a ticket (git log origin/platinum)
 - set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT, TEAM_ECR_URL and the other CI variables the template reads
+
+## Validate (what "done" looks like here)
+- no local check exists in the repo. A local `docker build` needs a login to the base image's registry, so the branch pipeline's build job is the check
+- Build Docker Image green on the branch pipeline, and its log names the pushed tags
+- Scan Docker Image is allowed to fail, so the pipeline colour does not show its result. Read the scan job and say what it found
+- done for the ticket means the consumer pins the new tag. This repo's merge alone changes nothing that runs
