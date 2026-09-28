@@ -30,3 +30,73 @@
 - plan from this Mac: `atpy sme howto cvg-titan-local-plan`. "Run the plan locally" means that real plan against tsnbx4, never validate-local, which is fmt only
 - a chart change carries its Chart.yaml version bump. The proof is `helm_release.<chart>` with `~ version` in the plan
 - done means the plan was read, destroys == 0 unless the ticket says otherwise, and manifest.input.yaml carries the change when the customer needs it
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/on-prem-migrated/central-support/cvg-titan-input
+- shape: layer-plan-apply
+- ci: .gitlab-ci.yml includes pipelines/.*.yml, stages in pipelines/.common.yml, jobs are `./scripts/deploy.sh <layer> $ENVIRONMENT plan|apply`
+- apply: manual, a human plays it. The agent never plays a job (D-0028)
+- pass: plan job success with its "Plan:" line. The apply job waits as manual before the play, and ends with "Apply complete!" after
+- poll: 60s, cap 3h
+- layer: 20_looker = -, dp_cac_20_looker
+- layer: aidbox/00_aidbox_prereqs = plan_aidbox_prereqs, apply_aidbox_prereqs
+- layer: aidbox/01_aidbox_infra = plan_aidbox_infra, apply_aidbox_infra
+- layer: aidbox/10_aidbox = plan_aidbox, apply_aidbox
+- layer: applications/11_webhosting = plan_webhosting, apply_webhosting
+- layer: applications/90_webhosting_dns = plan_webhosting_dns, apply_webhosting_dns
+- layer: core/00_bootstrap = -, bootstrap
+- layer: core/10_networking = plan_networking, apply_networking
+- layer: core/20_platform_prereqs = plan_platform_prereqs, apply_platform_prereqs
+- layer: core/21_platform_infra = plan_platform_infra, apply_platform_infra
+- layer: core/22_shared_prereqs = plan_shared_prereqs, apply_shared_prereqs
+- layer: core/23_eks_shared = plan_eks_shared, apply_eks_shared
+- layer: core/24_cdr_prereqs = plan_cdr_prereqs, apply_cdr_prereqs
+- layer: core/25_eks_cdr = plan_eks_cdr, apply_eks_cdr
+- layer: core/30_eks = plan_eks, apply_eks
+- layer: core/31_keycloak = plan_keycloak, apply_keycloak
+- layer: core/32_webhosting_prereqs = plan_webhosting_prereqs, apply_webhosting_prereqs
+- layer: core/33_services_config_template = plan_services_config_template, apply_services_config_template
+- layer: core/90_dns_prereqs = plan_dns_prereqs, apply_dns_prereqs
+- layer: core/91_dns = plan_dns, apply_dns
+- layer: core/99_aws_backup = plan_aws_backup, apply_aws_backup
+- layer: data_platform/iac/00_looker_pre_reqs = plan_data_platform_looker_prereqs, apply_data_platform_looker_prereqs
+- layer: data_platform/iac/10_looker_infra = plan_data_platform_looker_infra, apply_data_platform_looker_infra
+- layer: data_platform/iac/11_looker_db_config = plan_data_platform_looker_db_config, apply_data_platform_looker_db_config
+- layer: data_platform/iac/20_dp_prereqs = plan_data_platform_prereqs, apply_data_platform_prereqs
+- layer: data_platform/iac/21_dp_infra = plan_data_platform_infra, apply_data_platform_infra
+- layer: data_platform/iac/25_dp_aidbox_prereqs = plan_data_platform_aidbox_connection_prereqs, apply_data_platform_aidbox_connection_prereqs
+- layer: data_platform/iac/26_dp_aidbox = plan_data_platform_aidbox_connection, apply_data_platform_aidbox_connection
+- layer: data_platform/iac/30_looker_k8s = plan_data_platform_looker_k8s, apply_data_platform_looker_k8s
+- layer: observability/11_obs_networking_ssm = plan_obs_ssm, apply_obs_ssm
+- layer: observability/20_obs_prereqs = plan_obs_prereqs, apply_obs_prereqs
+- layer: observability/21_obs_kafka = plan_obs_kafka, apply_obs_kafka
+- layer: observability/30_obs_eks = plan_obs_eks, apply_obs_eks; renders general_helm_charts/elasticstack-*, general_helm_charts/elasticstack-operator-* (observability/modules/titan-eks/elastic.tf)
+- layer: observability/31_obs_elastic = plan_obs_elastic, apply_obs_elastic
+- layer: rhapsody/01_rhapsody_prereqs = plan_rhapsody_prereqs, apply_rhapsody_prereqs
+- layer: rhapsody/02_rhapsody = plan_rhapsody, apply_rhapsody
+- layer: shared/00_centralised_rds_postgres_prereqs = plan_central_rds_postgres_prereqs, apply_central_rds_postgres_prereqs
+- layer: shared/00_cms_cdn_prereqs = plan_cms_cdn_prereqs, apply_cms_cdn_prereqs
+- layer: shared/01_clamav_prereqs = plan_clamav_prereqs, apply_clamav_prereqs
+- layer: shared/01_cms_cdn = plan_cms_cdn, apply_cms_cdn
+- layer: shared/10_centralised_rds_postgres_infra = plan_central_rds_postgres, apply_central_rds_postgres
+- layer: shared/10_clamav = plan_clamav, apply_clamav
+- layer: shared/11_centralised_rds_postgres_access_control = plan_central_rds_postgres_access_control, apply_central_rds_postgres_access_control
+- layer: shared/20_fus_prereqs = plan_fus_prereqs, apply_fus_prereqs
+- layer: shared/21_fus = plan_fus, apply_fus
+- layer: shared/40_opensearch_prereqs = plan_opensearch_prereqs, apply_opensearch_prereqs
+- layer: shared/41_opensearch_domain = plan_central_opensearch, apply_central_opensearch
+- layer: shared/42_opensearch_compatibility = plan_opensearch_compatability, apply_opensearch_compatability
+- layer: shared/50_bento_cdn_virtual_service = plan_bento_config, apply_bento_config
+- layer: shared/51_link_shortener = plan_link_shortener, apply_link_shortener
+- layer: shared/52_rhapsody_mock = plan_rhapsody_mock, apply_rhapsody_mock
+- layer: shared/60_activemq_broker_prereqs = plan_activemq_prereqs, apply_activemq_prereqs
+- layer: shared/60_rapid7 = plan_rapid7, apply_rapid7
+- layer: shared/61_activemq_broker_infra = plan_central_activemq, apply_central_activemq
+- layer: shared/70_mongodb_prereqs = plan_mongodb_prereqs, apply_mongodb_prereqs
+- layer: shared/71_mongodb_server = plan_mongodb_server, apply_mongodb_server
+- layer: shared/72_mongodb_user = plan_mongodb_cdk_user, apply_mongodb_cdk_user
+- layer: stackrox/00_stackrox_prereqs = 00_plan_stackrox_prereqs, 00_apply_stackrox_prereqs
+- layer: stackrox/10_stackrox_infra = 10_plan_stackrox_infra, 10_apply_stackrox_infra
+- layer: stackrox/20_stackrox_k8s = 20_plan_stackrox_k8s, 20_apply_stackrox_k8s
+- layer: stackrox/21_stackrox_init_bundle = 21_plan_stackrox_init_bundle, 21_apply_stackrox_init_bundle
+- layer: stackrox/22_stackrox_secured_cluster_services = 22_plan_stackrox_secured_cluster_services, 22_apply_stackrox_secured_cluster_services
