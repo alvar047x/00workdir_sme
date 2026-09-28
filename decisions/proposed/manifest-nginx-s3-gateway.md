@@ -1,13 +1,14 @@
 ## Environment
-- default branch: platinum; protected: platinum
-- contents: dockerfile image build
-- pipeline: .gitlab-ci.yml; stages: lint, validations, auto lock update, pre-build, build, test, scan, prepare, release, pre-deploy verification, image validations, publish, ssm-parameters dyn env, migrate SCC secrets to SSM, argocd onboarding, prepare-iac-resources-file, argocd offboarding, push deployment artifacts, dynamic env iac deploy, dynamic env deploy, dev iac deploy, dev deploy, dev test automation, scheduler test notification, dev bg switch, dynamic bg switch, dev bg rollback, dynamic bg rollback, push production artifacts, staging deploy, staging test automation, production tag-pact, production deploy, production publish, clean up  # pipelines@stable:common/.stages.yml:1
-- MR target: platinum (git log origin/platinum: 105 of 105 merge commits); branch pattern: DVPS-XXXX-desc (git branch -r: 1 of 3 recent team-key branches)
-- pipeline template: project/.ecr_image.yml from pipelines at stable (matched by file, the project is a CI variable)  # .gitlab-ci.yml:3
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): ARTIFACTORY_AWS_NPM_TOKEN, CVG_PIPELINES_PROJECT, CVG_PIPELINES_PROJECT_ID, CVG_RENOVATE_PROJECT, DEV_KEYCLOAK_URL, JAVA_HOME, M2_HOME, MAVEN_HOME, NODE_MODULES_CACHE_KEY, NVM_DIR, PIPELINES_ACCESS_TOKEN, PROJECT_DEPLOYMENT_NAME, +13 more; git cannot see these  # pipelines@stable:common/.extends.yml:233
-- image build: job `Build Docker Image` (kaniko) builds <ci_project_dir>/Dockerfile from <ci_project_dir>; pushes <team_ecr_url>/ci/<project_deployment_name>:<ci_commit_short_sha>; also <team_ecr_url>/ci/<project_deployment_name>:latest when [ $CI_COMMIT_BRANCH == "platinum" ]; also <team_ecr_url>/ci/<project_deployment_name>:<extra_destination_tag> when [ -n "$EXTRA_DESTINATION_TAG" ]  # .gitlab-ci.yml:9
-- image build rules: never when $CI_PIPELINE_SOURCE == "merge_request_event"; run when $CI_PIPELINE_SOURCE != "schedule"; never when $CI_PIPELINE_SOURCE == "schedule"  # .gitlab-ci.yml:9
-- image build args from CI: BASE_IMAGE_VERSION, KEYSTOREPASSWORD (override the Dockerfile ARG defaults)  # .gitlab-ci.yml:9
-- source: base image ghcr.io/nginx/alpine-fips:0.4.0-alpine3.19; git cannot see this  # Dockerfile:5
-- source: base image nginxinc/nginx-s3-gateway:unprivileged-oss-20251124; git cannot see this  # Dockerfile:6
-- source: base image <account-id>.dkr.ecr.us-east-2.amazonaws.com/ironbank/opensource/nginx/nginx-alpine:1.29.4-<account-id> (CI overrides ARG BASE_IMAGE_VERSION); git cannot see this  # Dockerfile:8
+- default branch: platinum; protected: platinum (a GitLab setting git cannot show, from intake)
+- MR target: platinum (git merge history); branch pattern: DVPS-XXXX-desc (D-0002, the clone's own branches are mixed)
+- contents: one Dockerfile, three stages: the nginx alpine-fips image for its openssl.cnf, the upstream nginx-s3-gateway image for its config and entrypoint, and the Iron Bank nginx-alpine base that ships (Dockerfile:5, :6, :8) (repo map evaluated origin/platinum at 0fbcc14 of 2026-06-03, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
+- image: ironbank-base/opensource/nginxinc/nginx-s3-gateway/nginx-oss-s3-gateway. The job overrides ECR_REPO, so the path has no ci/ prefix (.gitlab-ci.yml:13)
+- tag to pin: <BASE_IMAGE_VERSION>-<timestamp to the second>, BASE_IMAGE_VERSION is read out of the Dockerfile by sed, so the Dockerfile ARG is the one place to change it (.gitlab-ci.yml, Dockerfile:1)
+- a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha and the tag above. On platinum the same build also moves the latest tag. It never runs on an MR pipeline or a schedule
+- consumers: cvg-titan-input pins this image in applications/11_webhosting/main.tf and in applications/environments/<env>/11_webhosting.tfvars, so a new image reaches an environment only after an MR there
+- FIPS: OpenSSL is built from source with enable-fips and the fips provider installed, then openssl.cnf is copied from the alpine-fips stage (Dockerfile:117-124)
+- versions pinned as ARGs in the Dockerfile: BASE_IMAGE_VERSION, FIPS_IMAGE_VERSION, OPENSSL_VERSION, NGINX_VERSION, NJS_VERSION. nginx is rebuilt from source, so NGINX_VERSION and the base tag move together
+- runs as USER nginx (Dockerfile:127)
+- TRIGGER_RENOVATE is "true", so the Renovate job runs after the build (.gitlab-ci.yml:7)
+- set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT, TEAM_ECR_URL and the other CI variables the template reads
