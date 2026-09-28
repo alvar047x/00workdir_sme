@@ -56,3 +56,11 @@
     ARG BASE_TAG=${BASE_IMAGE_VERSION}-<timestamp>
 - to change the image path: PROJECT_DEPLOYMENT_NAME at .gitlab-ci.yml:7. The registry lines under it are addresses and stay as they are in the file
 - commit message: `<type>: DVPS-XXXX <what changed>`, as the newest commit on platinum does
+
+## Branches
+- DVPS-XXXX-desc, cut from platinum: the work branch the scripts make. Its MR goes to platinum
+- the name sets nothing off, but the push does. Every push to any branch runs Build Docker Image and publishes an image tagged with the short sha and with <BASE_IMAGE_VERSION>-<timestamp>. So a work branch already writes a tag that looks like a release
+- platinum: the same build also moves the tag latest
+- renovate.json is in the repo, but no renovate branch or merge is on the remote, so the base tag moves by hand here
+- an MR pipeline has no build job. The build to read is the push pipeline of the branch
+- other shapes on the remote: chore/<desc> and feature/<desc>, one each, both from the same migration
