@@ -19,7 +19,8 @@
   - scripts run by `atpy do`:
     - `atpy repo pull <slug>`: fetches the default branch and prints what changed since the last evaluation (report re-run, per-section diff)
     - `atpy repo branch-start KEY --repo <slug> --title "<plan title>"`
-    - `atpy repo validate-local --repo <slug>`
+    - `atpy repo validate-local --repo <slug>`: a failure origin/<default> also has is pre-existing, named once inside a PASS
+    - `atpy repo edit <slug> chart-bump <dir> [--to V] | tf-set <file.tf> <type.name> k=v... [--lifecycle k=v...] | ci-job --from - [--file .gitlab-ci.yml]`: one scripted edit on the ticket branch, VERDICT then the diff; `atpy do edit --arg shape=...` runs it with a record
     - `atpy repo push <slug> [--force]`: a non-fast-forward is VERDICT HUMAN with the exact force command; --force only with the approval words (D-0030)
     - `atpy gitlab watch <id> --repo <slug> [--layer|--paths|--mr] [--once] [--until plan|apply]` (D-0025)
     - `atpy gitlab watch --derive --repo <slug>`: layer lines to approve
