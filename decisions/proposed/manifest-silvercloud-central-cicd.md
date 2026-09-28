@@ -11,4 +11,7 @@
 - set outside the repo, so git cannot show them: the ECR role and region variables, the cleanup patterns and lifespans, and the token the refresh jobs use against the GitLab API
 
 ## Validate (what "done" looks like here)
-- ci check: job lint-yaml runs `yamllint -d "{extends: default, rules: {line-length: {max: 256}}}"`  # .gitlab-ci.yml:156
+- the repo's own check is the lint-yaml job: yamllint with line length 256 over the yaml files the branch changed, on a push pipeline of any branch but main (.gitlab-ci.yml:141)
+- no local check exists in the repo, and nothing checks a Dockerfile
+- a Dockerfile change is proven by a person's build, and then by a green pipeline in a repo that uses the image
+- a scheduled job cannot be proven from a branch. It runs only on its schedule, from main
