@@ -20,11 +20,9 @@
 
 ## Validate (what "done" looks like here)
 - local: `terraform fmt -check -recursive -diff`
-- validate: `terraform init -backend=false && terraform validate` in the changed layer is a plan step, not a local line, because it runs per layer
-- MR: validate and plan jobs green for every changed layer; plan artifact reviewed; destroys == 0 unless the ticket says otherwise
-- apply is a manual job on the default branch after merge; never triggered by the agent (Reaper Gate, human step)
-- local: `pre-commit run --from-ref origin/main --to-ref HEAD`  # .pre-commit-config.yaml (hooks: terraform_fmt, terraform_docs, terraform_providers_lock)
-- rule: helm_release diffs a local chart only when its Chart.yaml version changes (no manifest experiment); a template-only edit needs the version bumped or the plan shows nothing  # helm provider config
-- ci check: job terraform:fmt runs `terraform fmt -check -recursive -diff platform/`  # .gitlab/ci/platform.yml:51
-- ci check: job terraform:validate:shared-services:00-bootstrap runs `terraform validate`  # .gitlab/ci/platform.yml:69
-- ci check: job terraform:validate:shared-services:10-network runs `terraform validate`  # .gitlab/ci/platform.yml:69
+- the repo's own check is `pre-commit run --from-ref origin/main --to-ref HEAD`, with the hooks terraform_fmt, terraform_docs and terraform_providers_lock. It needs pre-commit and the pinned terraform, so it is prose here (.pre-commit-config.yaml)
+- `terraform init -backend=false && terraform validate` in the changed root is a plan step, not a local line, because it runs per root
+- an Atlantis project: the autoplan comment on the MR is the plan. Only the intended resources change, destroys == 0 unless the ticket says otherwise
+- accounts/ or platform/: the validate and plan jobs of the changed layer green, and the plan read the same way
+- pexip/titan: the plan is run by a person inside the enclave, who gives the output. The agent cannot run it or see its state
+- a pipeline whose only job is no-op proves nothing. It means no CI job matched the change
