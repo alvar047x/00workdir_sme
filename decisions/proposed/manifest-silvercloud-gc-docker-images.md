@@ -13,3 +13,10 @@
 - no local check and no CI check exist
 - a `docker build` of the changed directory is the only proof, and an image whose base sits in the private registry needs a person's login first
 - building and pushing are a person's steps. The agent edits the Dockerfile and stops
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/on-prem-migrated/govcloud_archive/silvercloud-gc-docker-images
+- shape: none
+- ci: none, no .gitlab-ci.yml on origin/main
+- apply: none, a person builds and pushes by hand
+- pass: there is no pipeline to poll
