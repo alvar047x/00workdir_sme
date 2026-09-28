@@ -1,27 +1,16 @@
 ## Environment
-- default branch: main; protected: main
-- contents: dockerfile image build
-- pipeline: .gitlab-ci.yml, ci/common.gitlab-ci.yml, ci/tag-build.gitlab-ci.yml, ci/tag-build-titan.gitlab-ci.yml, ci/tag-deployment.gitlab-ci.yml, ci/scheduled-sec-scan.gitlab-ci.yml; stages: scheduled_pipeline, prepping_common_pipeline, test, tag, build, build-titan, deploy, deploy-titan, fvt, create_tag, release, notifications  # .gitlab-ci.yml:2
-- MR target: main (git log origin/main: 46 of 46 merge commits); branch pattern: fix/DVPS-XXXX-desc (git branch -r: 1 of 3 recent team-key branches)
-- layout: top-level dirs by tracked files: src (8863), e2e_tests (16), ci (7), scripts (3), kustomize (2), ca-certs (1), docs (1)  # git ls-files
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): BASH_REMATCH, BUILD_AWS_ACCESS_KEY_ID, BUILD_AWS_ECR_REGISTRY, BUILD_AWS_EKS_NAME, BUILD_AWS_EKS_REGION, BUILD_AWS_ROLE_TO_ASSUME, BUILD_AWS_SECRET_ACCESS_KEY, CENTRAL_AWS_ECR_AUTH, CENTRAL_AWS_ECR_REGISTRY, CICD_COMMON_RUNNER_TAGS, CICD_DIND_RUNNER_TAGS, GC_CI_PROJECT_ID, +37 more; git cannot see these  # ci/common.gitlab-ci.yml:317
-- image build: job `unit-test-branch` (docker) builds Dockerfile from .; pushes <ci_registry_image>:<ci_commit_sha>  # ci/common.gitlab-ci.yml:123
-- image build rules: run when $CI_PIPELINE_SOURCE == "merge_request_event"; run when $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH  # ci/common.gitlab-ci.yml:123
-- image build: job `build-image-aws` (docker) builds Dockerfile from .; pushes <central_aws_ecr_registry>/silvercloud/silvercloud-ehr:<image_tag>  # ci/tag-build.gitlab-ci.yml:2
-- image build rules: never when $SKIP_AWS_BUILD == "1"; run when $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+\-build$/  # ci/tag-build.gitlab-ci.yml:2
-- image build: job `build-titan-image-aws` (docker) builds Dockerfile.titan from .; pushes <central_aws_ecr_registry>/silvercloud/silvercloud-ehr:<ci_commit_tag>  # ci/tag-build-titan.gitlab-ci.yml:3
-- image build rules: never when $SKIP_AWS_BUILD == "1"; run when $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+\-(titanrc|titan)$/  # ci/tag-build-titan.gitlab-ci.yml:3
-- image build args from CI: BASE_IMAGE, BASE_REGISTRY, BASE_TAG (override the Dockerfile ARG defaults)  # ci/tag-build-titan.gitlab-ci.yml:3
-- image build: job `prepare-scan-image` (docker) builds Dockerfile from .; pushes nothing unconditionally; also <ci_registry_image>:<ci_commit_sha> when [ "$IMAGE_TO_SCAN_MODE" == "default" ] and not docker manifest inspect $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA > /dev/null 2>&1  # ci/scheduled-sec-scan.gitlab-ci.yml:3
-- image build rules: run when $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_PIPELINE_TYPE == "sec-scan"  # ci/scheduled-sec-scan.gitlab-ci.yml:3
-- source: base image public.ecr.aws/docker/library/python:3.12-slim-bookworm; git cannot see this  # Dockerfile:2
-- source: base image <account-id>.dkr.ecr.us-east-1.amazonaws.com/silvercloud-ehr:${BASE_TAG} (CI overrides ARG BASE_REGISTRY, BASE_IMAGE, BASE_TAG; ARG BASE_TAG has no default); git cannot see this  # Dockerfile.titan:8
-- values files, tracked: .env.test  # git ls-files
-- changes together: src/apps + src/docs (28 of 400 commits)  # git log origin/main
-- changes together: src + src/apps (22 of 400 commits)  # git log origin/main
-- changes together: src/apps + src/static (10 of 400 commits)  # git log origin/main
-- changes together: e2e_tests/cypress + src/apps (9 of 400 commits)  # git log origin/main
-- changes together: src/apps + src/templates (8 of 400 commits)  # git log origin/main
+- default branch: main; protected: main (a GitLab setting git cannot show, from intake)
+- MR target: main (git merge history); branch pattern: DVPS-XXXX-desc (D-0002, the clone's team branches are too few to show one pattern)
+- contents: a Django app under src/, cypress tests under e2e_tests/, the pipeline under ci/, kustomize/aws for the deploy, Dockerfile and Dockerfile.titan (repo map evaluated origin/main at 153c1f46 of 2026-07-14, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- releases are driven by git tags, not by branches. The tag's suffix picks what runs: -build, -qa, -stage, -prod-us, -prod-au, -prod-uk, -prod-ca, -titanrc, -titan (ci/tag-build.gitlab-ci.yml, ci/tag-deployment.gitlab-ci.yml, ci/tag-build-titan.gitlab-ci.yml)
+- a merge to main deploys. The push pipeline's create-qa-tag job makes the next vX.Y.Z-qa tag, that tag's pipeline makes the -build tag when none exists, the build pipeline builds the image, deploys it to the build environment and runs the functional test, then the qa deploy runs (ci/common.gitlab-ci.yml:295, ci/tag-deployment.gitlab-ci.yml:3, ci/tag-build.gitlab-ci.yml)
+- no deploy job is manual. A person pushing a vX.Y.Z-stage or -prod tag is the approval, and the pipeline deploys as soon as the tag exists
+- SKIP_AWS_BUILD and SKIP_AWS_DEPLOYMENT_ENV_LIST are CI variables that switch the build or a named environment's deploy off
+- the deploy is ci/scripts/kube-deploy.bash: it deletes the old migration job, sets the image in kustomize/aws, applies it, then sets the image on the app and celery deployments and on the cron jobs (ci/scripts/kube-deploy.bash:9, :25, :59)
+- Titan: a -titanrc or -titan tag builds Dockerfile.titan on top of the already built image of the same version, and scans it. Only -titanrc then triggers the silvercloud-gc-iac pipeline, which deploys to the test government environment (ci/tag-build-titan.gitlab-ci.yml:3, :89)
+- images: the MR pipeline pushes a test image to the GitLab registry, and tag pipelines push to the central registry under silvercloud/silvercloud-ehr
+- tool images and the registry token come from silvercloud-central-cicd
+- set outside the repo, so git cannot show them: the per-environment AWS keys, cluster names, registry variables and runner tags the ci/ files read
 
 ## Validate (what "done" looks like here)
 - ci check: job check-changes runs `UNIT_TEST=0`  # ci/common.gitlab-ci.yml:20
