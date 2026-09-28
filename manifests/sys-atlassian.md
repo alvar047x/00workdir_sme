@@ -2,7 +2,7 @@
 kind: system
 key: atlassian
 report: none
-last_intake: 2026-09-17
+last_intake: 2026-09-28
 ---
 TAGS: jira
 
@@ -22,8 +22,8 @@ TAGS: jira
 - post: `atpy jira comment KEY "<Markdown>"`; mention as [~Full Name]; check output for "mention not resolved"
 - edit: `atpy jira comment-edit KEY <id> "<Markdown>"`; delete: `atpy jira comment-delete KEY <id> --confirm` (only after the user says so)
 - what moves are possible: `atpy jira transitions KEY`; move: `atpy jira transition KEY --status "<name>"`
-- begin work: `atpy jira start KEY` (fetch, set fields, Implementing, comment)
-- close: one closing comment, then `atpy jira transition KEY --status Closed`. The pre-close gate passes when .sme/sessions/KEY/log.md has an entry. If it blocks, report the one-line reason and stop; never build plan or verification files to satisfy it. `--force` only when the user says to.
+- begin work: `atpy jira start KEY` (fetch, set fields, Implementing, comment). "Move to in progress" means Implementing: the sprint board's columns are Not Started, In Progress and Finished, and Implementing is what puts a ticket in In Progress
+- close: `atpy jira close KEY`. One call: the pre-close gate, then every status in order (Implementing, Ready for Verification, In Verification, Testing Complete, Closed), then the store close; it prints the last comment on the ticket, which is the premise check. "Close it" means this walk, never the Resolve shortcut. On the migrated scheme it stops and names `--resolve`, which needs the user's word. If the gate blocks, report the one-line reason and stop; never build plan or verification files to satisfy it
 - sprint: `atpy jira sprint "<name>"`; triage: `atpy sprint analyze`
 - work wiki (Confluence): `atpy wiki search "<terms>"`, `atpy wiki fetch <page>`; broken until wiki.py does its own CQL search (SME-01 S-168)
 
@@ -32,6 +32,7 @@ TAGS: jira
 - closing comment shape: what was done, resources changed, MR link if any, environments verified
 - never mention tooling in a comment: no automation_tools paths, no verb names, and nothing about what the tooling can or cannot do. A reader of the ticket does not know this layer exists
 - draft first, user approves, then post; one comment per action, never a stream
+- a comment goes out under Adam's name, so it states findings in his voice: "my research shows we should keep it off", never "I recommend"; plain words, short, no report headings unless asked
 
 ## Decisions in force here
 D-0023, D-0024
