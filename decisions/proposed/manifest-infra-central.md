@@ -1,69 +1,22 @@
 ## Environment
-- default branch: main; protected: develop,main
-- contents: terraform, kubernetes manifests or helm
-- pipeline: .gitlab-ci.yml, .gitlab/ci/accounts.yml, .gitlab/ci/platform.yml; stages: validate, plan  # .gitlab/ci/platform.yml:8
-- consumer of terraform-aws-pexip-common; terraform plan and apply pipelines live here
-- pipeline: .gitlab-ci.yml includes .gitlab/ci/platform.yml (platform/ layers) and .gitlab/ci/accounts.yml (accounts/*); accounts.yml extends amwell/platform/ci-templates terraform.yml
-- stages: validate (terraform fmt -check -recursive, terraform validate per layer with -backend=false) -> plan (terraform plan -out=plan.tfplan per TF_DIR, artifact kept) -> apply (extends .terraform:apply, needs the plan job, when: manual)
-- variables: TF_VERSION 1.12.0, TF_IN_AUTOMATION, TF_INPUT=false, AWS_ROLE_ARN (plan role), AWS_ROLE_ARN_APPLY (per-account apply role), TF_DIR per job
-- jobs run on merge_request_event with path changes, on push to the default branch, and on web (manual pipeline) source
-- accounts managed: shared-services, development, converge-staging, caretalks-prod, converge-prod, log-archive; each has backend-bootstrap and oidc layers
-- layout (intake 2026-09-14): one stack per directory; top level = accounts/, platform/, pexip/, titan/, devops/, development/, cvg-production/, cvg-staging/, caretalks-production/, converge/, shared-services/, networking/, log-archive/, amplar/, rhapsody/, central-registry/
-- pexip/titan: numbered stacks 00_prereqs 01_domain 10_vpc 11_tgw 12_bastion 21_endpoint 22_kms 23_syslog 29_certs 30_pexip_platform 40_int 41_preprod 42_prod; every stack reads pexip/titan/tfvars/<stack>.tfvars
-- pexip/titan security rules: SG for ssh in 21_endpoint/ssh_sg.tf, ingress allow list in tfvars/30_pexip_platform.tfvars, NACL rules in tfvars/10_vpc.tfvars (tfvars win over the module's nacl.tf locals), ssh_enabled maintenance flag in 30_pexip_platform
-- pexip/dev, pexip/stg, pexip/prod: commercial Pexip; pexip/prod/api holds bootstrap and maintenance scripts
-- titan/sandbox/platform: the Titan sandbox platform stack
-- accounts by stack (from permissions_boundary and role ARNs): Titan Pexip enclave <aws-account-4> (pexip/titan/12_bastion, 23_syslog, tfvars; no local profile), shared-services <aws-account-5>, development <aws-account-6>, converge-prod <aws-account-7>, converge-staging <aws-account-8>, caretalks-prod <aws-account-9>, plus <aws-account-10> and <aws-account-11> (unmapped, intake candidate)
-- git: Richard Morley's pexip SSH removal is commit dde6b63a on main (2026-05-29); merged is not applied, apply state is only visible from inside <aws-account-4>
-- branch pattern: DVPS-XXXX-desc (git branch -r: 13 of 27 recent team-key branches)
-- layout: top-level dirs by tracked files: amplar (505), pexip (289), converge (264), platform-archive (231), devops (186), development (168), cvg-production (70), accounts (49), caretalks-production (42), cvg-staging (41), log-archive (17), platform (14)  # git ls-files
-- source: CI include project amwell/platform/ci-templates file terraform.yml; git cannot see this  # .gitlab/ci/accounts.yml:25
-- source: terraform state in a s3 backend; git cannot see this  # accounts/caretalks-prod/backend-bootstrap/versions.tf:8
-- source: terraform remote state `cvges_prod` read from another stack; git cannot see this  # caretalks-production/infra/data.tf:6
-- source: terraform remote state `cvges_prod_config` read from another stack; git cannot see this  # caretalks-production/infra/data.tf:18
-- source: terraform remote state `cvges_dev` read from another stack; git cannot see this  # cvg-staging/infra/data.tf:156
-- source: terraform remote state `cvges_dev_config` read from another stack; git cannot see this  # cvg-staging/infra/data.tf:168
-- source: terraform remote state `kubernetes` read from another stack; git cannot see this  # development/dev-next/converge/data.tf:32
-- source: terraform remote state `vpc` read from another stack; git cannot see this  # development/gitlab-runner/data.tf:1
-- source: terraform remote state `gitlab` read from another stack; git cannot see this  # devops/atlantis/data.tf:1
-- source: terraform remote state `shared_devops_vpc` read from another stack; git cannot see this  # devops/gitlab/data.tf:1
-- source: terraform remote state `shared_devops_infra` read from another stack; git cannot see this  # devops/shared-devops/artifactoryha/data.tf:12
-- source: terraform remote state `dev` read from another stack; git cannot see this  # networking/dns/data.tf:1
-- source: terraform remote state `staging` read from another stack; git cannot see this  # networking/dns/data.tf:13
-- source: terraform remote state `cvgproduction` read from another stack; git cannot see this  # networking/dns/data.tf:26
-- source: terraform module git::https://gitlab.com/amwell/platform/infrastructure/terraform-modules.git//gitlab-oidc?ref=v2.12.0; git cannot see this  # accounts/caretalks-prod/oidc/main.tf:30
-- source: terraform module terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks; git cannot see this  # amplar/prod/looker/23_eks/iam.tf:2
-- source: terraform module terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc; git cannot see this  # amplar/prod/looker/23_eks/iam.tf:78
-- source: terraform module terraform-aws-modules/vpc/aws; git cannot see this  # amplar/prod/looker/modules/amplar-vpc/main.tf:2
-- source: terraform module terraform-aws-modules/vpc/aws//modules/vpc-endpoints; git cannot see this  # amplar/prod/looker/modules/amplar-vpc/main.tf:41
-- source: terraform module terraform-aws-modules/kms/aws; git cannot see this  # amplar/prod/looker/modules/prereqs/kms.tf:2
-- source: terraform module terraform-aws-modules/security-group/aws; git cannot see this  # caretalks-production/infra/apigateway.tf:67
-- source: terraform module terraform-aws-modules/acm/aws; git cannot see this  # caretalks-production/infra/argocd.tf:2
-- source: terraform module terraform-aws-modules/security-group/aws//modules/https-443; git cannot see this  # caretalks-production/infra/argocd.tf:15
-- source: terraform module git::https://gitlab.com/amwell/terraform-modules/sre/terraform-aws-converge-elastic-beats.git?ref=v1.4.2; git cannot see this  # caretalks-production/infra/beats.tf:2
-- source: terraform module git::https://gitlab.com/amwell/terraform-modules/sre/terraform-aws-converge-apigateway.git?ref=v1.7.0; git cannot see this  # caretalks-production/infra/converge.tf:30
-- source: terraform module terraform-aws-modules/eks/aws; git cannot see this  # caretalks-production/infra/eks.tf:21
-- source: base image public.ecr.aws/amazonlinux/amazonlinux:latest (moving tag); git cannot see this  # central-registry/test/Dockerfile:1
-- source: base image public.ecr.aws/docker/library/ruby:3.2-alpine; git cannot see this  # pexip/titan/23_syslog/Dockerfile:2
-- values files, tracked: amplar/data_platform/iac/environment/amplar-prod/00_looker_pre_reqs.tfvars, amplar/data_platform/iac/environment/amplar-prod/10_looker_infra.tfvars, amplar/data_platform/iac/environment/amplar-prod/11_looker_db_config.tfvars, amplar/data_platform/iac/environment/amplar-prod/30_looker_k8s.tfvars, amplar/data_platform/iac/environment/amplar-prod/backend.tfvars, amplar/data_platform/iac/environment/amplar-stage/00_looker_pre_reqs.tfvars, amplar/data_platform/iac/environment/amplar-stage/10_looker_infra.tfvars, amplar/data_platform/iac/environment/amplar-stage/11_looker_db_config.tfvars, amplar/data_platform/iac/environment/amplar-stage/30_looker_k8s.tfvars, amplar/data_platform/iac/environment/amplar-stage/backend.tfvars, caretalks-production/infra/vars/prod.backend.tfvars, caretalks-production/infra/vars/prod.tfvars, +128 more  # git ls-files
-- terraform process: Atlantis. An MR autoplans each project whose watched files changed (67 of 67 autoplan); apply is an `atlantis apply -p <project>` MR comment once the MR is approved, mergeable, undiverged (67 of 67); CI does not run terraform  # atlantis.yaml
-- terraform projects: 67, by top dir: devops (16), converge (14), amplar (14), development (11), cvg-production (3), pexip (2), caretalks-production (1), cvg-staging (1), mrkt-dev (1), networking (1), log-archive (1), staging (1)  # atlantis.yaml
-- terraform version (atlantis): v1.5.7 on 29, unset on 23, v1.8.1 on 15  # atlantis.yaml
-- terraform workflows (atlantis): devops (35), default (11), static-environment (9), amplar-stage-looker (4), amplar-prod-looker (4), devops-west (2), caretalks-production (1), root-config (1)  # atlantis.yaml
-- terraform roots: 113 dirs hold a backend block  # backend blocks
-- terraform version: .tool-versions 1.5.7 (.tool-versions); .tool-versions 1.8.1 (amplar/accounts/nonprod/.tool-versions); .tool-versions 1.8.1 (amplar/accounts/prod-looker/.tool-versions); .tool-versions 1.8.1 (amplar/data_platform/iac/00_looker_pre_reqs/.tool-versions); .tool-versions 1.8.1 (amplar/data_platform/iac/10_looker_infra/.tool-versions); .tool-versions 1.8.1 (amplar/data_platform/iac/30_looker_k8s/.tool-versions); .tool-versions 1.8.1 (central-registry/.tool-versions); .tool-versions 1.12.0 (platform-archive/platform-struct-examples/amwell-platform-monorepo/modules/.tool-versions); required_version >= 1.12 in 31 file(s), 1.5.7 in 27 file(s), >= 1.1.3 in 23 file(s), ~> 1.5.7 in 14 file(s); CI variable TF_VERSION  # accounts/caretalks-prod/backend-bootstrap/versions.tf
-- terraform variables: 113 roots declare 575 required (no default); 41 root x env var files checked, 0 leave required variables unset by anything in git; a TF_VAR_<name> in GitLab project CI settings would still supply them, and git cannot see those  # hcl2 over .tf and var files
-- terraform parse failures: 3 file(s) hcl2 could not read, left out: platform-archive/platform-struct-examples/amwell-platform-crossrepo-ssm/environments/silvercloud/qa/00-bootstrap/main.tf, platform-archive/platform-struct-examples/amwell-platform-crossrepo/environments/silvercloud/qa/00-bootstrap/main.tf, platform-archive/platform-struct-examples/amwell-platform-monorepo/environments/silvercloud/qa/00-bootstrap/main.tf  # hcl2
-- terraform helm: 17 helm_release resource(s); 1 install a chart from this repo, 16 from a chart repository, 0 from a path built at plan time  # helm_release
-- terraform helm chart: amplar/data_platform/iac/30_looker_k8s installs amplar/data_platform/iac/30_looker_k8s/helm-charts/ingress-nginx-4.8.3.tgz  # amplar/data_platform/iac/30_looker_k8s/ingress-nginx-controller.tf:21
-- source: helm chart aws-load-balancer-controller from https://aws.github.io/eks-charts, installed by amplar/prod/looker/23_eks; git cannot see this  # amplar/prod/looker/23_eks/addons.tf:21
-- source: helm chart external-secrets from https://charts.external-secrets.io, installed by amplar/prod/looker/23_eks; git cannot see this  # amplar/prod/looker/23_eks/addons.tf:70
-- source: helm chart metrics-server from https://kubernetes-sigs.github.io/metrics-server/, installed by amplar/prod/looker/23_eks; git cannot see this  # amplar/prod/looker/23_eks/addons.tf:94
-- source: helm chart ${each.value.chart} from ${try(each.value.repository, null)}, installed by amplar/prod/looker/modules/eks.eks_blueprints_addons-1.14; git cannot see this  # amplar/prod/looker/modules/eks.eks_blueprints_addons-1.14/helm.tf:5
-- changes together: cvg-production/infra + cvg-staging/infra (6 of 400 commits)  # git log origin/main
-- changes together: cvg-staging/infra + development/dev-next (5 of 400 commits)  # git log origin/main
-- changes together: pexip/dev + pexip/prod (4 of 400 commits)  # git log origin/main
-- changes together: cvg-production/infra + development/dev-next (3 of 400 commits)  # git log origin/main
+- default branch: main; protected: develop,main (a GitLab setting git cannot show, from intake 2026-09-15)
+- MR target: main (the default branch, the history is linear and shows no target); branch pattern: DVPS-XXXX-desc (git branch -r)
+- contents: the central terraform repo, one root per directory, owned by several teams. Top level: accounts, platform, pexip, titan, devops, development, converge, cvg-production, cvg-staging, caretalks-production, shared-services, staging, amplar, networking, log-archive, central-registry, rhapsody, mrkt-dev, platform-archive (repo map evaluated origin/main at e54fbead of 2026-09-16, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- terraform runs three ways here, and the directory decides which. Find the directory's way before planning anything
+- way 1, Atlantis: the projects listed in atlantis.yaml, which cover pexip/dev and pexip/prod and most of devops, converge, amplar and development. An MR autoplans each project whose files changed. Apply is the MR comment `atlantis apply -p <project>`, accepted once the MR is approved, mergeable and not diverged (atlantis.yaml)
+- way 2, GitLab CI: accounts/ and platform/ only. Jobs exist only when the change touches those paths. Any other change gets a pipeline with the single job no-op (.gitlab-ci.yml, .gitlab/ci/accounts.yml, .gitlab/ci/platform.yml)
+- way 3, by hand: pexip/titan is in neither atlantis.yaml nor CI. A person runs terraform inside the stack directory with `-var-file=../tfvars/<stack>.tfvars` (pexip/titan/.kiro/skills/pexip-infrastructure.md)
+- pexip/titan stacks, applied in number order, each with its own state: 00_prereqs, 01_domain, 10_vpc, 11_tgw, 12_bastion, 21_endpoint, 22_kms, 23_syslog, 24_gitlab_automation, 25_monitoring, 29_certs, 30_pexip_platform, 40_int, 41_preprod, 42_prod
+- pexip/titan branch is not settled from git. The repo's own Titan doc names dev-pexip-titan as the protected branch to cut from and merge to. On the refs read here that branch and main have diverged, each holds commits the other lacks, and pexip/titan differs between them. Ask which branch a Titan ticket works on before branching
+- pexip/titan security rules live in three places: 21_endpoint/ssh_sg.tf holds the ssh security group, tfvars/30_pexip_platform.tfvars the ingress allow list and the ssh_enabled maintenance flag, tfvars/10_vpc.tfvars the NACL rules
+- this repo consumes terraform-aws-pexip-common, pinned by tag in each stack's main.tf. A module change reaches a stack only through an MR here that moves the ref (D-0011)
+- merged is not applied. A Titan apply and its result are visible only from inside the enclave account (D-0017)
+- account ids, role ARNs and host names are written in the stacks and in the Titan doc. Never copy them into a ticket, a comment or a reply (D-0031)
+- run by a person, outside terraform: pexip/titan/scripts/scale-asg.sh terminates instances to cycle them, pexip/titan/scripts/create_ssm_params.sh and scripts/provision-runner-token.sh write SSM parameters
+- platform-archive/ holds examples, not live roots. Its scripts run terraform apply and destroy. Never run them
+- terraform version differs by root: 1.5.7 in the root .tool-versions, 1.8.1 in the amplar roots, 1.12.0 in the CI jobs for accounts and platform, and per project in atlantis.yaml. mise picks the version per directory (README.md, docs/mise.md)
+- helm: a chart installed from this repo is re-applied only when its Chart.yaml version changes
+- the layout is mid-migration toward accounts/ and platform/ (docs/repo-structure.md)
 
 ## Validate (what "done" looks like here)
 - local: `terraform fmt -check -recursive -diff`
