@@ -10,6 +10,7 @@
   - `atpy gitlab diff|comments <mr url>`
   - `atpy jira fetch|comments KEY`
   - `atpy wiki search|fetch`
+  - `atpy open [<name>]`: opens a page in the browser by its name and prints `opened <name>`; no name lists the names. The names and addresses are in ~/.config/sme/links, which the user writes by hand and the agent never reads, cats or greps; no address is printed, errors included (D-0031). A page with no name there is the user's to add
   - `atpy repo map <slug> [--check | --write | --report | --vars]`: the one repo evaluation tool, run when a repo is (re)evaluated, never per ticket; `--report` is the complete cited fact base the manifest is authored from; `--vars` traces variables per root and env; `--check` compares branch, MR target, pattern, project and layers with the manifest; `--write` stages only missing lines for `approve --section <slug>`
 - plan evaluation:
   - `atpy sme plan --draft KEY`: the planner brief, which carries the tag vocabulary
