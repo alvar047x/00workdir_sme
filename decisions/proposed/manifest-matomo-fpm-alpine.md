@@ -17,3 +17,12 @@
 - Build Docker Image green on the branch pipeline, and its log names the pushed tags
 - Scan Docker Image is allowed to fail, so the pipeline colour does not show its result. Read the scan job and say what it found
 - done for the ticket means the consumer pins the new tag. This repo's merge alone changes nothing that runs
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/on-prem-migrated/devops/dockerfiles/matomo-fpm-alpine
+- shape: image-build
+- ci: .gitlab-ci.yml, jobs from project/.ecr_image.yml in the pipelines repo at tag stable
+- jobs: Build Docker Image in stage build, Scan Docker Image in stage test with allow_failure, Renovate only when TRIGGER_RENOVATE is "true"
+- apply: none, there is no deploy job and nothing for a person to play
+- pass: Build Docker Image success on the branch pipeline. Watch the push pipeline, an MR pipeline has no build job
+- poll: 60s, cap 1h
