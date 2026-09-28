@@ -15,3 +15,11 @@
 - no local check exists in the repo, and nothing checks a Dockerfile
 - a Dockerfile change is proven by a person's build, and then by a green pipeline in a repo that uses the image
 - a scheduled job cannot be proven from a branch. It runs only on its schedule, from main
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/on-prem-migrated/silvercloud/silvercloud-central-cicd
+- shape: none
+- ci: .gitlab-ci.yml, stages scheduled_pipeline and lint
+- apply: none. The scheduled jobs change group variables and runners on their own schedule, and no person plays them
+- pass: lint-yaml success on the branch's push pipeline
+- poll: 60s, cap 30m
