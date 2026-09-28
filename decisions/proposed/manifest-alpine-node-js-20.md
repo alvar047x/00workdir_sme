@@ -37,3 +37,16 @@
 - where to edit for a package the image needs: the apk line, Dockerfile:3
 - where to edit for the image name: PROJECT_DEPLOYMENT_NAME at .gitlab-ci.yml:6
 - the jobs themselves are not here. They are in the pipelines repo, project/.ecr_image.yml, read at the tag stable
+
+## Patterns
+- to add a package: add it to the one apk line, keep `apk upgrade` last. Copy Dockerfile:3
+    RUN apk update && apk add <package>=~<major> <package> && apk upgrade
+- to prove a tool is in the image: one RUN line that prints its version, so a missing tool fails the build. Copy Dockerfile:4
+    RUN <tool> --version
+- to move the base image by hand: change only the tag on the FROM line. The registry part of the line is an address and stays as it is in the file
+    FROM <registry>/ironbank/opensource/alpinelinux/alpine:<tag>
+- to set a value for the build job: a variables block under the job name in .gitlab-ci.yml. Copy .gitlab-ci.yml:7-11
+    Build Docker Image:
+      variables:
+        <NAME>: "<value>"
+- commit message: `<type>(<scope>): DVPS-XXXX <what changed>`, as the older hand commits do. Renovate writes `fix(deps): ...` on its own
