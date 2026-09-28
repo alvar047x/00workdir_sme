@@ -17,3 +17,11 @@
 - the lint jobs look only at files the branch changed
 - no local check exists in the repo as a single command. The CI unit test is a docker build followed by `coverage run manage.py test` inside the image
 - done for a code change is a green MR pipeline. Done for a release is the environment's tag pipeline green through deploy, which is a person's tag
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/on-prem-migrated/silvercloud/silvercloud-ehr
+- shape: image-build
+- ci: .gitlab-ci.yml includes five files under ci/: common, tag-build, tag-build-titan, tag-deployment, scheduled-sec-scan
+- apply: deploys start from tags. The agent never creates or pushes a release tag (D-0028)
+- pass: on an MR, every job in stage test green. After the merge, expect three more pipelines: the push pipeline on main, the -qa tag pipeline and the -build tag pipeline it starts
+- poll: 60s, cap 2h
