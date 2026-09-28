@@ -26,3 +26,24 @@
 - accounts/ or platform/: the validate and plan jobs of the changed layer green, and the plan read the same way
 - pexip/titan: the plan is run by a person inside the enclave, who gives the output. The agent cannot run it or see its state
 - a pipeline whose only job is no-op proves nothing. It means no CI job matched the change
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/platform/infrastructure/infra-central
+- shape: layer-plan-apply
+- ci: .gitlab-ci.yml includes .gitlab/ci/platform.yml for platform/ and .gitlab/ci/accounts.yml for accounts/, which extends terraform.yml from amwell/platform/ci-templates
+- apply: manual, a human plays it. The agent never plays a job and never writes an atlantis apply comment (D-0028)
+- atlantis: its plans and applies are MR comments, not pipeline jobs. `atpy gitlab comments <mr url>` reads them
+- pass: plan job success with its "Plan:" line. The apply job waits as manual before the play, and ends with "Apply complete!" after
+- poll: 60s, cap 3h
+- layer: accounts/caretalks-prod/backend-bootstrap = plan:accounts:caretalks-prod:backend-bootstrap, apply:accounts:caretalks-prod:backend-bootstrap
+- layer: accounts/caretalks-prod/oidc = plan:accounts:caretalks-prod:oidc, apply:accounts:caretalks-prod:oidc
+- layer: accounts/converge-prod/backend-bootstrap = plan:accounts:converge-prod:backend-bootstrap, apply:accounts:converge-prod:backend-bootstrap
+- layer: accounts/converge-prod/oidc = plan:accounts:converge-prod:oidc, apply:accounts:converge-prod:oidc
+- layer: accounts/converge-staging/backend-bootstrap = plan:accounts:converge-staging:backend-bootstrap, apply:accounts:converge-staging:backend-bootstrap
+- layer: accounts/converge-staging/oidc = plan:accounts:converge-staging:oidc, apply:accounts:converge-staging:oidc
+- layer: accounts/development/backend-bootstrap = plan:accounts:development:backend-bootstrap, apply:accounts:development:backend-bootstrap
+- layer: accounts/development/oidc = plan:accounts:development:oidc, apply:accounts:development:oidc
+- layer: accounts/log-archive/backend-bootstrap = plan:accounts:log-archive:backend-bootstrap, apply:accounts:log-archive:backend-bootstrap
+- layer: accounts/log-archive/oidc = plan:accounts:log-archive:oidc, apply:accounts:log-archive:oidc
+- layer: accounts/shared-services/backend-bootstrap = plan:accounts:backend-bootstrap, apply:accounts:backend-bootstrap
+- layer: accounts/shared-services/oidc = plan:accounts:oidc, apply:accounts:oidc
