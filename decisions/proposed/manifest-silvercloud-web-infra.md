@@ -17,9 +17,8 @@
 - set outside the repo, so git cannot show them: CICD_JOB_IMAGE, BUILD_AWS_ECR_REGISTRY, the runner tags, and any TF_VAR set in GitLab
 
 ## Validate (what "done" looks like here)
-- local: `pre-commit run --from-ref origin/main --to-ref HEAD`  # .pre-commit-config.yaml (hooks: terraform_fmt, terraform_docs, terraform_providers_lock)
-- rule: helm_release diffs a local chart only when its Chart.yaml version changes (no manifest experiment); a template-only edit needs the version bumped or the plan shows nothing  # helm provider config
-- ci check: job check_latest_code runs `./scripts/checkplatinumhead.sh`  # .gitlab-ci.yml:159
-- ci check: job lint-yaml runs `yamllint -d "{extends: default, rules: {line-length: {max: 256}}}" $(find ./ -iname "*.yml" -or -iname "*.yaml")`  # .gitlab-ci.yml:179
-- ci check: job terraform-fmt runs `terraform fmt -diff -recursive -check .`  # .gitlab-ci.yml:192
-- rule: chart template edits came with a Chart.yaml change in 60 of 99 commits  # git log origin/main
+- the repo's own check is `pre-commit run --from-ref origin/main --to-ref HEAD`, with the hooks terraform_fmt, terraform_docs and terraform_providers_lock. It needs pre-commit and terraform installed, so it is prose here, not a `local:` line (.pre-commit-config.yaml)
+- on the MR: check_latest_code, check-jira-ticket, terraform-fmt, lint-yaml, the three SAST jobs, and the nine terraform-plan jobs green
+- read the plan of the phase the change touches: only the intended resources change, destroys == 0 unless the ticket says otherwise
+- an MR plan proves the build deployment only. A change to config/<another deployment>/ is proven by a web pipeline plan for that deployment, which a person starts
+- a chart change carries its Chart.yaml version bump
