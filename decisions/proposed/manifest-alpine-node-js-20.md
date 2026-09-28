@@ -1,15 +1,15 @@
 ## Environment
 - default branch: platinum; protected: platinum (a GitLab setting git cannot show, from intake)
 - MR target: platinum (git merge history); branch pattern: DVPS-XXXX-desc (D-0002, the clone's own branches are mixed)
-- contents: one Dockerfile: the Iron Bank alpine base plus nodejs 20 and npm from apk (Dockerfile:1, :3) (repo map evaluated origin/platinum at 4898109 of 2026-06-03, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- contents: one Dockerfile: the Iron Bank alpine base plus nodejs 20 and npm from apk (Dockerfile:1, :3) (repo map evaluated origin/platinum at c048e3e of 2026-09-16, fetched 2026-09-28)
 - pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
 - image: ci/titan/nodejs-alpine, set by PROJECT_DEPLOYMENT_NAME (.gitlab-ci.yml:6)
 - tag to pin: <BASE_IMAGE_VERSION>-<timestamp to the second>, BASE_IMAGE_VERSION is "20" in .gitlab-ci.yml
 - a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha. On platinum the same build also moves the latest tag. It never runs on an MR pipeline or a schedule
-- the version tag from a work branch: the template at the stable tag read here (b1919b7a of 2026-06-08) writes it from every branch. The pipelines default branch already writes it from platinum only, and that arrives when stable is next cut, which may have happened since the last fetch
+- the version tag from a work branch: the template at the stable tag read here (b1919b7a of 2026-06-08) writes it from every branch. The pipelines default branch already writes it from platinum only, and that arrives when stable is next cut. On 2026-09-28 stable had not moved
 - consumers: the pipelines repo pins this image by that tag in assets/docker/node20.hardened.Dockerfile and node20.onephase.hardened.Dockerfile, so a new image reaches builds only after an MR there
 - the Dockerfile sets no USER, so the image runs as root unless the base sets one (Dockerfile)
-- the node version is not pinned past the major: `apk add nodejs=~20` takes whatever the base's package index holds on build day (Dockerfile:3)
+- the base image tag is moved by Renovate, whose MRs land on platinum every few days, so platinum's Dockerfile changes without a ticket (git log, the renovate merges): `apk add nodejs=~20` takes whatever the base's package index holds on build day (Dockerfile:3)
 - set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT, TEAM_ECR_URL and the other CI variables the template reads
 
 ## Validate (what "done" looks like here)
