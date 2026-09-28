@@ -1,15 +1,15 @@
 ## Environment
 - default branch: main; protected: main (a GitLab setting git cannot show, from intake 2026-09-14)
 - MR target: main; branch pattern: DVPS-XXXX-desc (git merge history)
-- contents: terraform only, 9 roots under layers/; no CI file, no Dockerfile (repo map evaluated origin/main at 6f61997)
+- contents: terraform only, every root under layers/. No CI file, no Dockerfile (repo map evaluated origin/main at 6f61997 of 2026-09-24, fetched 2026-09-28, no change)
 - layers: azure (AVD in the awgov subscription, eastus2, azurerm state); aws-networking/ sub-layers backend-bootstrap, transit-gateway, ipam, ram-shares, network-manager, iam, route53 (s3 state); aws-pexip (peering and return routes to the Pexip Titan enclave, its own AWS account)
 - runner: `./deploy.sh <step> <init|plan|apply|output|destroy> [--dry-run]`, run by a person; nothing in CI runs terraform (deploy.sh:5)
 - runner detail: `terraform -chdir=layers/<layer>`; var file layers/<layer>/terraform.tfvars, else layers/<layer>/environments/$TF_ENV/terraform.tfvars; TF_ENV defaults to prod (deploy.sh:48, :477-486)
-- `./deploy.sh aws-networking <action>` runs the action on all 7 sub-layers in order; for one sub-layer use `./deploy.sh aws-networking/<sub> <action>` (deploy.sh:827). No step reads layers/aws-networking/environments/prod/.
+- `./deploy.sh aws-networking <action>` runs the action on every sub-layer in order; for one sub-layer use `./deploy.sh aws-networking/<sub> <action>` (deploy.sh:827). No step reads layers/aws-networking/environments/prod/.
 - order: transit-gateway before network-manager and ipam before ram-shares (remote state, network-manager/main.tf:46, ram-shares/main.tf:57); aws_peer_ip in the azure tfvars comes from the AWS VPN output, so azure is re-applied after aws-networking (HOWTO.md:23)
 - credentials: `az login`; AWS_PROFILE=awgov for aws-networking, awgov-pexip for aws-pexip (HOWTO.md:16, :24); deploy.sh only checks that some AWS identity is set (deploy.sh:157)
 - outside terraform, human steps only: seed-secrets (Key Vault), seed-vpn-key (SSM and Key Vault), upload-installers (storage blob); init creates the state bucket or storage account when a backend.hcl exists (deploy.sh:222-431, :510-512)
-- terraform version: required_version >= 1.12.0 in 7 roots, >= 1.7.0 in 2
+- terraform version: required_version >= 1.12.0 in most roots, >= 1.7.0 in the rest
 - compliance: every resource tagged compliance-framework 800-171, CMMC L2; NETWORK.md and ONBOARDING.md are the reference docs
 - titan data may be CUI; treat all repo content as sensitive
 
