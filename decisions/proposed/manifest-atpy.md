@@ -3,7 +3,7 @@
   - `atpy sme brief KEY...`: fetch, epic, delta, blocker, W step, log tail, state, next; appends the Repo section from gather_cmd
   - `atpy sme pull --sprint | pull KEY... [--new]`: --new leaves a key already on hold or planned alone, names it once, fetches the rest
   - `atpy sme state [KEY...]`
-  - `atpy gather KEY [--repo <slug>] [--json]`: repo, MR and newest-pipeline state, verdict first
+  - `atpy gather KEY [--repo <slug>] [--json | --closing]`: repo, MR and newest-pipeline state, verdict first; --closing prints the closing-comment skeleton from that state and the plan, `<...>` lines are the model's
   - `atpy gitlab diff|comments <mr url>`
   - `atpy jira fetch|comments KEY`
   - `atpy wiki search|fetch`
@@ -24,7 +24,7 @@
     - `atpy repo push <slug> [--force]`: a non-fast-forward is VERDICT HUMAN with the exact force command; --force only with the approval words (D-0030)
     - `atpy gitlab watch <id> --repo <slug> [--layer|--paths|--mr] [--once] [--until plan|apply]` (D-0025)
     - `atpy gitlab watch --derive --repo <slug>`: layer lines to approve
-    - `atpy gitlab mr-prepare KEY --repo <slug> --from -`: mr.md, the new-MR link, the drafted comment; no MR is created
+    - `atpy gitlab mr-prepare KEY --repo <slug> --skeleton`: the MR body skeleton from the branch, its diff and the plan, nothing written; then `--from -` with the finished body: mr.md, the new-MR link, the drafted comment; no MR is created
 - end after merge:
   - `atpy gitlab watch <id> --repo <slug> --until apply`: the apply is a human play (D-0028)
   - the plan's verification lines
