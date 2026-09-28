@@ -1,11 +1,12 @@
 ## Environment
-- default branch: platinum; protected: platinum
-- contents: dockerfile image build
-- pipeline: .gitlab-ci.yml; stages: lint, validations, auto lock update, pre-build, build, test, scan, prepare, release, pre-deploy verification, image validations, publish, ssm-parameters dyn env, migrate SCC secrets to SSM, argocd onboarding, prepare-iac-resources-file, argocd offboarding, push deployment artifacts, dynamic env iac deploy, dynamic env deploy, dev iac deploy, dev deploy, dev test automation, scheduler test notification, dev bg switch, dynamic bg switch, dev bg rollback, dynamic bg rollback, push production artifacts, staging deploy, staging test automation, production tag-pact, production deploy, production publish, clean up  # pipelines@stable:common/.stages.yml:1
-- MR target: platinum (git log origin/platinum: 104 of 104 merge commits); branch pattern: DVPS-XXXX (git branch -r: 2 of 3 recent team-key branches)
-- pipeline template: project/.ecr_image.yml from pipelines at stable (matched by file, the project is a CI variable)  # .gitlab-ci.yml:3
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): ARTIFACTORY_AWS_NPM_TOKEN, CVG_PIPELINES_PROJECT, CVG_PIPELINES_PROJECT_ID, CVG_RENOVATE_PROJECT, DEV_KEYCLOAK_URL, JAVA_HOME, M2_HOME, MAVEN_HOME, NODE_MODULES_CACHE_KEY, NVM_DIR, PIPELINES_ACCESS_TOKEN, REGISTRY, +13 more; git cannot see these  # pipelines@stable:common/.extends.yml:233
-- image build: job `Build Docker Image` (kaniko) builds <ci_project_dir>/Dockerfile from <ci_project_dir>; pushes <team_ecr_url>/ci/titan/nodejs-alpine:<ci_commit_short_sha>; also <team_ecr_url>/ci/titan/nodejs-alpine:latest when [ $CI_COMMIT_BRANCH == "platinum" ]; also <team_ecr_url>/ci/titan/nodejs-alpine:<extra_destination_tag> when [ -n "$EXTRA_DESTINATION_TAG" ]  # .gitlab-ci.yml:7
-- image build rules: never when $CI_PIPELINE_SOURCE == "merge_request_event"; run when $CI_PIPELINE_SOURCE != "schedule"; never when $CI_PIPELINE_SOURCE == "schedule"  # .gitlab-ci.yml:7
-- image build args from CI: BASE_IMAGE_VERSION, KEYSTOREPASSWORD (override the Dockerfile ARG defaults)  # .gitlab-ci.yml:7
-- source: base image <account-id>.dkr.ecr.us-east-2.amazonaws.com/ironbank/opensource/alpinelinux/alpine:3.20-<account-id>; git cannot see this  # Dockerfile:1
+- default branch: platinum; protected: platinum (a GitLab setting git cannot show, from intake)
+- MR target: platinum (git merge history); branch pattern: DVPS-XXXX-desc (D-0002, the clone's own branches are mixed)
+- contents: one Dockerfile: the Iron Bank alpine base plus nodejs 20 and npm from apk (Dockerfile:1, :3) (repo map evaluated origin/platinum at 4898109 of 2026-06-03, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
+- image: ci/titan/nodejs-alpine, set by PROJECT_DEPLOYMENT_NAME (.gitlab-ci.yml:6)
+- tag to pin: <BASE_IMAGE_VERSION>-<timestamp to the second>, BASE_IMAGE_VERSION is "20" in .gitlab-ci.yml
+- a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha and the tag above. On platinum the same build also moves the latest tag. It never runs on an MR pipeline or a schedule
+- consumers: the pipelines repo pins this image by that tag in assets/docker/node20.hardened.Dockerfile and node20.onephase.hardened.Dockerfile, so a new image reaches builds only after an MR there
+- the Dockerfile sets no USER, so the image runs as root unless the base sets one (Dockerfile)
+- the node version is not pinned past the major: `apk add nodejs=~20` takes whatever the base's package index holds on build day (Dockerfile:3)
+- set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT, TEAM_ECR_URL and the other CI variables the template reads
