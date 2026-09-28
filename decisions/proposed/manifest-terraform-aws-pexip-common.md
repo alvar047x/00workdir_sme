@@ -73,3 +73,10 @@
     }
 - to change lambda code: edit the source under python/ or go/, run that folder's build script, and commit the rebuilt zip in every module the script copies to, in the same commit
 - commit message: `<type>: DVPS-XXXX <what changed>`, type is feat, fix or chore. The type decides the version (D-0010)
+
+## Branches
+- feature/DVPS-XXXX-desc or fix/DVPS-XXXX-desc, cut from dev: the work branch. Its MR goes to dev (D-0013, VERSIONING.md)
+- dev: a merge here makes an rc tag. Consumers test against that tag
+- platinum: only dev is merged here. A merge makes the stable tag
+- release/<version> branches on the remote are from the older numbering. They are not used for new work
+- a branch push starts no job. The only MR job is the lint placeholder, and the release job runs on dev and platinum
