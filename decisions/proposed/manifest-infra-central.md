@@ -47,3 +47,22 @@
 - layer: accounts/log-archive/oidc = plan:accounts:log-archive:oidc, apply:accounts:log-archive:oidc
 - layer: accounts/shared-services/backend-bootstrap = plan:accounts:backend-bootstrap, apply:accounts:backend-bootstrap
 - layer: accounts/shared-services/oidc = plan:accounts:oidc, apply:accounts:oidc
+
+## Layout
+- pexip/titan/<NN_stack>/: one terraform root per numbered folder, each with its own state, applied in number order. A stack holds the same files every time: main.tf or a file named for what it builds, variables.tf, local.tf, data.tf, providers.tf, versions.tf, outputs.tf
+- pexip/titan/tfvars/<NN_stack>.tfvars: every value of that stack, one file per stack. The stack's variables.tf declares the input and this file sets it
+- pexip/titan/40_int, 41_preprod, 42_prod: the conferencing node groups of each environment. main.tf holds one module block per node group and region, named <kind>_<region>_<env>, where kind is edge, transcoding, burst_transcoding or livecaptions. Each block calls one sub-module of terraform-aws-pexip-common by tag, never the module's root
+- pexip/titan/30_pexip_platform: the management node, AIMS and the sync lambda. Its setup_scripts/api/ holds the hurl files that configure the platform through its API, idempotent ones and one-time ones
+- pexip/titan/10_vpc, 11_tgw, 21_endpoint, 22_kms: network, transit gateway, security groups and endpoints, keys. Later stacks read their outputs through terraform_remote_state blocks in data.tf
+- pexip/titan/23_syslog, 24_gitlab_automation, 25_monitoring, 29_certs: syslog on ECS, token rotation, alarms, certificate renewal. Each carries its lambda or image source beside the terraform
+- pexip/titan/42_prod/edge_hnl.tf and hnl_edge/: the one edge group built as plain resources instead of the module, with its own lambda source and committed zip
+- pexip/titan/scripts/: run by a person, never by terraform. pexip/titan/.kiro/skills/: the repo's own Titan doc
+- pexip/dev and pexip/prod: the commercial Pexip roots, run by Atlantis. They are not Titan
+- accounts/<account>/<layer>/ and platform/: the roots GitLab CI runs. Their jobs are in .gitlab/ci/accounts.yml and .gitlab/ci/platform.yml
+- every other top-level folder: one team's roots, run by Atlantis when atlantis.yaml lists the directory
+- atlantis.yaml: one project entry per Atlantis root. CODEOWNERS: who approves which path. docs/: the repo structure and mise
+- file types: terraform (.tf) and its values (.tfvars). lock files (.terraform.lock.hcl), committed per root. python for the lambdas, with a build script and a committed zip beside them. hurl files for the Pexip API. shell scripts. yaml for Atlantis and CI
+- where to edit for a node count, an instance type or an image: pexip/titan/tfvars/<NN_stack>.tfvars
+- where to edit for a node group setting: the module block in pexip/titan/<NN_stack>/main.tf. When the sub-module has no input for it, the module changes first, is released, and the ref moves here
+- where to edit for the module version: the `?ref=<tag>` at the end of every source line in the stack's main.tf
+- where to edit for a Titan security rule: the three places named in Environment
