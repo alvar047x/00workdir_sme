@@ -22,3 +22,13 @@
 - read the plan of the phase the change touches: only the intended resources change, destroys == 0 unless the ticket says otherwise
 - two required variables of deploy/30-aws-k8s are set by nothing in git for test-govcloud, the database passwords. They come from the run-time secret, so their absence in config/ is expected
 - a chart change carries its Chart.yaml version bump
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/on-prem-migrated/govcloud_archive/silvercloud-gc-iac
+- shape: single-plan-apply
+- ci: .gitlab-ci.yml with ci/tag-deployment.gitlab-ci.yml and ci/rotate-passwords.gitlab-ci.yml
+- jobs: on a branch push terraform-plan-<phase> for each of the seven phases. In a web pipeline with TERRAFORM, terraform-plan then terraform-apply
+- apply: terraform-apply is manual and exists only in a web pipeline. A person starts that pipeline and plays the job, the agent never does (D-0028)
+- red: the password rotation and app deploy jobs are not manual. They run as soon as a pipeline is started with their action, so the agent never starts one
+- pass: the plan job green, then the apply job green
+- poll: 60s, cap 2h
