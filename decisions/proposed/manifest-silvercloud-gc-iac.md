@@ -1,44 +1,20 @@
 ## Environment
-- default branch: main; protected: main
-- contents: terraform, kubernetes manifests or helm
-- pipeline: .gitlab-ci.yml, ci/tag-deployment.gitlab-ci.yml, ci/rotate-passwords.gitlab-ci.yml; stages: prepare, lint, test, security, check-tag, deploy, fvt, gitlab, push, plan, apply  # .gitlab-ci.yml:1
-- MR target: main (git log origin/main: 99 of 99 merge commits); branch pattern: DVPS-XXXX (git branch -r: 13 of 27 recent team-key branches)
-- layout: top-level dirs by tracked files: modules (249), helm-charts (78), deploy (63), manifest (21), config (14), ci (11), kustomize (11), scripts (8)  # git ls-files
-- source: CI include template Jobs/SAST.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:69
-- source: CI include template Jobs/SAST-IaC.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:72
-- source: CI include template Jobs/Secret-Detection.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:75
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AWS_ECR_PIPELINE_ACCESS_KEY_ID, AWS_ECR_PIPELINE_SECRET_ACCESS_KEY, BASH_REMATCH, BUILD_AWS_ACCESS_KEY_ID, BUILD_AWS_ECR_REGISTRY, BUILD_AWS_S3_NOT_TRACKED_ASSETS_BUCKET, BUILD_AWS_S3_VERSIONED_ASSETS_BUCKET, BUILD_AWS_SECRET_ACCESS_KEY, CICD_TOOLS_PIPELINE_JOB_IMAGE, EHR_APP_REPOSITORY, ENVS_REGEX, MYSQL_IMAGE, +4 more; git cannot see these  # .gitlab-ci.yml:103
-- source: terraform state in a s3 backend; git cannot see this  # deploy/00-aws-pre-reqs/versions.tf:15
-- source: terraform remote state `secrets` read from another stack; git cannot see this  # deploy/10-aws-secrets/main.tf:11
-- source: terraform module terraform-aws-modules/kms/aws; git cannot see this  # modules/terraform-aws-eks-20.36.0/main.tf:303
-- values files, tracked: config/security-validation_DEPRECATED/aws-infra.tfvars, config/security-validation_DEPRECATED/aws-k8s.tfvars, config/security-validation_DEPRECATED/aws-secrets.tfvars, config/test-commercial_DEPRECATED/aws-infra.tfvars, config/test-commercial_DEPRECATED/aws-k8s.tfvars, config/test-commercial_DEPRECATED/aws-post-k8s-deployment.tfvars, config/test-commercial_DEPRECATED/aws-secrets.tfvars, config/test-govcloud/00-aws-pre-reqs.tfvars, config/test-govcloud/10-aws-secrets.tfvars, config/test-govcloud/20-aws-infra.tfvars, config/test-govcloud/30-aws-k8s.tfvars, config/test-govcloud/40-aws-post-k8s-deployment.tfvars, +2 more  # git ls-files
-- terraform process: CI runs `./run.sh -d <deployment> -c <command> -p <phase>` from 9 job(s); arguments: -d deployment, -c command, -p phase, -n secret_name, -r aws_region, -b tfstate_bucket, -s tfstate_bucket_region, -t tfstate_dynamo_table, -m mirrored_providers, -x config_file  # .gitlab-ci.yml:195
-- terraform layout: runs in deploy/<target_module> (run.sh:121); state key <deployment>/<phase> (run.sh:147); vars config/<deployment>/<target_module>.tfvars (run.sh:270)  # run.sh
-- terraform grid: 14 var files; <deployment> 3: security-validation_DEPRECATED, test-commercial_DEPRECATED, test-govcloud; <target_module> 11: 00-aws-pre-reqs, 10-aws-secrets, 20-aws-infra, 30-aws-k8s, 40-aws-post-k8s-deployment, 90-aws-dns-prereqs, 91-aws-dns, aws-infra, aws-k8s, aws-post-k8s-deployment, +1 more  # run.sh:270
-- terraform grid gaps: 14 of 21 <deployment> x <target_module> pairs have no var file: security-validation_DEPRECATED/00-aws-pre-reqs, security-validation_DEPRECATED/10-aws-secrets, security-validation_DEPRECATED/20-aws-infra, security-validation_DEPRECATED/30-aws-k8s, security-validation_DEPRECATED/40-aws-post-k8s-deployment, security-validation_DEPRECATED/90-aws-dns-prereqs, security-validation_DEPRECATED/91-aws-dns, test-commercial_DEPRECATED/00-aws-pre-reqs, +6 more; the script finds no var file there, so that pair is not deployed or plans on defaults  # deploy/$TARGET_MODULE x var-file template
-- terraform roots: 7 dirs hold a backend block  # backend blocks
-- terraform version: .terraform-version 1.5.7 (.terraform-version); required_version = 1.5.7 in 6 file(s), 1.5.7 in 1 file(s)  # deploy/00-aws-pre-reqs/versions.tf
-- terraform variables: 7 roots declare 41 required (no default); 7 root x env var files checked, 1 leave required variables unset by anything in git; a TF_VAR_<name> in GitLab project CI settings would still supply them, and git cannot see those; 1 var file(s) come from run time, so these are upper bounds  # hcl2 over .tf and var files
-- terraform variables unset: deploy/30-aws-k8s @ test-govcloud: 2 (db_root_password, web_db_app_password)  # atpy repo map <slug> --vars
-- terraform variables set but not declared: 1 key(s) in 1 var file(s), e.g. gc_aws_adfs_role_aws_auth_username; terraform ignores them with a warning: stale or a typo  # config/test-govcloud/20-aws-infra.tfvars
-- source: terraform var file tfvars.json is written at run time by `aws secretsmanager get-secret-value --secret-id "$SECRET_NAME" --regio`; git cannot see which variables it supplies  # run.sh:153
-- terraform helm: 11 helm_release resource(s); 8 install a chart from this repo, 0 from a chart repository, 3 from a path built at plan time  # helm_release
-- terraform helm chart: deploy/91-aws-dns installs deploy/91-aws-dns/helm-charts/cert-manager-1.16.1.tgz  # deploy/91-aws-dns/cert_manager.tf:1
-- terraform helm chart: modules/aws/cluster installs helm-charts/cluster-autoscaler-9.43.1.tgz  # modules/aws/cluster/autoscaler.tf:1
-- terraform helm chart: modules/k8s/kube-cleanup installs helm-charts/kube-cleanup-operator-1.0.1.tgz  # modules/k8s/kube-cleanup/main.tf:1
-- terraform helm chart: modules/k8s/metrics-server installs helm-charts/metrics-server-3.12.0.tgz  # modules/k8s/metrics-server/main.tf:4
-- terraform helm chart: modules/k8s/monitoring installs helm-charts/eck-operator-2.16.1.tgz  # modules/k8s/monitoring/main.tf:84
-- terraform helm chart: modules/k8s/monitoring installs helm-charts/efk  # modules/k8s/monitoring/main.tf:204
-- terraform helm chart: modules/k8s/sch-ehr-helm installs helm-charts/sch-ehr  # modules/k8s/sch-ehr-helm/main.tf:6
-- terraform helm chart: modules/k8s/sch-web-helm installs helm-charts/sch-web  # modules/k8s/sch-web-helm/main.tf:11
-- terraform helm chart: modules/aws/cluster installs `helm-charts/${var.aws_load_balancer_controller_chart}` (built at plan time)  # modules/aws/cluster/albc.tf:28
-- terraform helm chart: modules/k8s/ingress-nginx installs `helm-charts/${var.ingress_nginx_chart}` (built at plan time)  # modules/k8s/ingress-nginx/main.tf:9
-- terraform helm chart: modules/k8s/monitoring installs `helm-charts/${var.kube_prometheus_stack_chart}` (built at plan time)  # modules/k8s/monitoring/main.tf:12
-- changes together: config/test-govcloud + modules/k8s (34 of 400 commits)  # git log origin/main
-- changes together: config/test-govcloud + modules/aws (30 of 400 commits)  # git log origin/main
-- changes together: config/test-commercial + config/test-govcloud (22 of 400 commits)  # git log origin/main
-- changes together: deploy/aws-k8s + modules/k8s (22 of 400 commits)  # git log origin/main
-- changes together: deploy/aws-infra + modules/aws (21 of 400 commits)  # git log origin/main
+- default branch: main; protected: main (a GitLab setting git cannot show, from intake)
+- MR target: main (git merge history); branch pattern: DVPS-XXXX-desc (D-0002, half of the clone's team branches carry no desc)
+- contents: terraform for the SilverCloud government environment. deploy/ holds the seven roots, modules/ what they call, config/test-govcloud/ the values, helm-charts/ the charts terraform installs, kustomize/ and ci/scripts/ the app deploys, manifest/<version>/manifest.yml the image lists (repo map evaluated origin/main at ab8533d of 2025-07-21, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- which copy is live is not settled from git. This clone's project sits under the govcloud_archive namespace and its main has not moved since 2025-07 on the ref read here, while silvercloud-web and silvercloud-ehr trigger a project at the path govcloud/silvercloud-gc-iac. Ask which one a ticket means before planning
+- this is Titan work. Treat all repo content as sensitive and judge any live check by D-0017
+- one deployment is live in config/: test-govcloud. The other two folders are marked deprecated
+- phases, in order: 00-aws-pre-reqs, 10-aws-secrets, 20-aws-infra, 30-aws-k8s, 40-aws-post-k8s-deployment, 90-aws-dns-prereqs, 91-aws-dns. The pipeline names them without the number: pre-reqs, secrets, infra, k8s, post-k8s-deployment, dns-prereqs, dns
+- runner: `./run.sh -d <deployment> -c plan|apply -p <phase>`, called only by CI. It runs terraform in deploy/<phase dir> with config/<deployment>/<phase dir>.tfvars, and reads secrets into tfvars.json at run time from Secrets Manager (run.sh:121, :153, :270)
+- terraform providers and modules are mirrored to a bucket: plan jobs pull the mirror first, and a push to main pushes it (scripts/pull-mirrored-terraform-providers-modules.sh, scripts/push-mirrored-terraform-providers-modules.sh)
+- a push to any branch plans all seven phases against test-govcloud. Here a branch push does start a pipeline (.gitlab-ci.yml:185)
+- the branch must contain the head of main or check_latest_code fails (scripts/checkplatinumhead.sh)
+- a web or triggered pipeline does one action, picked by CI_PIPELINE_ACTION: TERRAFORM, APP_DEPLOYMENT, or one of three password rotations
+- APP_DEPLOYMENT is how an app release lands: it checks the image tag exists, runs ci/scripts/kube-deploy-<web|ehr|nginx>.bash, runs the functional test, then create-mr writes the new version into config/test-govcloud/30-aws-k8s.tfvars and opens an MR, so the tfvars follow the deploy (ci/tag-deployment.gitlab-ci.yml:51, :172)
+- helm: a chart is re-applied only when its Chart.yaml version changes, so a template edit with no version bump shows nothing in the plan
+- terraform version: 1.5.7 (.terraform-version)
+- the fluentd image listed in manifest/ comes from fluentd-kubernetes-daemonset, and the CI tool image from silvercloud-central-cicd
 
 ## Validate (what "done" looks like here)
 - local: `pre-commit run --from-ref origin/main --to-ref HEAD`  # .pre-commit-config.yaml (hooks: terraform_fmt, terraform_docs, terraform_providers_lock)
