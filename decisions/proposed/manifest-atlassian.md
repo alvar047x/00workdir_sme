@@ -10,3 +10,10 @@
 - close: `atpy jira close KEY`. One call: the pre-close gate, then every status in order (Implementing, Ready for Verification, In Verification, Testing Complete, Closed), then the store close; it prints the last comment on the ticket, which is the premise check. "Close it" means this walk, never the Resolve shortcut. On the migrated scheme it stops and names `--resolve`, which needs the user's word. If the gate blocks, report the one-line reason and stop; never build plan or verification files to satisfy it
 - sprint: `atpy jira sprint "<name>"`; triage: `atpy sprint analyze`
 - work wiki (Confluence): `atpy wiki search "<terms>"`, `atpy wiki fetch <page>`; broken until wiki.py does its own CQL search (SME-01 S-168)
+
+## Conventions
+- Markdown only (D-0023): `- ` bullets, `1.` lists, backticks, `**bold**`; `#` only for a real heading
+- closing comment shape: what was done, resources changed, MR link if any, environments verified
+- never mention tooling in a comment: no automation_tools paths, no verb names, and nothing about what the tooling can or cannot do. A reader of the ticket does not know this layer exists
+- draft first, user approves, then post; one comment per action, never a stream
+- a comment goes out under Adam's name, so it states findings in his voice: "my research shows we should keep it off", never "I recommend"; plain words, short, no report headings unless asked
