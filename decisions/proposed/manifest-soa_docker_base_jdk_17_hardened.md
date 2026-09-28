@@ -27,3 +27,18 @@
 - apply: none, there is no deploy job and nothing for a person to play
 - pass: Build Docker Image success on the branch pipeline. Watch the push pipeline, an MR pipeline has no build job
 - poll: 60s, cap 1h
+
+## Layout
+- Dockerfile: the whole image, in four parts. The FROM line on the titan alpine_jdk17 base. The truststore block, which imports the certificate bundle into the Java cacerts. The Elastic APM block, off by default. The user, folders and start script for a spring-boot service
+- import_certs_script.sh: runs once during the build and is deleted from the image after. It downloads the certificate bundle, splits it, changes the cacerts password and imports every certificate under its own alias
+- run.sh: the start script the image keeps. It sets the spring defaults, adds the APM agent when ENABLE_ELASTIC_APM is true, and starts application.jar or application.war from /opt/spring-boot
+- .gitlab-ci.yml: the include of the shared image template and the two values this repo sets, the image name and BASE_IMAGE_VERSION
+- README.md: the doc
+- file types: one Dockerfile, two shell scripts, one CI yaml, one markdown file. No tests
+- where to edit for the JDK base: the tag on the FROM line, Dockerfile:1. Renovate moves it on its own
+- where to edit for the APM agent version: ELASTIC_APM_AGENT_VERSION at Dockerfile:31
+- where to edit for how a service starts: run.sh
+- where to edit for which certificates are trusted: import_certs_script.sh
+- where to edit for a package the image needs: the apk line, Dockerfile:3
+- the jobs themselves are not here. They are in the pipelines repo, project/.ecr_image.yml, read at the tag stable
+- soa_docker_base_jdk_17_hardened and soa_docker_base_jdk_21_hardened hold the same two scripts and the same Dockerfile, apart from the Java version. A change to one is nearly always owed to the other
