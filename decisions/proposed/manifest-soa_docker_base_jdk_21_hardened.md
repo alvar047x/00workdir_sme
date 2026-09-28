@@ -6,7 +6,7 @@
 - image: ci/titan/soa_docker_base_jdk_21, set by PROJECT_DEPLOYMENT_NAME (.gitlab-ci.yml:6)
 - tag to pin: <BASE_IMAGE_VERSION>-<timestamp to the second>, BASE_IMAGE_VERSION is "21" in .gitlab-ci.yml
 - a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha. On platinum the same build also moves the latest tag. It never runs on an MR pipeline or a schedule
-- the version tag from a work branch: the template at the stable tag read here (b1919b7a of 2026-06-08) writes it from every branch. The pipelines default branch already writes it from platinum only, and that arrives when stable is next cut. On 2026-09-28 stable had not moved
+- the tag to pin and latest are written from platinum only. A work branch push writes the short sha tag alone, because the template clears the version tag on every other branch (pipelines project/.ecr_image.yml:24-28, read at the tag stable, which was 2e0023e9 of 2026-09-21)
 - consumers: the pipelines repo pins this image by that tag in assets/docker/jdk21.hardened.Dockerfile, so a new image reaches service builds only after an MR there
 - the keystore password is a build arg, KEYSTOREPASSWORD, passed from a CI variable set outside the repo. The Dockerfile also keeps it as an ENV in the image, and the import script prints it into the build log, so the log of Build Docker Image is never pasted anywhere (Dockerfile:15-16, import_certs_script.sh:5)
 - the last USER line is root (Dockerfile:49)
