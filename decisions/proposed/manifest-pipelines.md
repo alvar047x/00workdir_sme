@@ -12,10 +12,10 @@
 - set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT, PIPELINES_ACCESS_TOKEN, PIPELINE_REPO_TOKEN and the many variables the templates read on the consumer's side
 
 ## Validate (what "done" looks like here)
-- ci check: job yamllint runs `yamllint .`  # .gitlab-ci.yml:20
-- ci check: job yamllint runs `cd documentation && yamllint --config-file ../.yamllint .`  # .gitlab-ci.yml:21
-- ci check: job Create branch and update reference runs `python3 -u ./pipelines/scripts/test_pipeline/test_pipeline.py`  # test/.test_pipeline.yml:8
-- ci check: job Clean up testing branches runs `python3 ./pipelines/scripts/test_pipeline/clean_up_test_branches.py`  # test/.test_pipeline.yml:89
-- ci check: job Clean up testing branches (Trigger on failure) runs `python3 ./pipelines/scripts/test_pipeline/clean_up_test_branches.py`  # test/.test_pipeline.yml:89
-- ci check: job gitlab_ci_lint:merge_request runs `./pipelines/scripts/test_pipeline/gitlab_ci_lint.sh`  # test/.test_pipeline.yml:113
-- ci check: job gitlab_ci_lint:push runs `./pipelines/scripts/test_pipeline/gitlab_ci_lint.sh`  # test/.test_pipeline.yml:113
+- the repo's own checks run in CI, on a push to any branch but platinum and on an MR: yamllint over the repo with .yamllint, and gitlab_ci_lint.sh (.gitlab-ci.yml:20, test/.test_pipeline.yml:117)
+- no local check exists in the repo
+- the MR pipeline tests the templates for real. It creates a branch of the same name in six template projects, points each at this branch, triggers their pipelines and waits: Nodejs, Maven, SPA, SPA-C, IAC Only and Python (test/.test_pipeline.yml)
+- nothing in that test covers project/.ecr_image.yml or project/.lambda.yml. A change there is proven by pointing one consumer's include at the branch, running its pipeline, and pointing it back to stable
+- a red downstream pipeline is a finding about the template. It is reported, not retried
+- the commit type is part of done, because it decides the version
+- merged to platinum is not shipped. Shipped is the stable tag cut after it, and that is a person's step
