@@ -71,3 +71,10 @@
 - to change a module: edit layers/azure/modules/<name>/main.tf, add the input to that module's variables.tf, and pass it from layers/azure/main.tf. An output another module needs goes into the module's outputs.tf
 - to change one AWS sub-layer: edit its own main.tf and the terraform.tfvars beside it, then plan that sub-layer alone
 - commit message: `DVPS-XXXX: <what changed>`, the key first, no conventional type. Nothing here reads the type
+
+## Branches
+- DVPS-XXXX-desc, cut from main: the work branch the scripts make. Its MR goes to main
+- the name sets nothing off. The repo has no CI file, so no branch starts a job and no MR shows a plan. The plan is what a person runs with deploy.sh and pastes
+- other shapes in the merge history: dvps-XXXX.titan.<desc> and feature/DVPS-XXXX. They behave the same
+- main is protected. Nothing is pushed to it, everything goes through an MR
+- merged is not applied. After the merge a person runs the apply from main
