@@ -1,7 +1,7 @@
 ## Environment
 - default branch: dev; protected: platinum (a GitLab setting git cannot show, from intake 2026-09-15)
 - MR target: dev; branch pattern: feature/desc or fix/desc (VERSIONING.md, the ticket key goes in front of desc)
-- contents: a terraform module library with no root and no backend, plus the lambda sources it ships: python/init, python/sync, go/aims_cert_renew (repo map evaluated origin/dev at 7bcfaf2 of 2026-07-30, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- contents: a terraform module library with no root and no backend, plus the lambda sources it ships: python/init, python/sync, go/aims_cert_renew (repo map evaluated origin/dev at 7bcfaf2 of 2026-07-30, and the fetch on 2026-09-28 was refused. infra-central already pins tags of this module that this clone does not hold, so newer commits exist and are unread)
 - modules: network, manager, aims, aims_cert_renew, proxy_edge_set, transcoding_set_asg, sync_lambda. The root main.tf wires them and holds the provider requirements (main.tf:271-518)
 - consumers: infra-central calls this module and holds every per-environment value, the Titan environments among them. Nothing here is deployed on its own (README.md, VERSIONING.md)
 - release: semantic-release makes an rc tag on dev and a stable tag on platinum, with no v prefix. The version comes from the commit type, so a commit without a conventional type ships under no version (.releaserc, D-0010)
