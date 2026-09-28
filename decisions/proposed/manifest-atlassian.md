@@ -1,0 +1,12 @@
+## Operations (one line each; these are the whole surface)
+- where a ticket stands: `atpy sme brief KEY` (live fetch, epic siblings, what changed since the last brief, blocker, W step, log tail, next); the full description and all comments are in automation_tools/tickets/KEY/ticket-review.md after it
+- refresh after a coworker replies: `atpy sme brief KEY` again; the delta lists the new comments
+- my sprint: `atpy sme pull --sprint` (fetches every ticket, prints state and who needs a plan)
+- list comments with ids: `atpy jira comments KEY`
+- post: `atpy jira comment KEY "<Markdown>"`; mention as [~Full Name]; check output for "mention not resolved"
+- edit: `atpy jira comment-edit KEY <id> "<Markdown>"`; delete: `atpy jira comment-delete KEY <id> --confirm` (only after the user says so)
+- what moves are possible: `atpy jira transitions KEY`; move: `atpy jira transition KEY --status "<name>"`
+- begin work: `atpy jira start KEY` (fetch, set fields, Implementing, comment). "Move to in progress" means Implementing: the sprint board's columns are Not Started, In Progress and Finished, and Implementing is what puts a ticket in In Progress
+- close: `atpy jira close KEY`. One call: the pre-close gate, then every status in order (Implementing, Ready for Verification, In Verification, Testing Complete, Closed), then the store close; it prints the last comment on the ticket, which is the premise check. "Close it" means this walk, never the Resolve shortcut. On the migrated scheme it stops and names `--resolve`, which needs the user's word. If the gate blocks, report the one-line reason and stop; never build plan or verification files to satisfy it
+- sprint: `atpy jira sprint "<name>"`; triage: `atpy sprint analyze`
+- work wiki (Confluence): `atpy wiki search "<terms>"`, `atpy wiki fetch <page>`; broken until wiki.py does its own CQL search (SME-01 S-168)
