@@ -44,3 +44,15 @@
 - where to edit for how logs are parsed or where they go: config/kubernetes.conf and config/fluent.conf
 - where to edit for an OS package: the microdnf install list, Dockerfile:27-32, and the remove list at Dockerfile:48 when it is a build tool
 - the jobs themselves are not here. They are in the pipelines repo, project/.ecr_image.yml, read at the tag stable
+
+## Patterns
+- to add a plugin gem: one `gem install` line inside the RUN, after the two that are there and before `bundle install`. Copy Dockerfile:39
+    gem install <fluent-plugin-name> --no-document && \
+- to add a build tool: add it to the microdnf install list and to the microdnf remove list, so it does not stay in the image. Copy Dockerfile:27-32 and Dockerfile:48
+- to add a config file: put it under config/ with the .conf ending. The COPY at Dockerfile:24 takes every .conf, and fluent.conf has to include it
+    @include <name>.conf
+- to move the fluentd version: the same version in .gitlab-ci.yml:10 and Dockerfile:1, and a base tag for that version at Dockerfile:5. The base cannot be newer than the upstream daemonset image of the same version, which the first FROM line pulls (Dockerfile:4, :8)
+    ARG BASE_IMAGE_VERSION=<version>
+    ARG BASE_TAG=${BASE_IMAGE_VERSION}-<timestamp>
+- to change the image path: PROJECT_DEPLOYMENT_NAME at .gitlab-ci.yml:7. The registry lines under it are addresses and stay as they are in the file
+- commit message: `<type>: DVPS-XXXX <what changed>`, as the newest commit on platinum does
