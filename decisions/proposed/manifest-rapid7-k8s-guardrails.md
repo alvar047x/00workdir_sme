@@ -5,3 +5,8 @@
 - the image work is not on main. The remote branch DVPS-4642-automate-rapid7-ecr holds the Dockerfile and hardening_manifest.yaml, unmerged on the ref read here
 - pipeline on main: GitLab's Secret-Detection template and no other job, so main builds and pushes nothing (.gitlab-ci.yml:16)
 - the older manifest line "dockerfile image build" was wrong for main: there is no Dockerfile on it
+
+## Validate (what "done" looks like here)
+- no local check exists in the repo
+- on main the only check is the secret_detection job. It proves nothing about an image
+- work that builds the image starts from the unmerged branch, and what proves it is whatever pipeline that branch carries. Read its .gitlab-ci.yml before planning
