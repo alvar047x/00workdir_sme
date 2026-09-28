@@ -29,3 +29,18 @@
 - apply: none, there is no deploy job and nothing for a person to play
 - pass: Build Docker Image success on the branch pipeline. Watch the push pipeline, an MR pipeline has no build job
 - poll: 60s, cap 1h
+
+## Layout
+- Dockerfile: the image the pipeline builds. The version ARGs and two FROM lines at the top, the COPY lines for plugins, entrypoint and config, then one long RUN that installs the gems and removes the build tools again
+- Dockerfile.arm64: the upstream arm64 variant. No job builds it
+- config/: the fluentd config the image ships, copied to /fluentd/etc. fluent.conf is the entry and includes kubernetes.conf, prometheus.conf and systemd.conf
+- scripts/entrypoint.sh: the image's entrypoint. scripts/plugins/: the two kubernetes parser plugins, ruby. scripts/Gemfile: kept from upstream, the build takes its Gemfile out of the upstream image instead
+- deployment/: upstream sample daemonset yaml, one per log target. Nothing applies it
+- hardening_manifest.yaml: the Iron Bank hardening record. renovate.json: Renovate's settings. .gitlab/CODEOWNERS: who approves
+- .gitlab-ci.yml: the include of the shared image template, the image path and BASE_IMAGE_VERSION
+- file types: two Dockerfiles, fluentd config (.conf), ruby plugins, one shell entrypoint, kubernetes yaml samples, CI yaml, json and yaml records
+- where to edit for the fluentd version: three places that must agree, BASE_IMAGE_VERSION at .gitlab-ci.yml:10, the ARG default at Dockerfile:1 and the base tag at Dockerfile:5
+- where to edit for a fluentd plugin gem: the `gem install` lines inside the RUN, Dockerfile:39-40
+- where to edit for how logs are parsed or where they go: config/kubernetes.conf and config/fluent.conf
+- where to edit for an OS package: the microdnf install list, Dockerfile:27-32, and the remove list at Dockerfile:48 when it is a build tool
+- the jobs themselves are not here. They are in the pipelines repo, project/.ecr_image.yml, read at the tag stable
