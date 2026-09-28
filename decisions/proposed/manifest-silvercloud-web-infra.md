@@ -22,3 +22,13 @@
 - read the plan of the phase the change touches: only the intended resources change, destroys == 0 unless the ticket says otherwise
 - an MR plan proves the build deployment only. A change to config/<another deployment>/ is proven by a web pipeline plan for that deployment, which a person starts
 - a chart change carries its Chart.yaml version bump
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/on-prem-migrated/silvercloud/silvercloud-web-infra
+- shape: single-plan-apply
+- ci: .gitlab-ci.yml, stages prepare, lint, review, test, plan, apply
+- jobs: on an MR terraform-plan-<phase> for each of the nine phases. In a web pipeline terraform-plan, then terraform-apply
+- apply: terraform-apply is manual and exists only in a web pipeline. A person starts that pipeline and plays the job, the agent never does (D-0028, docs/runbooks/running-pipelines.md)
+- pass: the plan job green with the summary it prints from plan.txt, then the apply job green
+- rollout order across deployments is in sys-aws
+- poll: 60s, cap 2h
