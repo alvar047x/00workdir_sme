@@ -15,7 +15,7 @@
 - account ids, host names and bucket names are written in pipelines/environments/ and in the tfvars. Never copy them into a ticket, a comment or a reply (D-0031)
 
 ## Validate (what "done" looks like here)
-- a plan is the proof, and a plan exists only on a branch whose name the pipeline knows. See Environment
+- a plan is the proof, and a plan exists only on a branch whose name the pipeline knows. See Branches
 - plan in the pipeline: the layer's plan job, named under Watch
 - plan from this Mac: `atpy sme howto cvg-titan-local-plan`. "Run the plan locally" means that real plan against tsnbx4, never validate-local, which is fmt only
 - a chart change carries its Chart.yaml version bump. The proof is `helm_release.<chart>` with `~ version` in the plan
