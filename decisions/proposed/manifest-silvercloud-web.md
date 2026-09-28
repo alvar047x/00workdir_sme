@@ -1,40 +1,18 @@
 ## Environment
-- default branch: main; protected: development,main
-- MR target: development; branch pattern: DVPS-XXXX-desc (topology.yaml)
-- contents: dockerfile image build
-- pipeline: .gitlab-ci.yml, ci/common.gitlab-ci.yml, ci/development-branch.gitlab-ci.yml, ci/tag-build.gitlab-ci.yml, ci/tag-build-titan.gitlab-ci.yml, ci/tag-deployment.gitlab-ci.yml; stages: scheduled_pipeline, tag, prebuild, build, build-titan, wait, test, deploy, deploy-titan, fvt, create_tag, release, static-tarball, notifications  # .gitlab-ci.yml:3
-- branch pattern: DVPS-XXXX-desc (git branch -r: 5 of 5 recent team-key branches)
-- layout: top-level dirs by tracked files: content (30640), apps (5134), static (4324), vue (715), custom_templates (693), e2e_tests (362), templates (41), locale (33), content_data (19), site_media (19), docs (15), i18n (14)  # git ls-files
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AWS_ECR_REGISTRY, BASH_REMATCH, BUILD_AWS_ACCESS_KEY_ID, BUILD_AWS_ECR_REGISTRY, BUILD_AWS_EKS_NAME, BUILD_AWS_EKS_REGION, BUILD_AWS_ROLE_TO_ASSUME, BUILD_AWS_S3_STATIC_ASSETS_BUCKET, BUILD_AWS_SECRET_ACCESS_KEY, BUILD_PIPELINE_TIME_ALLOWED_SECS, CENTRAL_AWS_ECR_AUTH, CENTRAL_AWS_ECR_REGISTRY, +63 more; git cannot see these  # ci/tag-build.gitlab-ci.yml:176
-- image build: job `prebuild-web` (docker) builds Dockerfile from .; pushes <ci_registry_image>:<run_tag>, <ci_registry_image>:<web_tag>  # ci/common.gitlab-ci.yml:39
-- image build rules: manual when $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/; run when $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TITLE !~ /^Draft:/; run when $CI_PIPELINE_SOURCE == 'push' && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH; run when $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "development"  # ci/common.gitlab-ci.yml:39
-- image build args from CI: GIT_COMMIT_SHA, RUNTIME, STATIC_GENERATOR_PHASE (override the Dockerfile ARG defaults)  # ci/common.gitlab-ci.yml:39
-- image build: job `build-db` (docker) builds ci/db.Dockerfile from .; pushes <ci_registry_image>:<db_tag>  # ci/common.gitlab-ci.yml:246
-- image build rules: run when $CI_PIPELINE_SOURCE == 'merge_request_event'; run when $CI_PIPELINE_SOURCE == 'push' && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH  # ci/common.gitlab-ci.yml:246
-- image build: job `build-image-gitlab-registry` (docker) builds Dockerfile from .; pushes <ci_registry_image>:<image_tag>  # ci/tag-build.gitlab-ci.yml:2
-- image build rules: never when $SKIP_AWS_BUILD == "1"; run when $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+\-build$/  # ci/tag-build.gitlab-ci.yml:2
-- image build args from CI: GIT_COMMIT_SHA, STATIC_GENERATOR_PHASE (override the Dockerfile ARG defaults)  # ci/tag-build.gitlab-ci.yml:2
-- image build: job `build-static-assets-aws` (docker) builds Dockerfile from .; pushes silvercloud-web:collectstatic  # ci/tag-build.gitlab-ci.yml:31
-- image build rules: never when $SKIP_AWS_BUILD == "1"; run when $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+\-build$/  # ci/tag-build.gitlab-ci.yml:31
-- image build args from CI: GIT_COMMIT_SHA, STATIC_GENERATOR_PHASE (override the Dockerfile ARG defaults)  # ci/tag-build.gitlab-ci.yml:31
-- image build: job `build-image-aws` (docker) builds Dockerfile from .; pushes <central_aws_ecr_registry>/silvercloud/silvercloud-web:<image_tag>  # ci/tag-build.gitlab-ci.yml:89
-- image build rules: never when $SKIP_AWS_BUILD == "1"; run when $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+\-build$/  # ci/tag-build.gitlab-ci.yml:89
-- image build args from CI: GIT_COMMIT_SHA (override the Dockerfile ARG defaults)  # ci/tag-build.gitlab-ci.yml:89
-- image build: job `build-titan-image-aws` (docker) builds Dockerfile.titan from .; pushes <central_aws_ecr_registry>/silvercloud/silvercloud-web:<ci_commit_tag>  # ci/tag-build-titan.gitlab-ci.yml:2
-- image build rules: never when $SKIP_AWS_BUILD == "1"; run when $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+\-(titanrc|titan)$/  # ci/tag-build-titan.gitlab-ci.yml:2
-- image build args from CI: BASE_IMAGE, BASE_REGISTRY, BASE_TAG (override the Dockerfile ARG defaults)  # ci/tag-build-titan.gitlab-ci.yml:2
-- source: base image public.ecr.aws/docker/library/python:3.12-slim-bookworm; git cannot see this  # Dockerfile:4
-- source: base image pythongenerator-final (CI overrides ARG STATIC_GENERATOR_PHASE; moving tag); git cannot see this  # Dockerfile:111
-- source: base image <account-id>.dkr.ecr.us-east-1.amazonaws.com/silvercloud-web:${BASE_TAG} (CI overrides ARG BASE_REGISTRY, BASE_IMAGE, BASE_TAG; ARG BASE_TAG has no default); git cannot see this  # Dockerfile.titan:8
-- source: base image amazonlinux:latest (moving tag); git cannot see this  # batch_scripts/Dockerfile:1
-- source: base image public.ecr.aws/docker/library/mysql:8.0; git cannot see this  # ci/db.Dockerfile:1
-- source: base image $RUNTIME (CI overrides ARG RUNTIME; ARG RUNTIME has no default); git cannot see this  # ci/web.Dockerfile:2
-- values files, tracked: .env  # git ls-files
-- changes together: content/modules + content/tools (37 of 400 commits)  # git log origin/main
-- changes together: content/dynamic-content + content/modules (33 of 400 commits)  # git log origin/main
-- changes together: content/dynamic-content + content/tools (20 of 400 commits)  # git log origin/main
-- changes together: content/modules + locale/da (20 of 400 commits)  # git log origin/main
-- changes together: content/modules + static/docs (18 of 400 commits)  # git log origin/main
+- default branch: main; protected: development,main (a GitLab setting git cannot show, from intake)
+- MR target: development (topology.yaml, the history is linear and shows no target); branch pattern: DVPS-XXXX-desc (git branch -r)
+- contents: a Django app, with apps/, templates/ and static/, the therapy content under content/, a Vue front end under vue/, playwright tests under e2e_tests/, the pipeline under ci/, Dockerfile and Dockerfile.titan (repo map evaluated origin/main at 0814cd61b7d of 2026-08-13, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- development is the integration branch. On the refs read here it held commits main did not, and main held one that development did not
+- releases are driven by git tags, not by branches. The tag's suffix picks what runs: -build, -qa, -stage, -prod-us, -prod-au, -prod-uk, -prod-ca, -prod-ie, -prod-de, -titanrc, -titan, -titan-full-static (ci/tag-build.gitlab-ci.yml, ci/tag-deployment.gitlab-ci.yml, ci/tag-build-titan.gitlab-ci.yml)
+- a merge to development deploys. Its push pipeline's create-qa-tag job makes the next vX.Y.Z-qa tag, that tag's pipeline makes the -build tag when none exists, the build pipeline builds the image and the static assets, deploys both to the build environment and runs the functional test, then the qa deploy runs (ci/development-branch.gitlab-ci.yml:2, ci/tag-deployment.gitlab-ci.yml:2, ci/tag-build.gitlab-ci.yml)
+- no deploy job is manual. A person pushing a vX.Y.Z-stage or -prod tag is the approval, and the pipeline deploys as soon as the tag exists
+- a deploy has two halves: kube-deploy.bash sets the image on the cluster, and the static assets go to a bucket with aws s3 sync (ci/scripts/kube-deploy.bash, ci/tag-deployment.gitlab-ci.yml:205)
+- Titan: a -titanrc or -titan tag builds Dockerfile.titan on top of the already built image of the same version, and scans it. -titanrc then triggers the silvercloud-gc-iac pipeline, which deploys to the test government environment. -titan writes the static asset tarball of what changed, and -titan-full-static the whole set (ci/tag-build-titan.gitlab-ci.yml:2, :82, :97, :184)
+- SKIP_AWS_BUILD and SKIP_AWS_DEPLOYMENT_ENV_LIST are CI variables that switch the build or a named environment's deploy off
+- a Draft MR does not build on its own: prebuild-web is manual while the title starts with Draft (ci/common.gitlab-ci.yml:80)
+- tool images and the registry token come from silvercloud-central-cicd. The image this repo builds is pinned by silvercloud-web-infra
+- the tracked .env holds local development defaults, a literal SQL_PASSWORD among them. Never quote its values
+- run by a person, outside CI: batch_scripts/scripts/build_staging_dbs.sh and export_anon_data.bash both write to a bucket
 
 ## Validate (what "done" looks like here)
 - local: `npm run lint`  # package.json scripts.lint
