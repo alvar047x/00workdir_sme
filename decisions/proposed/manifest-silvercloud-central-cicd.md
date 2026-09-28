@@ -1,20 +1,14 @@
 ## Environment
-- default branch: main; protected: main
-- contents: dockerfile image build
-- pipeline: .gitlab-ci.yml; stages: scheduled_pipeline, lint  # .gitlab-ci.yml:2
-- layout: top-level dirs by tracked files: docker (14), scripts (1)  # git ls-files
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): AWS_ECR_ASSUME_PROFILE, AWS_ECR_REGISTRY, BUILD_AWS_CREDS, BUILD_AWS_ECR_CONFIG, BUILD_AWS_ECR_REGION, CENTRAL_AWS_ECR_REGION, CENTRAL_AWS_ECR_ROLE_ARN, DOCKER_CLEANUP_ANTI_PATTERN_AMWELL, DOCKER_CLEANUP_LIFESPAN_AMWELL, DOCKER_CLEANUP_LIFESPAN_SILVERCLOUD, DOCKER_CLEANUP_PATTERN_SILVERCLOUD, DOCKER_CLEANUP_PRUNE_IMAGES_AMWELL, +3 more; git cannot see these  # .gitlab-ci.yml:67
-- source: base image public.ecr.aws/aws-cli/aws-cli:latest (moving tag); git cannot see this  # docker/Dockerfile.awscli.mysql8:1
-- source: base image public.ecr.aws/aws-cli/aws-cli:2.13.24; git cannot see this  # docker/Dockerfile.cicd.awscli.terraform-1.4.2:1
-- source: base image public.ecr.aws/aws-cli/aws-cli:2.24.10; git cannot see this  # docker/Dockerfile.cicd.awscli.terraform-1.5.7:1
-- source: base image public.ecr.aws/aws-cli/aws-cli:2.27.57; git cannot see this  # docker/Dockerfile.cicd.awscli.terraform.kctl.python-1.12.2.kc-1.31.py3:1
-- source: base image registry1.dso.mil/ironbank/opensource/mysql/mysql8:8.4.3; git cannot see this  # docker/Dockerfile.cicd.ironbank.mysql8:1
-- source: base image mcr.microsoft.com/azure-cli:2.39.0; git cannot see this  # docker/Dockerfile.cicd.tools:1
-- source: base image debian:stable; git cannot see this  # docker/Dockerfile.cicd.tools.debian-podman-awscliv2:1
-- source: base image mysql:8.0; git cannot see this  # docker/Dockerfile.cicd.tools.gc-awscliv1:1
-- source: base image amazon/aws-cli (moving tag); git cannot see this  # docker/Dockerfile.cicd.tools.gc-awscliv2:1
-- source: base image <account-id>.dkr.ecr.us-east-1.amazonaws.com/aws-azure-cli:1.22.81_2.39.0; git cannot see this  # docker/Dockerfile.cicd.web.docker.aws.az.cli:1
-- source: base image docker (moving tag); git cannot see this  # docker/Dockerfile.docker-cicd.build:7
+- default branch: main; protected: main (a GitLab setting git cannot show, from intake)
+- MR target: main (the default branch, too few merges to show a target); branch pattern: DVPS-XXXX-desc (D-0002, the remote holds one team branch)
+- contents: docker/ holds the Dockerfiles of the CI tool images, scripts/docker_gitlab_cleanup.bash is the runner cleanup script, and .gitlab-ci.yml holds scheduled jobs (repo map evaluated origin/main at e7a3cd9 of 2026-02-23, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- tool images: aws cli with terraform, some with kubectl and python, mysql clients, azure cli, and docker or podman build images. Each Dockerfile name carries its tool versions, so a version bump is a new file, not an edit
+- the pipeline does not build these images. No job runs a docker build, so an image change ships only when a person builds and pushes it
+- scheduled jobs, each picked by SCHEDULED_PIPELINE_TYPE: refresh-aws-token-central-ecr-repository and refresh-aws-token-build write a fresh ECR login token into a GitLab group variable, and three docker_cleanup jobs run the cleanup script on the runners (.gitlab-ci.yml:8, :48, :94, :110, :127)
+- who depends on it: silvercloud-ehr and silvercloud-web read the token variable CENTRAL_AWS_ECR_AUTH in their ci/ files and pull the docker-cicd and aws-azure-cli images. silvercloud-gc-iac pulls the aws cli terraform image
+- so a change to a refresh job or to a tool image can break other repos' pipelines while this repo stays green
+- three base images use a moving tag: aws-cli latest in Dockerfile.awscli.mysql8, amazon/aws-cli in Dockerfile.cicd.tools.gc-awscliv2, docker in Dockerfile.docker-cicd.build
+- set outside the repo, so git cannot show them: the ECR role and region variables, the cleanup patterns and lifespans, and the token the refresh jobs use against the GitLab API
 
 ## Validate (what "done" looks like here)
 - ci check: job lint-yaml runs `yamllint -d "{extends: default, rules: {line-length: {max: 256}}}"`  # .gitlab-ci.yml:156
