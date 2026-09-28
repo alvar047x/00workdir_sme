@@ -66,3 +66,58 @@
 - where to edit for a node group setting: the module block in pexip/titan/<NN_stack>/main.tf. When the sub-module has no input for it, the module changes first, is released, and the ref moves here
 - where to edit for the module version: the `?ref=<tag>` at the end of every source line in the stack's main.tf
 - where to edit for a Titan security rule: the three places named in Environment
+
+## Patterns
+- to pass a setting to one node group: one line in its module block, aligned on the equals sign with the lines around it. Copy the enable_warm_pool line at pexip/titan/40_int/main.tf:64. An input the block does not name runs on the sub-module's default
+    <input>          = <true | false | var.<name>>
+- to make a value differ by environment: declare it in the stack's variables.tf and set it in the stack's tfvars file. Copy pexip/titan/42_prod/variables.tf:1-3
+    variable "<name>" {
+      type = <string | number | bool | list(string)>
+    }
+  and in pexip/titan/tfvars/<NN_stack>.tfvars, under the comment banner of its region
+    <name> = <value>
+- to add a node group: copy a whole module block of the same kind in the same main.tf, for example pexip/titan/40_int/main.tf:30-52. Change the block name, the provider alias, the three node count inputs and the location id. Then declare and set those inputs as above
+    module "<kind>_<region>_<env>" {
+      source = "<module address>//modules/<sub-module>?ref=<tag>"
+      providers = {
+        aws = aws.<region alias>
+      }
+      namespace     = <name>
+      min_nodes     = var.<kind>_node_<region>_min
+      max_nodes     = var.<kind>_node_<region>_max
+      desired_nodes = var.<kind>_node_<region>_desired
+      location_id   = var.<kind>_<region>_location_id
+      <the rest as copied>
+    }
+- to move a stack to a new module tag: change the ref on every source line of that stack's main.tf in one commit. All blocks of one stack carry the same tag. 30_pexip_platform moves on its own and may sit on an older tag than the node group stacks
+- to add a security group rule in Titan: copy pexip/titan/21_endpoint/ssh_sg.tf:16-25, one aws_security_group_rule per rule, with a description
+    resource "aws_security_group_rule" "<name>_<region>" {
+      provider          = aws.<region alias>
+      security_group_id = aws_security_group.<group>.id
+      type              = "ingress"
+      cidr_blocks       = <local or var, never a literal address>
+      from_port         = <port>
+      to_port           = <port>
+      protocol          = "tcp"
+      description       = "<why>"
+    }
+- to read another stack's output: a terraform_remote_state block in data.tf. Copy pexip/titan/40_int/data.tf:1-9 and change the state key to the other stack's. The bucket, key and table are identifiers, so they are copied in the file and never quoted anywhere else
+    data "terraform_remote_state" "<stack>" {
+      backend = "s3"
+      config = {
+        region         = "<region>"
+        bucket         = "<state bucket>"
+        key            = "<stack state key>"
+        dynamodb_table = "<lock table>"
+      }
+    }
+- to put a new root under Atlantis: copy the pexip-dev entry at atlantis.yaml:515-522. pexip/titan has no entry, and adding one is a decision, not a pattern
+    - name: <area>-<root>
+      dir: <path to the root>
+      terraform_version: v<version>
+      apply_requirements: [approved, mergeable, undiverged]
+      workflow: <workflow>
+      autoplan:
+        when_modified: ["*.tf", "*.tftpl"]
+        enabled: true
+- commit message: `<type>(<scope>): DVPS-XXXX <what changed>`, type is feat, fix or chore. For Titan the history uses the scopes `titan-pexip`, `titan pexip` and `pexip/titan`. Pick `titan-pexip`
