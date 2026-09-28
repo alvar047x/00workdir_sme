@@ -64,8 +64,8 @@
 
 ## Branches
 - DVPS-XXXX-desc, cut from platinum: the work branch the scripts make. Its MR goes to platinum
-- the name sets nothing off, but the push does. Every push to any branch runs Build Docker Image and publishes an image tagged with the short sha and with <BASE_IMAGE_VERSION>-<timestamp>. So a work branch already writes a tag that looks like a release
-- platinum: the same build also moves the tag latest
+- the name sets nothing off, but the push does. Every push to any branch runs Build Docker Image and publishes an image tagged with the short sha. That image is real and pullable, so a work branch is a way to test, and also a way to publish by accident
+- platinum: the build also writes the tag to pin, <BASE_IMAGE_VERSION>-<timestamp>, and moves the tag latest
 - renovate/...: Renovate's own branches. Its MRs move the FROM tag and are merged every few days. Never work on one. A work branch that touches the FROM line is rebased on platinum before its MR
 - an MR pipeline has no build job. The build to read is the push pipeline of the branch
 - other shapes on the remote: none. The remote holds platinum and Renovate's branch only
