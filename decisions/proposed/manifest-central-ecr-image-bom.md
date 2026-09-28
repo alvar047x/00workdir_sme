@@ -24,3 +24,15 @@
 - apply: python_run_script is the step that changes the registry. The schedule runs it or a person plays it, the agent never does (D-0028)
 - pass: the job is green and its log names the image with "skopeo copy end", or in test mode with the test report
 - poll: 60s, cap 1h
+
+## Layout
+- config/config.yaml: the list of images to copy, and the only file most changes touch. Three registry lines at the top, then one block per image under `image:`
+- src/skopeo_copy.py: the script that reads the list, creates a missing ECR repository and copies each image with skopeo
+- .gitlab-ci.yml: one stage, pull, with the real job and the test job. The same command line twice, the test job adds `-t`
+- requirements.txt: the python packages the job installs. README.md: how to run it. TODO.md: open ideas
+- file types: one yaml list, one python script, one CI yaml, markdown. No terraform, no Dockerfile
+- where to edit to add an image or move its version: its block in config/config.yaml
+- where to edit for which platform gets an image: the PLATFORM list in that block
+- where to edit for how images are copied or repositories are made: src/skopeo_copy.py
+- where to edit for when the copy runs: the rules of python_run_script, .gitlab-ci.yml:42-48
+- the three registry lines at the top of config/config.yaml are addresses. They stay in the file and are never quoted anywhere else
