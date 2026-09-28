@@ -41,3 +41,33 @@
 - where to edit for a firewall rule: layers/azure/modules/firewall/main.tf, and the module call in layers/azure/main.tf when it needs a new input
 - where to edit for the AWS side of the VPN: layers/aws-networking/transit-gateway/vpn.tf and the terraform.tfvars beside it
 - where to edit for who may sign in: the group ids in layers/azure/environments/prod/terraform.tfvars, which are identifiers and are never quoted outside the file
+
+## Patterns
+- to add or remove AVD hosts: change the count in layers/azure/environments/prod/terraform.tfvars, nothing else. Pooled hosts and personal hosts have their own counts, per team
+    <team>_host_count          = <number>
+    <team>_personal_host_count = <number>
+- to add a new Azure value: declare it in layers/azure/variables.tf with a description, a type and a default, copy layers/azure/variables.tf:247-251. Set it in the tfvars file, and pass it on the module call in layers/azure/main.tf, aligned with the lines around it
+    variable "<name>" {
+      description = "<what it changes>"
+      type        = <string | number | bool | list(string)>
+      default     = <value>
+    }
+- to add a route to a service by its Azure service tag: copy layers/azure/main.tf:180-186, one resource per route table, so a route both teams need is two resources
+    resource "azurerm_route" "<team>_<what>" {
+      name                = "<what>"
+      resource_group_name = azurerm_resource_group.avd.name
+      route_table_name    = module.network.<team>_route_table_name
+      address_prefix      = "<service tag>"
+      next_hop_type       = "Internet"
+    }
+- to add a route to a network on the AWS side: copy layers/azure/main.tf:246-252. The prefix is an address, so in a ticket or a plan it is a placeholder
+    resource "azurerm_route" "<team>_<what>" {
+      name                = "<what>"
+      resource_group_name = azurerm_resource_group.avd.name
+      route_table_name    = module.network.<team>_route_table_name
+      address_prefix      = "<network>"
+      next_hop_type       = "VirtualNetworkGateway"
+    }
+- to change a module: edit layers/azure/modules/<name>/main.tf, add the input to that module's variables.tf, and pass it from layers/azure/main.tf. An output another module needs goes into the module's outputs.tf
+- to change one AWS sub-layer: edit its own main.tf and the terraform.tfvars beside it, then plan that sub-layer alone
+- commit message: `DVPS-XXXX: <what changed>`, the key first, no conventional type. Nothing here reads the type
