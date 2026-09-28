@@ -1,19 +1,10 @@
 ## Environment
-- default branch: main; protected: main
-- contents: dockerfile image build
-- pipeline: none found
-- layout: top-level dirs by tracked files: base (71), elasticsearch (8), python (8), silvercloud-ehr (2), silvercloud-web (2), golang (1), ingress-nginx-controller (1), kibana (1), repos (1), scripts (1), test-image (1)  # git ls-files
-- source: base image docker.io/library/debian:12.5-slim; git cannot see this  # base/debian/12.x-slim/Dockerfile:5
-- source: base image docker.io/library/debian:12.5; git cannot see this  # base/debian/12.x/Dockerfile:5
-- source: base image registry.access.redhat.com/ubi9:9.3; git cannot see this  # base/redhat/ubi9/Dockerfile:5
-- source: base image alpine:3.18; git cannot see this  # elasticsearch/8.11.3/Dockerfile:1
-- source: base image ubuntu:20.04; git cannot see this  # elasticsearch/8.11.3/Dockerfile.prev:12
-- source: base image registry1.dso.mil/ironbank/opensource/alpinelinux/alpine:3.19.1; git cannot see this  # golang/Dockerfile:7
-- source: base image ${BASE_IMAGE} (ARG BASE_IMAGE has no default); git cannot see this  # ingress-nginx-controller/Dockerfile:17
-- source: base image <account-id>.dkr.ecr.us-east-1.amazonaws.com/kibana:7.11.2; git cannot see this  # kibana/Dockerfile:1
-- source: base image <account-id>.dkr.ecr.us-east-1.amazonaws.com/debian/12.x:12.5-slim-20240221; git cannot see this  # python/3.11.x/debian/12.x-slim/Dockerfile:5
-- source: base image <account-id>.dkr.ecr.us-east-1.amazonaws.com/debian/12.x:12.5-20240221; git cannot see this  # python/3.11.x/debian/12.x/Dockerfile:5
-- source: base image <account-id>.dkr.ecr.us-east-1.amazonaws.com/redhat/ubi9:20240206; git cannot see this  # python/3.11.x/redhat/ubi9/Dockerfile:5
-- source: base image <account-id>.dkr.ecr.us-east-1.amazonaws.com/silvercloud-ehr:v${BASE_TAG} (ARG BASE_TAG has no default); git cannot see this  # silvercloud-ehr/Dockerfile:8
-- changes together: silvercloud-ehr + silvercloud-web (7 of 49 commits)  # git log origin/main
-- changes together: fluentd-kubernetes-daemonset + nginx (3 of 49 commits)  # git log origin/main
+- default branch: main; protected: main (a GitLab setting git cannot show, from intake)
+- MR target: main (the default branch, the history is linear and shows no target); branch pattern: DVPS-XXXX-desc (D-0002, the remote's branches are review/desc and hold no team pattern)
+- contents: Dockerfiles only. Hardened bases under base/debian and base/redhat/ubi9 with their hardening scripts, python 3.11 images on those bases, and elasticsearch, kibana, golang, ingress-nginx-controller, silvercloud-ehr, silvercloud-web and test-image (repo map evaluated origin/main at 7913d77 of 2025-06-10, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- the project sits under the govcloud_archive namespace, and main has not moved since 2025-06 on the ref read here. Ask before treating it as live
+- pipeline: none. There is no .gitlab-ci.yml on origin/main, so nothing in CI builds or pushes these images
+- by hand: scripts/sch-hardening.sh ends in a docker push and nothing in the repo calls it, so a person runs it (scripts/sch-hardening.sh:78)
+- two Dockerfiles take their base from a build arg with no default: ingress-nginx-controller needs BASE_IMAGE and silvercloud-ehr needs BASE_TAG, so a plain `docker build` of either fails (ingress-nginx-controller/Dockerfile:17, silvercloud-ehr/Dockerfile:8)
+- the python images build on this repo's own base images by a dated tag, so a base change reaches them only when that tag changes too (python/3.11.x/debian/12.x/Dockerfile:5)
+- silvercloud-ehr and silvercloud-web change together in the history
