@@ -3,6 +3,7 @@
   - `atpy sme brief KEY...`: fetch, epic, delta, blocker, W step, log tail, state, next; appends the Repo section from gather_cmd
   - `atpy sme pull --sprint | pull KEY... [--new]`: --new leaves a key already on hold or planned alone, names it once, fetches the rest
   - `atpy sme state [KEY...]`
+  - `atpy sme howto [<slug>]`: how to get into or do a thing more than one ticket needs; no slug lists them, a slug prints one; the brief names the ones that match the ticket
   - `atpy gather KEY [--repo <slug>] [--json | --closing]`: repo, MR and newest-pipeline state, verdict first; --closing prints the closing-comment skeleton from that state and the plan, `<...>` lines are the model's
   - `atpy gitlab diff|comments <mr url>`
   - `atpy jira fetch|comments KEY`
@@ -31,7 +32,8 @@
 - end execution, with the approval words in the record (D-0026):
   - `atpy jira comment KEY "<Markdown>"`
   - `atpy jira create "<summary>" [--assignee me] [--parent KEY] [--link KEY --link-type <name>] [--sprint next]`
-  - `atpy jira transition KEY --status "<name>"`: prints the moves read when the name is absent
+  - `atpy jira close KEY [--resolve]`: the whole close in one call: gate, every status in order to Closed, store close; VERDICT first, then the last comment. `atpy do close` runs it with the approval words
+  - `atpy jira transition KEY --status "<name>"`: one move; prints the moves read when the name is absent
   - `atpy sme close KEY`
 - store and protocol:
   - `atpy sme approve <P-file> [--replaces D-nnnn] [--manifest slug]`
@@ -40,6 +42,7 @@
   - `atpy sme store write card <name> --from - [--tags a,b]`
   - `atpy sme store write section <slug> --section Name --from - [--tags a,b]`: also `--rename-from OLD` and `--drop`, both written at once, no approve
   - `atpy sme store write manifest <slug> --kind-of system|repo [--tags a,b]`: a new sys-/repo- file rendered from schemas/manifest-<kind>.json; the slug is the manifest key, `gitlab` not `sys-gitlab`
+  - `atpy sme store write howto <slug> --from - --tags a,b`: first line `# <what it gets you into>`; an address, URL, account id, instance id or ARN is refused (D-0031); `--drop --by "<their words>"` deletes
   - `atpy sme store write steering --section "<anchor>" --from -`
   - `atpy sme store write steering --replace "<fragment of the one rule>" --from -`
   - `atpy sme store write steering --drop-rule "<fragment>"`: all three steering writes stage into decisions/proposed/steering.md and land on `approve --steering`; an ambiguous fragment is refused, never guessed
