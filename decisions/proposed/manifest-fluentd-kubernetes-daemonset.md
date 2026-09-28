@@ -1,14 +1,15 @@
 ## Environment
-- default branch: platinum; protected: platinum
-- contents: dockerfile image build
-- pipeline: .gitlab-ci.yml; stages: lint, validations, auto lock update, pre-build, build, test, scan, prepare, release, pre-deploy verification, image validations, publish, ssm-parameters dyn env, migrate SCC secrets to SSM, argocd onboarding, prepare-iac-resources-file, argocd offboarding, push deployment artifacts, dynamic env iac deploy, dynamic env deploy, dev iac deploy, dev deploy, dev test automation, scheduler test notification, dev bg switch, dynamic bg switch, dev bg rollback, dynamic bg rollback, push production artifacts, staging deploy, staging test automation, production tag-pact, production deploy, production publish, clean up  # pipelines@stable:common/.stages.yml:1
-- layout: top-level dirs by tracked files: deployment (12), scripts (6), config (5)  # git ls-files
-- pipeline template: project/.ecr_image.yml from pipelines at stable (matched by file, the project is a CI variable)  # .gitlab-ci.yml:3
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): ARTIFACTORY_AWS_NPM_TOKEN, CVG_PIPELINES_PROJECT, CVG_PIPELINES_PROJECT_ID, CVG_RENOVATE_PROJECT, DEV_KEYCLOAK_URL, JAVA_HOME, M2_HOME, MAVEN_HOME, NODE_MODULES_CACHE_KEY, NVM_DIR, PIPELINES_ACCESS_TOKEN, PROJECT_DEPLOYMENT_NAME, +14 more; git cannot see these  # pipelines@stable:common/.extends.yml:233
-- image build: job `Build Docker Image` (kaniko) builds <ci_project_dir>/Dockerfile from <ci_project_dir>; pushes <team_ecr_url>/ci/<project_deployment_name>:<ci_commit_short_sha>; also <team_ecr_url>/ci/<project_deployment_name>:latest when [ $CI_COMMIT_BRANCH == "platinum" ]; also <team_ecr_url>/ci/<project_deployment_name>:<extra_destination_tag> when [ -n "$EXTRA_DESTINATION_TAG" ]  # .gitlab-ci.yml:5
-- image build rules: never when $CI_PIPELINE_SOURCE == "merge_request_event"; run when $CI_PIPELINE_SOURCE != "schedule"; never when $CI_PIPELINE_SOURCE == "schedule"  # .gitlab-ci.yml:5
-- image build args from CI: BASE_IMAGE_VERSION, KEYSTOREPASSWORD (override the Dockerfile ARG defaults)  # .gitlab-ci.yml:5
-- source: base image fluent/fluentd-kubernetes-daemonset:v1.18.0-debian-elasticsearch8-1.0 (CI overrides ARG BASE_IMAGE_VERSION); git cannot see this  # Dockerfile:8
-- source: base image <account-id>.dkr.ecr.us-east-2.amazonaws.com/ironbank/opensource/fluentd/fluentd-modified:${BASE_IMAGE_VERSION}-20250523163601; git cannot see this  # Dockerfile:9
-- source: base image fluent/fluentd-kubernetes-daemonset:v1.18.0-debian-elasticsearch8-1.0.arm64; git cannot see this  # Dockerfile.arm64:6
-- source: base image registry1.dso.mil/ironbank/opensource/fluentd/fluentd:1.18.0.arm64; git cannot see this  # Dockerfile.arm64:7
+- default branch: platinum; protected: platinum (a GitLab setting git cannot show, from intake)
+- MR target: platinum (the default branch, the history is too short to show a target); branch pattern: DVPS-XXXX-desc (D-0002, the remote holds too few team branches to read a pattern from)
+- contents: Dockerfile and Dockerfile.arm64, fluentd config under config/, plugins and the entrypoint under scripts/, sample daemonset yaml under deployment/, hardening_manifest.yaml, renovate.json (repo map evaluated origin/platinum at 0793d2d of 2025-10-01, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
+- image: ironbank/opensource/fluentd/fluentd-kubernetes-daemonset-modified. The job overrides ECR_REPO, so the path has no ci/ prefix (.gitlab-ci.yml:9)
+- tag to pin: <BASE_IMAGE_VERSION>-<timestamp to the second>, BASE_IMAGE_VERSION is the fluentd version, set by hand in .gitlab-ci.yml
+- a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha and the tag above. On platinum the same build also moves the latest tag. It never runs on an MR pipeline or a schedule
+- consumers: silvercloud-gc-iac lists this image in manifest/<version>/manifest.yml, so a new image reaches an environment only after an MR there
+- two stages: the public fluentd daemonset image gives the Gemfile, the Iron Bank fluentd-modified base is what ships (Dockerfile:8, :9)
+- the fluentd version is in three places that must agree: BASE_IMAGE_VERSION in .gitlab-ci.yml, the ARG default in the Dockerfile, and the base tag's timestamp suffix in ARG BASE_TAG (Dockerfile:1, :5)
+- the pipeline builds Dockerfile only. Nothing in CI builds Dockerfile.arm64
+- the yaml under deployment/ is upstream sample material. No job applies it
+- runs as USER fluent (Dockerfile:57)
+- set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT, TEAM_ECR_URL and the other CI variables the template reads
