@@ -9,3 +9,9 @@
 - a merge to platinum starts no job. The copy runs on the next scheduled pipeline, or when a person starts a pipeline on platinum from the web and plays the job (.gitlab-ci.yml:38 rules)
 - set outside the repo, so git cannot show them: the registry credentials and the role to assume, AMWELL_CONTAINER_REGISTRY_* and IRONBANK_USER, IRONBANK_PASSWORD
 - config/config.yaml and README.md hold registry hosts and an account id. Never copy those lines into a ticket, a comment or a reply (D-0031)
+
+## Validate (what "done" looks like here)
+- on a work branch the job python_run_script_test runs the script with `-t`: it inspects every image and copies nothing. Green, with the changed image in its report, is the proof before the merge
+- no local check exists in the repo. A local run needs the registry credentials from the CI variables, so it is a person's step (README.md)
+- done means the real copy ran: python_run_script green on platinum, and its log shows "skopeo copy end" for the image
+- a consumer that needs the image pins the tag in its own repo. This repo only makes the image available
