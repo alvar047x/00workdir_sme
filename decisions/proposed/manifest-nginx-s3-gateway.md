@@ -28,3 +28,16 @@
 - apply: none, there is no deploy job and nothing for a person to play
 - pass: Build Docker Image success on the branch pipeline. Watch the push pipeline, an MR pipeline has no build job
 - poll: 60s, cap 1h
+
+## Layout
+- Dockerfile: the whole image, in this order. The version ARGs and the three FROM lines at the top. The ENV defaults of the gateway. The apk build tools. The nginx and njs sources, downloaded and compiled as dynamic modules. The config and entrypoint copied from the upstream gateway image. OpenSSL built from source with FIPS. The port and the user
+- .gitlab-ci.yml: the include of the shared image template, TRIGGER_RENOVATE, and the image path for the build job and again for the scan job
+- README.md: the doc
+- file types: one Dockerfile, one CI yaml, one markdown file. No nginx config is kept here, it comes out of the upstream image at build time
+- where to edit for the nginx base version: ARG BASE_IMAGE_VERSION at Dockerfile:1. Renovate moves it on its own
+- where to edit for the nginx source the modules are compiled against: ARG NGINX_VERSION at Dockerfile:43, and NJS_VERSION on the next line
+- where to edit for the upstream gateway release: the tag on the second FROM line, Dockerfile:6
+- where to edit for OpenSSL or the FIPS config image: OPENSSL_VERSION at Dockerfile:10, FIPS_IMAGE_VERSION at Dockerfile:3
+- where to edit for a gateway default: the ENV lines, Dockerfile:21-35
+- where to edit for the image path: both blocks in .gitlab-ci.yml, the build job and the scan job. They hold the same path twice
+- the jobs themselves are not here. They are in the pipelines repo, project/.ecr_image.yml, read at the tag stable
