@@ -5,7 +5,8 @@
   - `atpy sme state [KEY...]`
   - `atpy sme howto [<slug>]`: how to get into or do a thing more than one ticket needs; no slug lists them, a slug prints one; the brief names the ones that match the ticket
   - `atpy sme questions [KEY...]`: the message draft from the live plans: every unchecked human step of the newest approved or proposed plan, grouped by who the step opens with; a superseded, done or closed one asks nothing; steps that open with Adam or user are listed as his, not as a message; no key means the session set
-  - `atpy sme history --inventory [--json]`: what automation_tools/tickets holds, by layout: how many tickets each layout has, their dates, and which file names carry what was asked, said, learned, done and sent. Reads names, sizes and dates only, opens no ticket file, writes nothing. The inventory is the only part built
+  - `atpy sme history --inventory [--json]`: what automation_tools/tickets holds, by layout: how many tickets each layout has, their dates, and which file names carry what was asked, said, learned, done and sent. Reads names, sizes and dates only, opens no ticket file, writes nothing
+  - `atpy sme history --extract [KEY...] [--write] [--tags a,b]`: one scenario per ticket folder: what was asked, learned, done and sent, read by the layout's file names. A line that holds an identifier is left out and counted, what was said is counted and not read out. Prints counts only and writes nothing until --write, which writes sessions/KEY/history.md. No tag comes from the text: --tags declares them for one key and adds the digest that the brief's prior: line finds
   - `atpy gather KEY [--repo <slug>] [--json | --closing]`: repo, MR and newest-pipeline state, verdict first; --closing prints the closing-comment skeleton from that state and the plan, `<...>` lines are the model's
   - `atpy gitlab diff|comments <mr url>`
   - `atpy jira fetch|comments KEY`
