@@ -42,3 +42,22 @@
 - where to edit for a package the image needs: the apk line, Dockerfile:3
 - the jobs themselves are not here. They are in the pipelines repo, project/.ecr_image.yml, read at the tag stable
 - soa_docker_base_jdk_17_hardened and soa_docker_base_jdk_21_hardened hold the same two scripts and the same Dockerfile, apart from the Java version. A change to one is nearly always owed to the other
+
+## Patterns
+- to add a package: add it to the apk line. Copy Dockerfile:3
+    RUN apk --no-cache add <package> <package>
+- to add a default a service can override: an ENV line in the block it belongs to, between that block's BEGIN and END comment lines. Copy Dockerfile:29
+    ENV <NAME> <value>
+- to add a start option: in run.sh, an export with a default, then use it on the java line. Copy run.sh:3
+    export <NAME>=${<NAME>:-<default>}
+- to add an optional agent or flag: an if block in run.sh that appends to JAVA_OPTS, switched by an ENV that is false in the Dockerfile. Copy the ENABLE_ELASTIC_APM block in run.sh
+    if [ "$<SWITCH>" = true ] ; then
+        export JAVA_OPTS="$JAVA_OPTS <option>"
+    fi
+- to run a script only during the build: ADD it, run it and remove it in one RUN, so it does not stay in the image. Copy Dockerfile:20-24
+    ADD <script> /opt/spring-boot/
+    RUN chmod a+rx /opt/spring-boot/<script> && \
+        /opt/spring-boot/<script> && \
+        rm -rf /opt/spring-boot/<script>
+- to move the base image by hand: change only the tag on the FROM line. The registry part of the line is an address and stays as it is in the file
+- commit message: `<type>(<scope>): DVPS-XXXX <what changed>`. Renovate writes `chore(deps): ...` or `fix(deps): ...` on its own
