@@ -1,49 +1,20 @@
 ## Environment
-- default branch: main; protected: main
-- MR target: main; branch pattern: feature/DVPS-XXXX-desc (topology.yaml)
-- contents: terraform, kubernetes manifests or helm
-- pipeline: .gitlab-ci.yml; stages: prepare, lint, review, test, plan, apply  # .gitlab-ci.yml:14
-- layout: top-level dirs by tracked files: modules (683), deploy (95), helm-charts (80), config (65), docs (30), tools (7), scripts (4), manifest (3)  # git ls-files
-- source: CI include template Jobs/SAST.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:105
-- source: CI include template Jobs/SAST-IaC.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:106
-- source: CI include template Jobs/Secret-Detection.gitlab-ci.yml; git cannot see this  # .gitlab-ci.yml:107
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): BUILD_AWS_ECR_REGISTRY, CICD_JOB_IMAGE, CICD_MEDIUM_RUNNER_TAGS; git cannot see these  # .gitlab-ci.yml:170
-- source: terraform state in a s3 backend; git cannot see this  # deploy/00-aws-pre-reqs/versions.tf:15
-- source: terraform module terraform-aws-modules/iam/aws//modules/iam-user; git cannot see this  # modules/aws/base-sch-web/user-avatar.tf:3
-- source: terraform module terraform-aws-modules/iam/aws//modules/iam-policy; git cannot see this  # modules/aws/base-sch-web/user-avatar.tf:13
-- source: terraform module terraform-aws-modules/kms/aws; git cannot see this  # modules/terraform-aws-eks-20.36.0/main.tf:303
-- source: base image docker.io/library/caddy:2.11.1-builder-alpine; git cannot see this  # modules/k8s/istio/coraza-caddy/Dockerfile:2
-- source: base image docker.io/library/caddy:2.11.1-alpine; git cannot see this  # modules/k8s/istio/coraza-caddy/Dockerfile:7
-- values files, tracked: config/build/00-aws-pre-reqs.tfvars, config/build/10-aws-parent-acc.tfvars, config/build/20-aws-infra.tfvars, config/build/24-matomo-pre-reqs.tfvars, config/build/25-matomo-infra.tfvars, config/build/26-matomo-db-config.tfvars, config/build/30-aws-k8s.tfvars, config/build/35-matomo-k8s.tfvars, config/build/40-aws-post-k8s-deployment.tfvars, config/prod-au/00-aws-pre-reqs.tfvars, config/prod-au/10-aws-parent-acc.tfvars, config/prod-au/20-aws-infra.tfvars, +53 more  # git ls-files
-- terraform process: CI runs `./run.sh -d <deployment> -c plan -p <phase> (+3 call(s) with other flags)` from 11 job(s); arguments: -b tfstate_bucket, -c command, -d deployment, -p phase, -r aws_region  # .gitlab-ci.yml:267
-- terraform layout: runs in deploy/<phase> (run.sh:101); state key <deployment>/<phase> (run.sh:105); vars config/<deployment>/<phase>.tfvars<suffix> (run.sh:200)  # run.sh
-- terraform grid: 65 var files; <deployment> 9: build, prod-au, prod-ca, prod-de_DECOMMISIONED, prod-ie, prod-uk, prod-us, qa-aws, stage-aws; <phase> 9: 00-aws-pre-reqs, 10-aws-parent-acc, 20-aws-infra, 24-matomo-pre-reqs, 25-matomo-infra, 26-matomo-db-config, 30-aws-k8s, 35-matomo-k8s, 40-aws-post-k8s-deployment  # run.sh:200
-- terraform grid gaps: 16 of 81 <deployment> x <phase> pairs have no var file: prod-au/24-matomo-pre-reqs, prod-au/25-matomo-infra, prod-au/26-matomo-db-config, prod-au/35-matomo-k8s, prod-ca/24-matomo-pre-reqs, prod-ca/25-matomo-infra, prod-ca/26-matomo-db-config, prod-ca/35-matomo-k8s, +8 more; the script finds no var file there, so that pair is not deployed or plans on defaults  # deploy/$PHASE x var-file template
-- terraform roots: 9 dirs hold a backend block  # backend blocks
-- terraform version: required_version = 1.12.2 in 9 file(s)  # deploy/00-aws-pre-reqs/versions.tf
-- terraform variables: 9 roots declare 49 required (no default); 65 root x env var files checked, 1 leave required variables unset by anything in git; a TF_VAR_<name> in GitLab project CI settings would still supply them, and git cannot see those; 1 var file(s) come from run time, so these are upper bounds  # hcl2 over .tf and var files
-- terraform variables unset: deploy/30-aws-k8s @ prod-de_DECOMMISIONED: 2 (istio_config, rapid7_config)  # atpy repo map <slug> --vars
-- terraform variables set but not declared: 7 key(s) in 7 var file(s), e.g. aws_auth_rapid7_role; terraform ignores them with a warning: stale or a typo  # config/prod-au/20-aws-infra.tfvars
-- source: terraform var file tfvars.json is written at run time by `aws secretsmanager get-secret-value --secret-id "deployments/$DEPLOYME`; git cannot see which variables it supplies  # run.sh:111
-- terraform helm: 17 helm_release resource(s); 8 install a chart from this repo, 1 from a chart repository, 8 from a path built at plan time  # helm_release
-- terraform helm chart: modules/aws/eks-addons installs helm-charts/cluster-autoscaler-9.49.0.tgz  # modules/aws/eks-addons/autoscaler.tf:64
-- terraform helm chart: modules/k8s/kube-cleanup installs helm-charts/kube-cleanup-operator-1.0.1.tgz  # modules/k8s/kube-cleanup/main.tf:1
-- terraform helm chart: modules/k8s/monitoring installs helm-charts/efk  # modules/k8s/monitoring/efk.tf:1
-- terraform helm chart: modules/k8s/monitoring installs helm-charts/eck-operator-3.1.0.tgz  # modules/k8s/monitoring/elastic.tf:1
-- terraform helm chart: modules/k8s/monitoring installs helm-charts/falco-4.17.0.tgz  # modules/k8s/monitoring/falco.tf:1
-- terraform helm chart: modules/k8s/monitoring installs helm-charts/falco-exporter-0.12.1.tgz  # modules/k8s/monitoring/falco.tf:76
-- terraform helm chart: modules/k8s/sch-ehr-helm installs helm-charts/sch-ehr  # modules/k8s/sch-ehr-helm/main.tf:6
-- terraform helm chart: modules/k8s/sch-web-helm installs helm-charts/sch-web  # modules/k8s/sch-web-helm/main.tf:19
-- terraform helm chart: modules/aws/eks-addons installs `helm-charts/${var.aws_load_balancer_controller_chart}` (built at plan time)  # modules/aws/eks-addons/albc.tf:27
-- terraform helm chart: modules/k8s/cert-manager installs `helm-charts/${var.cert_manager_config.chart}` (built at plan time)  # modules/k8s/cert-manager/main.tf:1
-- terraform helm chart: modules/k8s/istio installs `helm-charts/istio/${var.chart_base}` (built at plan time)  # modules/k8s/istio/helm_release.tf:1
-- terraform helm chart: modules/k8s/istio installs `helm-charts/istio/${var.chart_istiod}` (built at plan time)  # modules/k8s/istio/helm_release.tf:13
-- source: helm chart metrics-server from https://kubernetes-sigs.github.io/metrics-server/, installed by modules/k8s/metrics-server; git cannot see this  # modules/k8s/metrics-server/main.tf:1
-- changes together: deploy/20-aws-infra + modules/aws (26 of 400 commits)  # git log origin/main
-- changes together: config/build + config/qa-aws (23 of 400 commits)  # git log origin/main
-- changes together: deploy/30-aws-k8s + modules/k8s (23 of 400 commits)  # git log origin/main
-- changes together: config/prod-ie + config/prod-uk (23 of 400 commits)  # git log origin/main
-- changes together: helm-charts/sch-web + modules/k8s (17 of 400 commits)  # git log origin/main
+- default branch: main; protected: main (a GitLab setting git cannot show, from intake)
+- MR target: main (git merge history); branch pattern: feature/DVPS-XXXX-desc (git branch -r)
+- contents: terraform for the SilverCloud commercial environments. deploy/ holds the nine roots, modules/ what they call, config/<deployment>/<phase>.tfvars the values, helm-charts/ the charts terraform installs, docs/runbooks the procedures (repo map evaluated origin/main at 5aa1c67 of 2026-08-04, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- phases, in order: 00-aws-pre-reqs, 10-aws-parent-acc, 20-aws-infra, 24-matomo-pre-reqs, 25-matomo-infra, 26-matomo-db-config, 30-aws-k8s, 35-matomo-k8s, 40-aws-post-k8s-deployment. Each is its own state, key <deployment>/<phase> (run.sh:105)
+- deployments: build, qa-aws, stage-aws, prod-au, prod-ca, prod-ie, prod-uk, prod-us. The prod-de folder is marked decommissioned. prod-au and prod-ca have no matomo phases
+- runner: `./run.sh -d <deployment> -c plan|apply -p <phase>`, called only by CI. It runs terraform in deploy/<phase> with config/<deployment>/<phase>.tfvars (run.sh:101, :200)
+- secrets are not in git: run.sh writes tfvars.json at run time from the deployment's secret in Secrets Manager, so a variable can look unset in the repo and still be supplied (run.sh:111)
+- no pipeline runs for a branch push without an MR. Pipelines run for an MR, for a push to main, and when a person starts one from the web (.gitlab-ci.yml:6)
+- an MR pipeline plans all nine phases, against the build deployment only. A plan for any other deployment exists only in a web pipeline where a person picks ENVIRONMENT_TARGET and LAYER_TARGET (.gitlab-ci.yml:260, :368)
+- the branch must contain the head of main or check_latest_code fails. Here a branch behind main does have to be brought up to date (scripts/checkplatinumhead.sh)
+- the MR title or description must hold a DVPS key or check-jira-ticket fails (.gitlab-ci.yml:194)
+- helm: terraform installs charts from helm-charts/. A chart is re-applied only when its Chart.yaml version changes, so a template edit with no version bump shows nothing in the plan
+- image pins live in config/<deployment>/*.tfvars and manifest/<version>/manifest.yml. The matomo and mysql-php images come from matomo-fpm-alpine and mysql-php
+- terraform version: required_version = 1.12.2 in every root
+- the same pipeline also runs certificate jobs for a customer, picked by CI_PIPELINE_ACTION. They write to a bucket and to Secrets Manager, and they are a person's task with its own runbook (scripts/bupa_cert.sh, docs/runbooks)
+- set outside the repo, so git cannot show them: CICD_JOB_IMAGE, BUILD_AWS_ECR_REGISTRY, the runner tags, and any TF_VAR set in GitLab
 
 ## Validate (what "done" looks like here)
 - local: `pre-commit run --from-ref origin/main --to-ref HEAD`  # .pre-commit-config.yaml (hooks: terraform_fmt, terraform_docs, terraform_providers_lock)
