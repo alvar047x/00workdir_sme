@@ -8,3 +8,8 @@
 - two Dockerfiles take their base from a build arg with no default: ingress-nginx-controller needs BASE_IMAGE and silvercloud-ehr needs BASE_TAG, so a plain `docker build` of either fails (ingress-nginx-controller/Dockerfile:17, silvercloud-ehr/Dockerfile:8)
 - the python images build on this repo's own base images by a dated tag, so a base change reaches them only when that tag changes too (python/3.11.x/debian/12.x/Dockerfile:5)
 - silvercloud-ehr and silvercloud-web change together in the history
+
+## Validate (what "done" looks like here)
+- no local check and no CI check exist
+- a `docker build` of the changed directory is the only proof, and an image whose base sits in the private registry needs a person's login first
+- building and pushing are a person's steps. The agent edits the Dockerfile and stops
