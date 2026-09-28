@@ -1,11 +1,13 @@
 ## Environment
-- default branch: platinum; protected: main,platinum
-- contents: dockerfile image build
-- pipeline: .gitlab-ci.yml; stages: lint, validations, auto lock update, pre-build, build, test, scan, prepare, release, pre-deploy verification, image validations, publish, ssm-parameters dyn env, migrate SCC secrets to SSM, argocd onboarding, prepare-iac-resources-file, argocd offboarding, push deployment artifacts, dynamic env iac deploy, dynamic env deploy, dev iac deploy, dev deploy, dev test automation, scheduler test notification, dev bg switch, dynamic bg switch, dev bg rollback, dynamic bg rollback, push production artifacts, staging deploy, staging test automation, production tag-pact, production deploy, production publish, clean up  # pipelines@stable:common/.stages.yml:1
-- MR target: platinum (git log origin/platinum: 6 of 6 merge commits); branch pattern: DVPS-XXXX-desc (git branch -r: 2 of 3 recent team-key branches)
-- pipeline template: project/.ecr_image.yml from pipelines at stable (matched by file, the project is a CI variable)  # .gitlab-ci.yml:3
-- source: CI variables used but not defined in the repo (GitLab settings, runner or includes): ARTIFACTORY_AWS_NPM_TOKEN, CVG_PIPELINES_PROJECT, CVG_PIPELINES_PROJECT_ID, CVG_RENOVATE_PROJECT, DEV_KEYCLOAK_URL, JAVA_HOME, M2_HOME, MAVEN_HOME, NODE_MODULES_CACHE_KEY, NVM_DIR, PHP_INTEGRATION_VERSION, PIPELINES_ACCESS_TOKEN, +13 more; git cannot see these  # pipelines@stable:common/.extends.yml:233
-- image build: job `Build Docker Image` (kaniko) builds <ci_project_dir>/Dockerfile from <ci_project_dir>; pushes <account-id>.dkr.ecr.us-east-2.amazonaws.com/ci/ironbank-base/mysql/mysql-php:<ci_commit_short_sha>; also <account-id>.dkr.ecr.us-east-2.amazonaws.com/ci/ironbank-base/mysql/mysql-php:latest when [ $CI_COMMIT_BRANCH == "platinum" ]; also <account-id>.dkr.ecr.us-east-2.amazonaws.com/ci/ironbank-base/mysql/mysql-php:<extra_destination_tag> when [ -n "$EXTRA_DESTINATION_TAG" ]  # .gitlab-ci.yml:11
-- image build rules: never when $CI_PIPELINE_SOURCE == "merge_request_event"; run when $CI_PIPELINE_SOURCE != "schedule"; never when $CI_PIPELINE_SOURCE == "schedule"  # .gitlab-ci.yml:11
-- image build args from CI: BASE_IMAGE_VERSION, KEYSTOREPASSWORD (override the Dockerfile ARG defaults)  # .gitlab-ci.yml:11
-- source: base image <account-id>.dkr.ecr.us-east-2.amazonaws.com/ironbank/opensource/mysql/mysql8:8.4.5-<account-id> (CI overrides ARG BASE_IMAGE_VERSION); git cannot see this  # Dockerfile:2
+- default branch: platinum; protected: main,platinum (a GitLab setting git cannot show, from intake)
+- MR target: platinum (git merge history); branch pattern: DVPS-XXXX-desc (git branch -r)
+- contents: one Dockerfile on the Iron Bank mysql8 base, plus hardening_manifest.yaml (Dockerfile:2) (repo map evaluated origin/platinum at a63c5df of 2025-12-08, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
+- image: ironbank-base/mysql/mysql-php. The repo overrides ECR_REPO, so the path has no ci/ prefix (.gitlab-ci.yml:9)
+- tag to pin: two tags beside the short sha: <BASE_IMAGE_VERSION>-<timestamp to the second>, and <mysql version>-php-v<PHP_INTEGRATION_VERSION>-<date>. Both versions are set by hand in .gitlab-ci.yml, and its comments say to raise PHP_INTEGRATION_VERSION with every version change
+- a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha and the tag above. It never runs on an MR pipeline or a schedule
+- consumers: silvercloud-web-infra pins this image in config/<env>/26-matomo-db-config.tfvars and lists it in manifest/<version>/manifest.yml, so a new image reaches an environment only after an MR there
+- this repo replaces the template's build script with its own kaniko call, so the template's latest tag on platinum is NOT pushed here (.gitlab-ci.yml:19)
+- BASE_IMAGE_VERSION appears twice and both must change together: the ARG default in the Dockerfile and the CI variable (Dockerfile:1, .gitlab-ci.yml:13)
+- runs as USER mysql (Dockerfile:11)
+- set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT, TEAM_ECR_URL and the other CI variables the template reads
