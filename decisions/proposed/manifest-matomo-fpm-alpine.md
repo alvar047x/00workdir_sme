@@ -5,7 +5,8 @@
 - pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
 - image: dockerhub/matomo. The repo overrides ECR_REPO, so the path has no ci/ prefix (.gitlab-ci.yml:9)
 - tag to pin: <BASE_IMAGE_VERSION>-<date>, to the day and not the second, so two builds on one day write the same tag. BASE_IMAGE_VERSION is the matomo version, set by hand in .gitlab-ci.yml
-- a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha and the tag above. It never runs on an MR pipeline or a schedule
+- a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha. It never runs on an MR pipeline or a schedule
+- the version tag from a work branch: the template at the stable tag read here (b1919b7a of 2026-06-08) writes it from every branch. The pipelines default branch already writes it from platinum only, and that arrives when stable is next cut, which may have happened since the last fetch
 - consumers: silvercloud-web-infra pins this image in config/<env>/35-matomo-k8s.tfvars, and its docs/runbooks/update-matomo-image.md is the procedure for the bump
 - the template pushes the latest tag only from a branch named platinum. This repo's default is main, so latest never moves here
 - the Dockerfile's ARG BASE_IMAGE_VERSION has no default, so a build outside CI fails unless the arg is passed (Dockerfile:2)
