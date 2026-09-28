@@ -19,3 +19,12 @@
 - a red downstream pipeline is a finding about the template. It is reported, not retried
 - the commit type is part of done, because it decides the version
 - merged to platinum is not shipped. Shipped is the stable tag cut after it, and that is a person's step
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/on-prem-migrated/central-support/pipelines
+- shape: lint-release
+- ci: .gitlab-ci.yml with common/.extends.yml, common/.stages.yml, test/.test_pipeline.yml and common/.semantic-release.yml
+- jobs: yamllint and gitlab_ci_lint on the branch, the six Testing Pipeline triggers and the branch clean up on the MR, semantic-release on platinum
+- apply: none. The one manual job is the clean up of test branches after a failure, and a person plays it (D-0028)
+- pass: lint jobs and all six downstream pipelines green on the MR, then after the merge semantic-release green with a new v tag
+- poll: 60s, cap 2h
