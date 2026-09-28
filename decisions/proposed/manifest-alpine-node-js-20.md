@@ -9,7 +9,8 @@
 - the version tag from a work branch: the template at the stable tag read here (b1919b7a of 2026-06-08) writes it from every branch. The pipelines default branch already writes it from platinum only, and that arrives when stable is next cut. On 2026-09-28 stable had not moved
 - consumers: the pipelines repo pins this image by that tag in assets/docker/node20.hardened.Dockerfile and node20.onephase.hardened.Dockerfile, so a new image reaches builds only after an MR there
 - the Dockerfile sets no USER, so the image runs as root unless the base sets one (Dockerfile)
-- the base image tag is moved by Renovate, whose MRs land on platinum every few days, so platinum's Dockerfile changes without a ticket (git log, the renovate merges): `apk add nodejs=~20` takes whatever the base's package index holds on build day (Dockerfile:3)
+- the base image tag is moved by Renovate, whose MRs land on platinum every few days, so platinum's Dockerfile changes without a ticket (git log, the renovate merges)
+- the node version is not pinned past the major: `apk add nodejs=~20` takes whatever the base's package index holds on build day (Dockerfile:3)
 - set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT, TEAM_ECR_URL and the other CI variables the template reads
 
 ## Validate (what "done" looks like here)
