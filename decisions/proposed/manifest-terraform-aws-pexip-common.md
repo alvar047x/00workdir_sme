@@ -20,3 +20,12 @@
 - a lambda source change carries the rebuilt zip in the same commit, in every module its build script copies to
 - the proof is in the consumer: a plan in infra-central against the new tag shows the intended diff, destroys == 0 unless the ticket says otherwise
 - after the merge to dev the release job publishes an rc tag, and the consumer pins that tag (D-0011)
+
+## Watch (how to monitor this repo's pipelines)
+- project: amwell/terraform-modules/sre/terraform-aws-pexip-common
+- shape: lint-release
+- ci: .gitlab-ci.yml, stages lint and release, runner tag amwell-build
+- apply: none here. Plan and apply run in infra-central on the MR that changes the module ref (D-0028)
+- pass: lint job success on the MR, then after the merge to dev or platinum the release job succeeds and a new tag exists
+- poll: 60s, cap 1h
+- consumer: watch the infra-central pipeline with --repo infra-central
