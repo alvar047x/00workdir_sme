@@ -1,12 +1,13 @@
 ## Environment
 - default branch: platinum; protected: platinum (a GitLab setting git cannot show, from intake)
 - MR target: platinum (git merge history); branch pattern: DVPS-XXXX-desc (D-0002, half of the clone's team branches carry no desc)
-- contents: config/config.yaml is the list of images to copy, src/skopeo_copy.py is the script that copies them (repo map evaluated origin/platinum at 06e7dd8 of 2026-04-20, and the fetch on 2026-09-28 was refused, so anything newer is unread)
-- what it does: copies Iron Bank and public images into the central ECR registry with skopeo, and creates the ECR repository when it is missing (README.md, src/skopeo_copy.py:43, :245)
+- contents: config/config.yaml is the list of images to copy, src/skopeo_copy.py is the script that copies them (repo map evaluated origin/platinum at a6e861e of 2026-09-22, fetched 2026-09-28)
+- what it does: copies Iron Bank and public images into the central ECR registry with skopeo, and creates the ECR repository when it is missing (README.md, src/skopeo_copy.py:43, :258)
 - adding or bumping an image is one edit: an entry in config/config.yaml with IMAGE_REPOSITORY, IMAGE_NAME, IMAGE_TAG and PLATFORM, where PLATFORM is sch, cvg or both
-- test mode: the `-t` flag makes the script report what it would copy or create and change nothing (src/skopeo_copy.py:30, :53, :251)
+- test mode: the `-t` flag makes the script report what it would copy or create and change nothing (src/skopeo_copy.py:30)
 - renovate opens a branch per image that bumps IMAGE_TAG, so most merges here are tag bumps with no ticket (git branch -r)
 - a merge to platinum starts no job. The copy runs on the next scheduled pipeline, or when a person starts a pipeline on platinum from the web and plays the job (.gitlab-ci.yml:38 rules)
+- every job prints its whole environment into the log before it starts, so a job log of this repo is never pasted into a ticket, a comment or a reply (.gitlab-ci.yml:21)
 - set outside the repo, so git cannot show them: the registry credentials and the role to assume, AMWELL_CONTAINER_REGISTRY_* and IRONBANK_USER, IRONBANK_PASSWORD
 - config/config.yaml and README.md hold registry hosts and an account id. Never copy those lines into a ticket, a comment or a reply (D-0031)
 
