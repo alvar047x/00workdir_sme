@@ -36,3 +36,18 @@
 - where to edit for how images are copied or repositories are made: src/skopeo_copy.py
 - where to edit for when the copy runs: the rules of python_run_script, .gitlab-ci.yml:42-48
 - the three registry lines at the top of config/config.yaml are addresses. They stay in the file and are never quoted anywhere else
+
+## Patterns
+- to add an image: a new block under `image:`, the same four keys in the same order, a blank line after it. Copy config/config.yaml:6-12. The block name is free and only has to be unique
+    <name>:
+      IMAGE_REPOSITORY: <registry path of the source, without the image name>
+      IMAGE_NAME: <image name>
+      IMAGE_TAG: <tag>
+      PLATFORM:
+        - <sch | cvg>
+- to move an image to a new version: change IMAGE_TAG in its block and nothing else. Renovate does this on its own for the images it knows
+- to keep two versions of one image: two blocks with different names and the same IMAGE_NAME
+- to stop copying an image: comment the block out with a line saying why, as the file already does. Nothing is deleted from the registry by this repo
+- to add a script option: one add_argument line beside the others, with a default. Copy src/skopeo_copy.py:30
+    parser.add_argument('-<letter>', '--<name>', default=<value>)
+- commit message: `[<ticket key>] <what changed>` is what the team writes here, and Renovate writes `fix(deps): ...`. Nothing reads the message, so use `DVPS-XXXX: <what changed>`
