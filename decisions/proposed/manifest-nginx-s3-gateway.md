@@ -41,3 +41,17 @@
 - where to edit for a gateway default: the ENV lines, Dockerfile:21-35
 - where to edit for the image path: both blocks in .gitlab-ci.yml, the build job and the scan job. They hold the same path twice
 - the jobs themselves are not here. They are in the pipelines repo, project/.ecr_image.yml, read at the tag stable
+
+## Patterns
+- to move a version: change the ARG value and nothing else. Copy Dockerfile:43. Every download and folder name below it is built from the ARG
+    ARG <NAME>_VERSION=<version>
+- to keep the modules loadable: NGINX_VERSION is the nginx version inside the base image, not the newest release. When BASE_IMAGE_VERSION moves to another nginx version, NGINX_VERSION moves with it in the same commit. Modules compiled against another version do not load
+- to add a gateway default: one ENV line in the block it belongs to, under that block's comment. Copy Dockerfile:29
+    ENV <NAME>=<value>
+- to add an nginx module: one `--with-<module>` line in the configure call, before the two dynamic module lines at the end. Copy Dockerfile:86
+    --with-<module> \
+- to take a file from another image: a named FROM stage at the top and a COPY from it. Copy Dockerfile:5 and Dockerfile:124
+    FROM <image>:<tag> as <stage>
+    COPY --from=<stage> <path in that image> <path in this image>
+- to change the image path: the same two lines in both jobs of .gitlab-ci.yml. The registry part is an address and stays as it is in the file
+- commit message: `<type>(<scope>): DVPS-XXXX <what changed>`. Renovate writes `fix(deps): ...` on its own
