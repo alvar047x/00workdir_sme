@@ -33,7 +33,7 @@
 ## Layout
 - main.tf, variables.tf, outputs.tf, iam.tf, domain.tf, nacl.tf at the root: the all-in-one module. main.tf calls each sub-module once per region and passes the provider alias
 - modules/<name>/: one sub-module each, always the same files: main.tf, variables.tf, outputs.tf, versions.tf, and lambda.tf where the module ships a lambda
-- modules/transcoding_set_asg and modules/proxy_edge_set: the conferencing node groups. These two take most of the changes
+- modules/transcoding_set_asg, modules/overflow_set_asg and modules/proxy_edge_set: the conferencing node groups. These take most of the changes. overflow_set_asg is a near copy of transcoding_set_asg, so a change to one is usually owed to the other
 - modules/network: VPC, subnets, security groups. modules/manager: the management node. modules/aims and modules/aims_cert_renew: AIMS and its certificate renewal. modules/sync_lambda: the credential sync lambda
 - python/init/: the lambda that configures a node as it comes up, with one <kind>.json.tpl per node kind. python/sync/: the sync lambda. go/aims_cert_renew/: the certificate renewal lambda
 - file types: terraform (.tf) in the root and modules. python and go lambda sources. json templates (.json.tpl) the init lambda fills in. committed lambda packages (.zip), one per lambda module. .releaserc and .gitlab-ci.yml for the release. VERSIONING.md and README.md are the docs
