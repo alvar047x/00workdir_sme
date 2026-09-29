@@ -1,7 +1,7 @@
 ## Environment
 - default branch: platinum; protected: main,platinum (a GitLab setting git cannot show, from intake)
 - MR target: platinum (git merge history); branch pattern: DVPS-XXXX-desc (git branch -r)
-- contents: one Dockerfile on the Iron Bank mysql8 base, plus hardening_manifest.yaml (Dockerfile:2) (repo map evaluated origin/platinum at a63c5df of 2025-12-08, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- contents: one Dockerfile on the Iron Bank mysql8 base, plus hardening_manifest.yaml (Dockerfile:2) (repo map evaluated origin/platinum at a63c5df of 2025-12-08, fetched 2026-09-28, no change)
 - pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
 - image: ironbank-base/mysql/mysql-php. The repo overrides ECR_REPO, so the path has no ci/ prefix (.gitlab-ci.yml:9)
 - tag to pin: two tags beside the short sha: <BASE_IMAGE_VERSION>-<timestamp to the second>, and <mysql version>-php-v<PHP_INTEGRATION_VERSION>-<date>. Both versions are set by hand in .gitlab-ci.yml, and its comments say to raise PHP_INTEGRATION_VERSION with every version change
