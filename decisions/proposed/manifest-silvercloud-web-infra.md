@@ -1,15 +1,15 @@
 ## Environment
 - default branch: main; protected: main (a GitLab setting git cannot show, from intake)
 - MR target: main (git merge history); branch pattern: feature/DVPS-XXXX-desc (git branch -r)
-- contents: terraform for the SilverCloud commercial environments. deploy/ holds the nine roots, modules/ what they call, config/<deployment>/<phase>.tfvars the values, helm-charts/ the charts terraform installs, docs/runbooks the procedures (repo map evaluated origin/main at 5aa1c67 of 2026-08-04, and the fetch on 2026-09-28 was refused, so anything newer is unread)
-- phases, in order: 00-aws-pre-reqs, 10-aws-parent-acc, 20-aws-infra, 24-matomo-pre-reqs, 25-matomo-infra, 26-matomo-db-config, 30-aws-k8s, 35-matomo-k8s, 40-aws-post-k8s-deployment. Each is its own state, key <deployment>/<phase> (run.sh:105)
+- contents: terraform for the SilverCloud commercial environments. deploy/ holds the nine roots, modules/ what they call, config/<deployment>/<phase>.tfvars the values, helm-charts/ the charts terraform installs, docs/runbooks the procedures (repo map evaluated origin/main at 16e0d68 of 2026-09-28, fetched 2026-09-28)
+- phases, in order: 00-aws-pre-reqs, 10-aws-parent-acc, 20-aws-infra, 24-matomo-pre-reqs, 25-matomo-infra, 26-matomo-db-config, 30-aws-k8s, 35-matomo-k8s, 40-aws-post-k8s-deployment. Each is its own state, key <deployment>/<phase> (run.sh:110)
 - deployments: build, qa-aws, stage-aws, prod-au, prod-ca, prod-ie, prod-uk, prod-us. The prod-de folder is marked decommissioned. prod-au and prod-ca have no matomo phases
-- runner: `./run.sh -d <deployment> -c plan|apply -p <phase>`, called only by CI. It runs terraform in deploy/<phase> with config/<deployment>/<phase>.tfvars (run.sh:101, :200)
-- secrets are not in git: run.sh writes tfvars.json at run time from the deployment's secret in Secrets Manager, so a variable can look unset in the repo and still be supplied (run.sh:111)
+- runner: `./run.sh -d <deployment> -c plan|apply -p <phase>`, called only by CI. It runs terraform in deploy/<phase> with config/<deployment>/<phase>.tfvars (run.sh:106, :218)
+- secrets are not in git: run.sh writes tfvars.json at run time from the deployment's secret in Secrets Manager, so a variable can look unset in the repo and still be supplied (run.sh:116)
 - no pipeline runs for a branch push without an MR. Pipelines run for an MR, for a push to main, and when a person starts one from the web (.gitlab-ci.yml:6)
-- an MR pipeline plans all nine phases, against the build deployment only. A plan for any other deployment exists only in a web pipeline where a person picks ENVIRONMENT_TARGET and LAYER_TARGET (.gitlab-ci.yml:260, :368)
+- an MR pipeline plans all nine phases, against the build deployment only. A plan for any other deployment exists only in a web pipeline where a person picks ENVIRONMENT_TARGET and LAYER_TARGET (.gitlab-ci.yml:265, :373)
 - the branch must contain the head of main or check_latest_code fails. Here a branch behind main does have to be brought up to date (scripts/checkplatinumhead.sh)
-- the MR title or description must hold a DVPS key or check-jira-ticket fails (.gitlab-ci.yml:194)
+- the MR title or description must hold a DVPS key or check-jira-ticket fails (.gitlab-ci.yml:200)
 - helm: terraform installs charts from helm-charts/. A chart is re-applied only when its Chart.yaml version changes, so a template edit with no version bump shows nothing in the plan
 - image pins live in config/<deployment>/*.tfvars and manifest/<version>/manifest.yml. The matomo and mysql-php images come from matomo-fpm-alpine and mysql-php
 - terraform version: required_version = 1.12.2 in every root
