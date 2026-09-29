@@ -1,9 +1,9 @@
 ## Environment
 - default branch: main; protected: main (a GitLab setting git cannot show, from intake)
 - MR target: main (git merge history); branch pattern: DVPS-XXXX-desc (D-0002, the clone's team branches are too few to show one pattern)
-- contents: a Django app under src/, cypress tests under e2e_tests/, the pipeline under ci/, kustomize/aws for the deploy, Dockerfile and Dockerfile.titan (repo map evaluated origin/main at 153c1f46 of 2026-07-14, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- contents: a Django app under src/, cypress tests under e2e_tests/, the pipeline under ci/, kustomize/aws for the deploy, Dockerfile and Dockerfile.titan (repo map evaluated origin/main at 925b8fe8 of 2026-09-22, fetched 2026-09-28)
 - releases are driven by git tags, not by branches. The tag's suffix picks what runs: -build, -qa, -stage, -prod-us, -prod-au, -prod-uk, -prod-ca, -titanrc, -titan (ci/tag-build.gitlab-ci.yml, ci/tag-deployment.gitlab-ci.yml, ci/tag-build-titan.gitlab-ci.yml)
-- a merge to main deploys. The push pipeline's create-qa-tag job makes the next vX.Y.Z-qa tag, that tag's pipeline makes the -build tag when none exists, the build pipeline builds the image, deploys it to the build environment and runs the functional test, then the qa deploy runs (ci/common.gitlab-ci.yml:295, ci/tag-deployment.gitlab-ci.yml:3, ci/tag-build.gitlab-ci.yml)
+- a merge to main deploys. The push pipeline's create-qa-tag job makes the next vX.Y.Z-qa tag, that tag's pipeline makes the -build tag when none exists, the build pipeline builds the image, deploys it to the build environment and runs the functional test, then the qa deploy runs (ci/common.gitlab-ci.yml:296, ci/tag-deployment.gitlab-ci.yml:3, ci/tag-build.gitlab-ci.yml)
 - no deploy job is manual. A person pushing a vX.Y.Z-stage or -prod tag is the approval, and the pipeline deploys as soon as the tag exists
 - SKIP_AWS_BUILD and SKIP_AWS_DEPLOYMENT_ENV_LIST are CI variables that switch the build or a named environment's deploy off
 - the deploy is ci/scripts/kube-deploy.bash: it deletes the old migration job, sets the image in kustomize/aws, applies it, then sets the image on the app and celery deployments and on the cron jobs (ci/scripts/kube-deploy.bash:9, :25, :59)
