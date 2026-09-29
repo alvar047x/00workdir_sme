@@ -3,44 +3,39 @@ kind: repo
 key: https://gitlab.com/amwell/on-prem-migrated/central-support/cvg-titan-input.git
 slug: cvg-titan-input
 report: layout-2026-09-14
-last_intake: 2026-09-17
+last_intake: 2026-09-29
 ---
 TAGS: titan, pipeline
 
 ## Environment
-- default branch: platinum; protected: platinum
-- MR target: platinum; branch pattern: DVPS-XXXX-desc (topology.yaml)
-- contents: terraform, kubernetes manifests or helm
-- pipeline: .gitlab-ci.yml
-- titan data may be CUI; treat all repo content as sensitive
-
-- layout (intake 2026-09-14): numbered stack dirs per domain: core/00_bootstrap .. 99_aws_backup (networking, ssm, eks shared/cdr, keycloak 31, webhosting prereqs, dns), aidbox/00..10, applications/11 and 90, data_platform/iac/00..30 (looker, dp), observability/11..31 (kafka, eks, elastic), rhapsody/01, bento/, general_modules/ (vendored eks and kms modules), general_helm_charts/, stackrox/, dr/, shared/
-- account: titan-sandbox <aws-account-3> (47 references); the customer (Titan) deploys production from manifest.all.yaml plus scripts; there is no direct production access (D-0017)
-- manifests: manifest.input.yaml (what Amwell hands over) and manifest.all.yaml (everything deployed together); README explains commercial vs Titan deployment differences
-- RDS clusters: aidbox/10_aidbox (has rds.force_ssl=1 parameter group), core/31_keycloak and shared/10_centralised_rds_postgres_infra (no cluster parameter group as of DVPS-6804 review)
-- pipelines: pipelines/environments and pipelines/scripts copy artifacts from commercial into the sandbox; nothing builds here directly
-- terraform/terraform.tfvars is the single tfvars; amazon-aurora.pem is the RDS CA bundle
+- default branch: platinum; protected: platinum (a GitLab setting git cannot show, from intake)
+- MR target: platinum (git merge history); branch pattern: feature/DVPS-XXXX-desc (pipelines/.common.yml, and see Branches)
+- titan data may be CUI. Treat all repo content as sensitive (D-0017)
+- what it is: the Titan deliverable. The sandbox is where it is tested, and the customer deploys production from the manifest and the scripts. There is no direct production access (README.md, D-0017)
+- read at: repo map evaluated origin/platinum at c04ce0ee of 2026-09-28, fetched 2026-09-28
+- this repo is not changed often. Notes here grow ticket by ticket, so a gap is a gap, not a rule
+- runner: `./scripts/deploy.sh <layer> <environment> plan|apply`, and `./services/deploy.sh <manifest> <layer> <environment> <action>` for service stacks. State key <environment>/<layer>, vars <domain>/environments/<environment>/<layer>.tfvars (scripts/deploy.sh:157, :181, :195)
+- each environment file switches job groups on and off with RUN_..._JOBS variables (pipelines/environments/)
+- an MR pipeline carries no terraform job. The rules read the branch name and pin_manifest is skipped on an MR, so the branch pipeline is the one to read
+- the branch must contain the head of platinum, or pin_manifest fails at its first step (scripts/checkplatinumhead.sh)
+- CODEOWNERS names owners per directory, and manifest.input.yaml has its own long list, so an MR needs the owner of what it touches
+- terraform version: required_version ~>1.5.7 in nearly every root
+- dr/scripts/ are run by a person and they delete or modify live resources. Never run them
+- account ids, host names and bucket names are written in pipelines/environments/ and in the tfvars. Never copy them into a ticket, a comment or a reply (D-0031)
 
 ## Validate (what "done" looks like here)
-- "run the plan locally" / "local plan" in this repo means a real terraform plan against tsnbx4, never validate-local (that is only fmt, and terraform/terraform.tfvars already fails it on platinum)
-- local plan, run from the repo root; recipe verified end to end 2026-09-17 (DVPS-6622, ~5 min, no retries needed):
-  1. `aws sts get-caller-identity --profile titan-admin` (D-0015; titan-sandbox is the same account <aws-account-3> but is denied credentials)
-  2. manifest.all.yaml is gitignored and the local copy is stale; terraform reads it for chart revisions and image tags. Replace it with the pin_manifest artifact of the newest platinum pipeline: GitLab API `pipelines?ref=platinum`, job `pin_manifest`, `jobs/<id>/artifacts/manifest.all.yaml` (token from 00workdir/.env). Without this the plan fails on missing general_helm_charts/<chart>-<rev> dirs
-  3. `eval "$(aws configure export-credentials --profile titan-admin --format env)"`
-  4. `export AWS_REGION=us-east-2 TERRAFORM_PROVIDERS_BUCKET=tsnbx4-deployment-artifacts CI_COMMIT_BRANCH=platinum TFENV_TERRAFORM_VERSION=1.5.7 DOWNLOAD_PROVIDERS=true`. CI_COMMIT_BRANCH=platinum or the providers key is providers-.tar.gz (404); the S3 providers mirror is linux_amd64 only, so DOWNLOAD_PROVIDERS=true on this Mac; required_version is ~>1.5.7 and the default tfenv is 1.9.0
-  5. `./scripts/deploy.sh ./observability/30_obs_eks tsnbx4 plan > <scratchpad>/plan.log 2>&1` in the background, one wait, then grep the log for `will be`, `Plan:` and `Error`; never poll with sleep
-  - if an earlier failed run left an empty `<domain>/providers` dir or a lock file from the linux mirror, remove `<domain>/providers` and `<layer>/.terraform.lock.hcl` first
-  - env settings come from pipelines/environments/.tsnbx4.yml (dotfiles: `ls -a`); CI runs the same script as role CrossAccountGitlabRunner after the pin_manifest and generate_core_providers jobs
-- plan, pipeline: the layer's plan_* job (Watch below); jobs on platinum target tsnbx4
-- helm charts: general_helm_charts/<chart>-<rev> is picked by the manifest revision, but helm_release (helm 2.13.0, no manifest experiment) only diffs when Chart.yaml `version:` changes, so a template-only edit needs the version bumped; proof is `helm_release.<chart>` with `~ version` in the plan (DVPS-6622: `1.0.8 -> 1.0.11` shown locally)
-- done means: plan reviewed, destroys == 0 unless stated, and the change is reflected in manifest.all.yaml if the customer needs it
+- a plan is the proof, and a plan exists only on a branch whose name the pipeline knows. See Branches
+- plan in the pipeline: the layer's plan job, named under Watch
+- plan from this Mac: `atpy sme howto cvg-titan-local-plan`. "Run the plan locally" means that real plan against tsnbx4, never validate-local, which is fmt only
+- a chart change carries its Chart.yaml version bump. The proof is `helm_release.<chart>` with `~ version` in the plan
+- done means the plan was read, destroys == 0 unless the ticket says otherwise, and manifest.input.yaml carries the change when the customer needs it
 
 ## Watch (how to monitor this repo's pipelines)
 - project: amwell/on-prem-migrated/central-support/cvg-titan-input
 - shape: layer-plan-apply
-- ci: .gitlab-ci.yml includes pipelines/.*.yml; stages in pipelines/.common.yml; jobs are `./scripts/deploy.sh <layer> $ENVIRONMENT plan|apply`
-- apply: manual, a human plays it; the agent never plays a job (D-0028)
-- pass: plan job success with its "Plan:" line; apply job waiting manual before the play, success with its "Apply complete!" line after
+- ci: .gitlab-ci.yml includes pipelines/.*.yml, stages in pipelines/.common.yml, jobs are `./scripts/deploy.sh <layer> $ENVIRONMENT plan|apply`
+- apply: manual, a human plays it. The agent never plays a job (D-0028)
+- pass: plan job success with its "Plan:" line. The apply job waits as manual before the play, and ends with "Apply complete!" after
 - poll: 60s, cap 3h
 - layer: 20_looker = -, dp_cac_20_looker
 - layer: aidbox/00_aidbox_prereqs = plan_aidbox_prereqs, apply_aidbox_prereqs
@@ -110,3 +105,48 @@ D-0017
 
 ## Overrides
 none
+
+## Layout
+- <domain>/<NN_layer>/: one terraform root per numbered folder, applied in number order inside its domain. Domains: core, shared, aidbox, applications, data_platform/iac, observability, rhapsody, stackrox
+- <domain>/environments/<environment>/<layer>.tfvars: the values of that layer for that environment. Environments with pipeline files: tsnbx4, tsnbx5, tsnbx6, tsnbx7, stable
+- <domain>/modules/: what the layers of that domain call. core/modules/titan-eks is behind both EKS layers, core/23_eks_shared and core/25_eks_cdr, so a cluster change usually touches the module and both layers
+- general_modules/: vendored upstream terraform modules, kept with their version in the folder name
+- general_helm_charts/<chart>-<rev>/: the charts terraform installs. The manifest's revision picks the folder
+- services/: the per-service stacks and their own deploy.sh. applications/: web hosting and its DNS
+- manifest.input.yaml: what ships. One entry per application, service and bento plugin, with its revision
+- pipelines/: the CI files, one per domain, .common.yml for stages and rules, environments/ for the per-environment variables. Every file name there starts with a dot
+- scripts/: deploy.sh and the push, pull and generate scripts the jobs call. dr/: recovery scripts and docs
+- file types: terraform (.tf) and its values (.tfvars). helm charts with Chart.yaml, values and templates. yaml for the manifest and the pipelines. python and shell for the scripts
+
+## Patterns
+- to change what ships: edit the entry in manifest.input.yaml, never manifest.all.yaml. An entry is a name, a revision and a phase, csv or cod
+    <name>:
+      revision: <version or short sha>
+      phase: <csv | cod>
+- to change a chart's templates: edit under general_helm_charts/<chart>-<rev>/ and raise `version:` in its Chart.yaml in the same commit. `atpy repo edit cvg-titan-input chart-bump <dir>` does the bump
+- to change a value for one environment: edit <domain>/environments/<environment>/<layer>.tfvars. A value every environment needs goes into each environment's file, and the variable is declared in the layer's variables.tf
+- to change both EKS clusters: make the change in core/modules/titan-eks, and add the input to variables.tf of core/23_eks_shared and core/25_eks_cdr
+- to write an ARN: `arn:${data.aws_partition.current.partition}:...`, never a literal partition. check_compliance fails the pipeline on a literal one
+- to give a new layer its jobs: copy the plan and apply pair at pipelines/.core.yml:37-56 into the domain's pipeline file, and change the job names and the layer path
+    plan_<layer>:
+      extends:
+        - .base_terraform
+        - .terraform_plan_drift_check
+      stage: <domain>
+      needs: [ generate_core_providers ]
+      script: ./scripts/deploy.sh ./<domain>/<NN_layer> $ENVIRONMENT plan
+    apply_<layer>:
+      extends: .base_terraform
+      stage: <domain>
+      needs: [ generate_core_providers, plan_<layer> ]
+      script: ./scripts/deploy.sh ./<domain>/<NN_layer> $ENVIRONMENT apply
+  The rules lines under each job are copied as they stand. A new layer also needs its `- layer:` line under Watch, from `atpy gitlab watch --derive --repo cvg-titan-input`
+
+## Branches
+- the name decides the pipeline. A name the rules do not know gets no plan at all (pipelines/.common.yml)
+- feature/DVPS-XXXX-desc or review/...: the plan jobs and no apply job. pull_thirdparty_images and aidbox_config_push still run on their own and do change the sandbox. This is the shape the scripts make
+- titan/DVPS-XXXX-desc or platinum: every job platinum has. Plans run on the push, applies are manual, and the deploy and push jobs of the groups that are switched on run on their own. Most of the team's branches are this shape
+- titan/tsnbx5..., titan/tsnbx6..., titan/tsnbx7..., titan/stable...: the same, against that environment. Every other branch runs against tsnbx4 (pipelines/.config.yml)
+- service/..., app/..., bento/...: the single service, single app and bento pipelines, for a change to one deliverable
+- DVPS-XXXX-desc with no prefix: pin_manifest and check_compliance only. No plan exists to read, so the plan has to be run from this Mac
+- our own history here used all three: titan/ in 2025, feature/DVPS-XXXX until early 2026, then the bare key, which is why later tickets needed the local plan
