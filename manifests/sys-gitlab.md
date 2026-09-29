@@ -2,7 +2,7 @@
 kind: system
 key: gitlab
 report: none
-last_intake: 2026-09-16
+last_intake: 2026-09-29
 ---
 ## Environment
 - gitlab.com, group amwell; SAML sign-in for the UI. Every API call is `PRIVATE-TOKEN: $GITLAB_TOKEN` from 00workdir/.env (a glpat); no other credential exists and the token is never printed
@@ -23,6 +23,7 @@ last_intake: 2026-09-16
 - a branch behind its target needs no rebase to review cleanly: an MR shows the merge-base diff, so rebasing a pushed branch buys nothing and costs the force push
 - runner_system_failure is a runner eviction, not a code failure: log it and let the human retry (D-0028)
 - pagination: pipeline jobs are paged and a job may carry a null runner; both are handled inside the tooling, so a job list is complete without a second call
+- a fetch, pull or push refused with "Cannot find valid SSO session" is not a token problem and not a permission problem. Run `atpy do gitlab-login --words "<prompt>"` once: it opens the group's sign-in page. Reply one line, "GitLab sign-in page open; say go once signed in", and stop. On go, run it again and quote its VERDICT. WAITING means the sign-in has not landed: say so and stop, never loop with sleep, never retry before the user says go again
 
 ## Decisions in force here
 - D-0003, D-0020, D-0025, D-0028, D-0030
