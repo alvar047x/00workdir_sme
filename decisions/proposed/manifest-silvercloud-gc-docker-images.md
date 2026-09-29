@@ -1,7 +1,7 @@
 ## Environment
 - default branch: main; protected: main (a GitLab setting git cannot show, from intake)
 - MR target: main (the default branch, the history is linear and shows no target); branch pattern: DVPS-XXXX-desc (D-0002, the remote's branches are review/desc and hold no team pattern)
-- contents: Dockerfiles only. Hardened bases under base/debian and base/redhat/ubi9 with their hardening scripts, python 3.11 images on those bases, and elasticsearch, kibana, golang, ingress-nginx-controller, silvercloud-ehr, silvercloud-web and test-image (repo map evaluated origin/main at 7913d77 of 2025-06-10, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- contents: Dockerfiles only. Hardened bases under base/debian and base/redhat/ubi9 with their hardening scripts, python 3.11 images on those bases, and elasticsearch, kibana, golang, ingress-nginx-controller, silvercloud-ehr, silvercloud-web and test-image (repo map evaluated origin/main at 7913d77 of 2025-06-10, fetched 2026-09-28, no change)
 - the project sits under the govcloud_archive namespace, and main has not moved since 2025-06 on the ref read here. Ask before treating it as live
 - pipeline: none. There is no .gitlab-ci.yml on origin/main, so nothing in CI builds or pushes these images
 - by hand: scripts/sch-hardening.sh ends in a docker push and nothing in the repo calls it, so a person runs it (scripts/sch-hardening.sh:78)
