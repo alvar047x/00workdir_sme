@@ -6,7 +6,7 @@
 - runner: `./deploy.sh <step> <init|plan|apply|output|destroy> [--dry-run]`, run by a person; nothing in CI runs terraform (deploy.sh:5)
 - runner detail: `terraform -chdir=layers/<layer>`; var file layers/<layer>/terraform.tfvars, else layers/<layer>/environments/$TF_ENV/terraform.tfvars; TF_ENV defaults to prod (deploy.sh:48, :477-486)
 - `./deploy.sh aws-networking <action>` runs the action on every sub-layer in order; for one sub-layer use `./deploy.sh aws-networking/<sub> <action>` (deploy.sh:827). No step reads layers/aws-networking/environments/prod/.
-- order: transit-gateway before network-manager and ipam before ram-shares (remote state, network-manager/main.tf:46, ram-shares/main.tf:57); aws_peer_ip in the azure tfvars comes from the AWS VPN output, so azure is re-applied after aws-networking (HOWTO.md:23)
+- order: transit-gateway before network-manager and ipam before ram-shares (remote state, layers/aws-networking/network-manager/main.tf:46, layers/aws-networking/ram-shares/main.tf:57); aws_peer_ip in the azure tfvars comes from the AWS VPN output, so azure is re-applied after aws-networking (HOWTO.md:23)
 - credentials: `az login`; AWS_PROFILE=awgov for aws-networking, awgov-pexip for aws-pexip (HOWTO.md:16, :24); deploy.sh only checks that some AWS identity is set (deploy.sh:157)
 - outside terraform, human steps only: seed-secrets (Key Vault), seed-vpn-key (SSM and Key Vault), upload-installers (storage blob); init creates the state bucket or storage account when a backend.hcl exists (deploy.sh:222-431, :510-512)
 - terraform version: required_version >= 1.12.0 in most roots, >= 1.7.0 in the rest
