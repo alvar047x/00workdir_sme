@@ -2,7 +2,7 @@
 kind: system
 key: atpy
 report: none
-last_intake: 2026-09-28
+last_intake: 2026-09-29
 ---
 
 ## Environment
@@ -17,11 +17,13 @@ last_intake: 2026-09-28
   - `atpy sme state [KEY...]`
   - `atpy sme howto [<slug>]`: how to get into or do a thing more than one ticket needs; no slug lists them, a slug prints one; the brief names the ones that match the ticket
   - `atpy sme questions [KEY...]`: the message draft from the live plans: every unchecked human step of the newest approved or proposed plan, grouped by who the step opens with; a superseded, done or closed one asks nothing; steps that open with Adam or user are listed as his, not as a message; no key means the session set
-  - `atpy sme history --inventory [--json]`: what automation_tools/tickets holds, by layout: how many tickets each layout has, their dates, and which file names carry what was asked, said, learned, done and sent. Reads names, sizes and dates only, opens no ticket file, writes nothing. The inventory is the only part built
+  - `atpy sme history --inventory [--json]`: what automation_tools/tickets holds, by layout: how many tickets each layout has, their dates, and which file names carry what was asked, said, learned, done and sent. Reads names, sizes and dates only, opens no ticket file, writes nothing
+  - `atpy sme history --extract [KEY...] [--write] [--tags a,b]`: one scenario per ticket folder: what was asked, learned, done and sent, read by the layout's file names. A line that holds an identifier is left out and counted, what was said is counted and not read out. Prints counts only and writes nothing until --write, which writes sessions/KEY/history.md. No tag comes from the text: --tags declares them for one key and adds the digest that the brief's prior: line finds
   - `atpy gather KEY [--repo <slug>] [--json | --closing]`: repo, MR and newest-pipeline state, verdict first; --closing prints the closing-comment skeleton from that state and the plan, `<...>` lines are the model's
   - `atpy gitlab diff|comments <mr url>`
   - `atpy jira fetch|comments KEY`
   - `atpy wiki search|fetch`
+  - `atpy open [<name>]`: opens a page in the browser by its name and prints `opened <name>`; no name lists the names. The names and addresses are in ~/.config/sme/links, which the user writes by hand and the agent never reads, cats or greps; no address is printed, errors included (D-0031). A page with no name there is the user's to add
   - `atpy repo map <slug> [--check | --write | --report | --vars]`: the one repo evaluation tool, run when a repo is (re)evaluated, never per ticket; `--report` is the complete cited fact base the manifest is authored from; `--vars` traces variables per root and env; `--check` compares branch, MR target, pattern, project and layers with the manifest; `--write` stages only missing lines for `approve --section <slug>`
 - plan evaluation:
   - `atpy sme plan --draft KEY`: the planner brief, which carries the tag vocabulary
@@ -32,6 +34,7 @@ last_intake: 2026-09-28
   - `atpy do <classification> --words "<the prompt verbatim>" [--arg k=v ...] [--approval "<their words>"] [--ticket KEY]`: derives the record (ticket from the session set, repo from the ticket, manifests from the repo, decisions and five booleans from the table in do.py), writes it to sessions/KEY/intake-<n>.json for audit, and runs the script, VERDICT first
   - `atpy do <record.json> [--plan]`: a record path still works. Never hand-write a record and never read `--help` for its shape (SME-01 W-01)
   - scripts run by `atpy do`:
+    - `atpy do gitlab-login --words "<prompt>" [--arg repo=<slug>] [--arg fetch=all|<slug>] [--arg reopen=1]`: is the GitLab SSO session valid. PASS when it is. When it lapsed it opens the group's sign-in page in the browser and says HUMAN: reply one line and stop. On go, run it again: that is the refresh, and fetch= moves the clones' remote refs. The sign-in address is never printed
     - `atpy repo pull <slug>`: fetches the default branch and prints what changed since the last evaluation (report re-run, per-section diff)
     - `atpy repo branch-start KEY --repo <slug> --title "<plan title>"`
     - `atpy repo validate-local --repo <slug>`: a failure origin/<default> also has is pre-existing, named once inside a PASS
