@@ -1,7 +1,7 @@
 ## Environment
 - default branch: main; protected: main (a GitLab setting git cannot show, from intake)
 - MR target: main (git merge history); branch pattern: DVPS-XXXX-desc (D-0002, half of the clone's team branches carry no desc)
-- contents: terraform for the SilverCloud government environment. deploy/ holds the seven roots, modules/ what they call, config/test-govcloud/ the values, helm-charts/ the charts terraform installs, kustomize/ and ci/scripts/ the app deploys, manifest/<version>/manifest.yml the image lists (repo map evaluated origin/main at ab8533d of 2025-07-21, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- contents: terraform for the SilverCloud government environment. deploy/ holds the seven roots, modules/ what they call, config/test-govcloud/ the values, helm-charts/ the charts terraform installs, kustomize/ and ci/scripts/ the app deploys, manifest/<version>/manifest.yml the image lists (repo map evaluated origin/main at ab8533d of 2025-07-21, fetched 2026-09-28, no change)
 - which copy is live is not settled from git. This clone's project sits under the govcloud_archive namespace and its main has not moved since 2025-07 on the ref read here, while silvercloud-web and silvercloud-ehr trigger a project at the path govcloud/silvercloud-gc-iac. Ask which one a ticket means before planning
 - this is Titan work. Treat all repo content as sensitive and judge any live check by D-0017
 - one deployment is live in config/: test-govcloud. The other two folders are marked deprecated
