@@ -1,0 +1,91 @@
+## Operations (one line per family; if a verb is not here it does not exist, propose it instead of improvising)
+- intake, lookups (no record):
+  - `atpy sme brief KEY...`: fetch, epic, delta, blocker, W step, log tail, state, next; appends the Repo section from gather_cmd
+  - `atpy sme pull --sprint | pull KEY... [--new]`: --new leaves a key already on hold or planned alone, names it once, fetches the rest
+  - `atpy sme state [KEY...]`
+  - `atpy sme status [--tests] [--json]`: two questions from disk, no model: are there still scripts to build (the open NEXT rows and every ticket step against the code), and is the system ready for Kiro (hooks, caps, steering, permissions, Kiro settings, verb list against the code, manifests, hook proof, git, D-0031). VERDICT first, every FAIL names its fix, writes nothing
+  - `atpy sme howto [<slug>]`: how to get into or do a thing more than one ticket needs; no slug lists them, a slug prints one; the brief names the ones that match the ticket
+  - `atpy sme questions [KEY...]`: the message draft from the live plans: every unchecked human step of the newest approved or proposed plan, grouped by who the step opens with; a superseded, done or closed one asks nothing; steps that open with Adam or user are listed as his, not as a message; no key means the session set
+  - `atpy sme standup [--since YYYY-MM-DD|today] [--all]`: the standup from disk, no model, no fetch, writes only the state cache: Yesterday is every `log`, `close` and `plan` commit on sessions/ since the previous workday (Monday reaches Friday), grouped by ticket, the last three lines each; Today is each open ticket from the window or the sprint with its live plan's first unchecked step; Blockers are the tickets on hold. Account ids, addresses and URLs are scrubbed
+  - `atpy sme history --inventory [--json]`: what automation_tools/tickets holds, by layout: how many tickets each layout has, their dates, and which file names carry what was asked, said, learned, done and sent. Reads names, sizes and dates only, opens no ticket file, writes nothing
+  - `atpy sme history --extract [KEY...] [--write] [--tags a,b]`: one scenario per ticket folder: what was asked, learned, done and sent, read by the layout's file names. A line that holds an identifier is left out and counted, what was said is counted and not read out. Prints counts only and writes nothing until --write, which writes sessions/KEY/history.md. No tag comes from the text: --tags declares them for one key and adds the digest that the brief's prior: line finds
+  - `atpy gather KEY [--repo <slug>] [--json | --closing]`: repo, MR and newest-pipeline state, verdict first; --closing prints the closing-comment skeleton from that state and the plan, `<...>` lines are the model's
+  - `atpy gitlab diff|comments <mr url>`
+  - `atpy jira fetch|comments KEY`
+  - `atpy wiki search|fetch`
+  - `atpy open [<name>]`: opens a page in the browser by its name and prints `opened <name>`; no name lists the names. The names and addresses are in ~/.config/sme/links, which the user writes by hand and the agent never reads, cats or greps; no address is printed, errors included (D-0031). A page with no name there is the user's to add
+  - `atpy repo map <slug> [--check | --write | --report | --vars]`: the one repo evaluation tool, run when a repo is (re)evaluated, never per ticket; `--report` is the complete cited fact base the manifest is authored from; `--vars` traces variables per root and env; `--check` compares branch, MR target, pattern, project and layers with the manifest; `--write` stages only missing lines for `approve --section <slug>`
+- plan evaluation:
+  - `atpy sme plan --draft KEY`: the planner brief, which carries the tag vocabulary
+  - `atpy sme plan --ticket KEY --from - [--template <slug>]`: the scout writes the plan with it; its body must hold one `TAGS:` line, confirmed once by the approve. With --template the body holds only `## Questions`, `## Changes`, `## Verify`, `## Validate`, `## Not doing`; the pull, branch, validate, push, watch, MR and post rows are filled from repo-<slug> (T-0001) and the brief shows the skeleton when the ticket names one repo
+  - `atpy sme store write amendment W-nn --ticket KEY --from - --by "<their words>"`
+  - `atpy sme approve W-nn --ticket KEY --by "<their words>"`
+- plan execution, through the executor:
+  - `atpy do <classification> --words "<the prompt verbatim>" [--arg k=v ...] [--approval "<their words>"] [--ticket KEY]`: derives the record (ticket from the session set, repo from the ticket, manifests from the repo, decisions and five booleans from the table in do.py), writes it to sessions/KEY/intake-<n>.json for audit, and runs the script, VERDICT first
+  - `atpy do <record.json> [--plan]`: a record path still works. Never hand-write a record and never read `--help` for its shape (SME-01 W-01)
+  - scripts run by `atpy do`:
+    - `atpy do aws-login --words "<prompt>" --arg profile=<name from sys-aws> [--arg session=<sso-session>] [--arg wait=150]`: the identity check first, the SSO login in the background only when it fails, then the identity check polled; PASS, or WAITING when the browser click has not landed: say so and stop, never loop
+    - `atpy do gitlab-login --words "<prompt>" [--arg repo=<slug>] [--arg fetch=all|<slug>] [--arg reopen=1]`: is the GitLab SSO session valid. PASS when it is. When it lapsed it opens the group's sign-in page in the browser and says HUMAN: reply one line and stop. On go, run it again: that is the refresh, and fetch= moves the clones' remote refs. The sign-in address is never printed
+    - `atpy repo pull <slug>`: fetches the default branch and prints what changed since the last evaluation (report re-run, per-section diff)
+    - `atpy repo branch-start KEY --repo <slug> --title "<plan title>"`
+    - `atpy repo validate-local --repo <slug>`: a failure origin/<default> also has is pre-existing, named once inside a PASS
+    - `atpy repo edit <slug> chart-bump <dir> [--to V] | tf-set <file.tf> <type.name> k=v... [--lifecycle k=v...] | ci-job --from - [--file .gitlab-ci.yml]`: one scripted edit on the ticket branch, VERDICT then the diff; `atpy do edit --arg shape=...` runs it with a record
+    - `atpy repo push <slug> [--force]`: a non-fast-forward is VERDICT HUMAN with the exact force command; --force only with the approval words (D-0030)
+    - `atpy gitlab watch <id> --repo <slug> [--layer|--paths|--mr] [--once] [--until plan|apply]` (D-0025)
+    - `atpy gitlab watch --derive --repo <slug>`: layer lines to approve
+    - `atpy gitlab mr-prepare KEY --repo <slug> --skeleton`: the MR body skeleton from the branch, its diff and the plan, nothing written; then `--from -` with the finished body: mr.md, the new-MR link, the drafted comment; no MR is created
+- end after merge:
+  - `atpy gitlab watch <id> --repo <slug> --until apply`: the apply is a human play (D-0028)
+  - the plan's verification lines
+- end execution, with the approval words in the record (D-0026):
+  - `atpy jira comment KEY "<Markdown>"`
+  - `atpy jira create "<summary>" [--assignee me] [--parent KEY] [--link KEY --link-type <name>] [--sprint next]`
+  - `atpy jira close KEY [--resolve]`: the whole close in one call: gate, every status in order to Closed, store close; VERDICT first, then the last comment. `atpy do close` runs it with the approval words
+  - `atpy jira transition KEY --status "<name>"`: one move; prints the moves read when the name is absent
+  - `atpy sme close KEY`
+- store and protocol:
+  - `atpy sme approve <P-file> [--replaces D-nnnn] [--manifest slug]`
+  - `atpy sme approve --section <slug>`
+  - `atpy sme approve --steering`
+  - `atpy sme store write card <name> --from - [--tags a,b]`
+  - `atpy sme store write section <slug> --section Name --from - [--tags a,b]`: also `--rename-from OLD` and `--drop`, both written at once, no approve
+  - `atpy sme store write manifest <slug> --kind-of system|repo [--tags a,b]`: a new sys-/repo- file rendered from schemas/manifest-<kind>.json; the slug is the manifest key, `gitlab` not `sys-gitlab`
+  - `atpy sme store write howto <slug> --from - --tags a,b`: first line `# <what it gets you into>`; an address, URL, account id, instance id or ARN is refused (D-0031); `--drop --by "<their words>"` deletes
+  - `atpy sme store write steering --section "<anchor>" --from -`
+  - `atpy sme store write steering --replace "<fragment of the one rule>" --from -`
+  - `atpy sme store write steering --drop-rule "<fragment>"`: all three steering writes stage into decisions/proposed/steering.md and land on `approve --steering`; an ambiguous fragment is refused, never guessed
+  - `atpy sme mark-step KEY n --by "<their words>"`: the executor calls it on step_satisfied_by
+  - `atpy sme log add --ticket KEY --ref note|digest|D-nnnn|fail:D-nnnn|fail:none --text "..." [--tags a,b] [--block | --unblock]`: there is no `none` ref; it was deleted, and `fail:none` is the only ref sme end drafts a card from. --block puts the ticket on hold locally (status.json, next=wait, Jira untouched); --unblock lifts it
+  - `atpy sme log edit S-nn --ticket KEY [--text ...] [--ref ...] [--tags a,b]`
+  - `atpy sme end`
+  - `atpy sme close KEY`
+  - `atpy sme resolve|verify|respcheck`: run from the hooks, never by hand
+- primitives, only inside a script or when no script covers the ask:
+  - `atpy gitlab pipelines|pipeline|job --project <path>`
+  - `atpy jira board --project <key>`: the board line to approve into sys-atlassian
+  - `atpy jira start|transitions|set-fields|comment-edit|comment-delete|sprint`
+  - `atpy gate check|classify|status|mint|approve|clear|doctor`
+  - `atpy sprint analyze`
+- covered-by: watch = atpy gitlab pipeline, atpy gitlab job, atpy gitlab monitor, at gitlab pipeline, at gitlab job, curl *gitlab.com/api/v4/projects/*/pipelines*, curl *gitlab.com/api/v4/projects/*/jobs*
+- covered-by: gather = atpy gitlab pipelines, at gitlab pipelines, git ls-remote, git log origin/*, git branch -r, curl *gitlab.com/api/v4/projects/*/merge_requests*
+- a covered primitive is denied by the pre-shell gate while the session holds a ticket; the denial names the script, and the script runs through `atpy do` with a record
+- not verbs:
+  - `atpy sme propose|amend|intake|reintake` print "no such verb" and exit 1
+  - `atpy gitlab monitor` is archived
+- legacy, do not use (old plan system, being retired):
+  - atpy ticket verify, atpy verify, atpy pattern, atpy manifest, atpy context, atpy test
+- retrieval:
+  - tags are a closed vocabulary in ../selfdestruction/schemas/tags.json, and a tag is declared, never inferred from text
+  - key is uppercase `TAGS:` on its own line in an artifact, never inline in prose; an unknown tag is refused with the vocabulary printed
+  - .sme/state/tags.json is the derived inverted index, rebuilt from disk on every write and never hand-edited
+  - the brief's `prior:` line is an exact set intersection over it, digests only, top three by match count, with no text similarity anywhere in the path
+- component lifecycle (a delete or a retire needs the user's words; a create or an update does not):
+  - `atpy sme store write decision D-nnnn --from - --by "<their words>"`: rewrites a card and its index line
+  - `atpy sme store write decision D-nnnn --drop --by "<their words>"`: retires it, stamps the card, marks the index line superseded and strips the id from every manifest that cited it
+  - `atpy sme store write manifest <slug> --drop --by "<their words>"`: deletes a manifest (workdir.md is not deletable)
+  - `atpy sme store write hook <id> --from -`: creates or rewrites a client hook in .kiro/hooks after validating trigger and action against the shapes the client accepts
+  - `atpy sme store write hook <id> --drop --by "<their words>"`: moves it to .kiro/hooks/archive
+- proposed cards:
+  - a card drafted from a ticket log lives in `.sme/sessions/KEY/cards/` with a derived `index.md` (one line per card: provenance, tags, Decided) and is triaged when that ticket closes, not while it runs
+  - `decisions/proposed/` holds only cards meant as rules everywhere; the brief prints the count and the index path
+  - `atpy sme store write card <name> --drop --by "<their words>"`: discards one and prints what it threw away; a name matching zero or several cards is refused, so there is no wildcard delete
