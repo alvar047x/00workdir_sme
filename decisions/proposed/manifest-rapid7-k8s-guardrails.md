@@ -1,10 +1,14 @@
 ## Environment
 - default branch: main; protected: main (a GitLab setting git cannot show, from intake)
-- MR target: main (the default branch, the history is too short to show a target); branch pattern: DVPS-XXXX-desc (D-0002, the remote holds one team branch)
-- contents on main: .gitlab-ci.yml and the untouched GitLab template README, nothing else (repo map evaluated origin/main at f6f7e71 of 2025-12-28, and the fetch on 2026-09-28 was refused, so anything newer is unread)
-- the image work is not on main. The remote branch DVPS-4642-automate-rapid7-ecr holds the Dockerfile and hardening_manifest.yaml, unmerged on the ref read here
-- pipeline on main: GitLab's Secret-Detection template and no other job, so main builds and pushes nothing (.gitlab-ci.yml:16)
-- the older manifest line "dockerfile image build" was wrong for main: there is no Dockerfile on it
+- MR target: main (the default branch, the history is too short to show a target); branch pattern: DVPS-XXXX-desc (D-0002, the remote holds no team branch now)
+- contents: a two line Dockerfile that re-publishes the vendor's k8s-guardrails image from the public registry, plus hardening_manifest.yaml (repo map evaluated origin/main at 0f13690 of 2026-02-24, fetched 2026-09-28)
+- pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
+- image path: set by PROJECT_DEPLOYMENT_NAME, with TEAM_ECR_URL and ECR_REPO overridden in the file, so the path has no ci/ prefix (.gitlab-ci.yml:7-9)
+- the vendor version is BASE_IMAGE_VERSION in .gitlab-ci.yml. The Dockerfile takes it as a build arg and has no default, so a build outside CI needs the arg (.gitlab-ci.yml:13, Dockerfile:2)
+- a push publishes: the build job runs on every branch push and writes an image tagged with the short sha. It never runs on an MR pipeline or a schedule
+- no version tag and no latest are ever written here. The template writes both from a branch named platinum only, and this repo's default is main. A consumer can pin the short sha tag and nothing else (pipelines project/.ecr_image.yml:24-28, read at the tag stable, which was 2e0023e9 of 2026-09-21)
+- the history of main was rewritten on the remote when the image work was merged, so a clone whose local main cannot fast-forward holds the old line and is read through origin/main
+- set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT and the registry credentials the template uses
 
 ## Validate (what "done" looks like here)
 - no local check exists in the repo
