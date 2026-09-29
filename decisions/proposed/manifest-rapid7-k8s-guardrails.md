@@ -31,3 +31,13 @@
 - where to edit for a new vendor version: BASE_IMAGE_VERSION at .gitlab-ci.yml:13
 - where to edit for the image path: the three lines at .gitlab-ci.yml:7-9. The registry parts are addresses and stay as they are in the file
 - the jobs themselves are not here. They are in the pipelines repo, project/.ecr_image.yml, read at the tag stable
+
+## Patterns
+- to move to a new vendor version: change the one value, nothing in the Dockerfile. Copy .gitlab-ci.yml:11-13
+    Build Docker Image:
+      variables:
+        BASE_IMAGE_VERSION: "<vendor version>"
+- to add something on top of the vendor image: lines after the FROM in the Dockerfile. Today there are none, so the first one sets the format
+    FROM <registry>/<vendor image>:${BASE_IMAGE_VERSION}
+    RUN <command>
+- commit message: `DVPS-XXXX: <what changed>`. Nothing here reads the message
