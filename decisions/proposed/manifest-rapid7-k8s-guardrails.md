@@ -22,3 +22,12 @@
 - apply: none
 - pass: secret_detection success
 - poll: 60s, cap 30m
+
+## Layout
+- Dockerfile: the ARG and the FROM line, nothing else. The image is the vendor's, unchanged
+- .gitlab-ci.yml: the include of the shared image template, the image path and the vendor version
+- hardening_manifest.yaml: the hardening record of the image. README.md: the doc
+- file types: one Dockerfile, two yaml files, one markdown file
+- where to edit for a new vendor version: BASE_IMAGE_VERSION at .gitlab-ci.yml:13
+- where to edit for the image path: the three lines at .gitlab-ci.yml:7-9. The registry parts are addresses and stay as they are in the file
+- the jobs themselves are not here. They are in the pipelines repo, project/.ecr_image.yml, read at the tag stable
