@@ -29,7 +29,7 @@ last_intake: 2026-09-29
   - `atpy repo map <slug> [--check | --write | --report | --vars]`: the one repo evaluation tool, run when a repo is (re)evaluated, never per ticket; `--report` is the complete cited fact base the manifest is authored from; `--vars` traces variables per root and env; `--check` compares branch, MR target, pattern, project and layers with the manifest; `--write` stages only missing lines for `approve --section <slug>`
 - plan evaluation:
   - `atpy sme plan --draft KEY`: the planner brief, which carries the tag vocabulary
-  - `atpy sme plan --ticket KEY --from - [--template <slug>]`: the scout writes the plan with it; its body must hold one `TAGS:` line, confirmed once by the approve. With --template the body holds only `## Questions`, `## Changes`, `## Verify`, `## Validate`, `## Not doing`; the pull, branch, validate, push, watch, MR and post rows are filled from repo-<slug> (T-0001) and the brief shows the skeleton when the ticket names one repo
+  - `atpy sme plan --ticket KEY --from - [--template <slug>]`: the agent writes the plan with it in the chat, no sub-agent (NEXT R4); its body must hold one `TAGS:` line, confirmed once by the approve. With --template the body holds only `## Questions`, `## Changes`, `## Verify`, `## Validate`, `## Not doing`; the pull, branch, validate, push, watch, MR and post rows are filled from repo-<slug> (T-0001) and the brief shows the skeleton when the ticket names one repo
   - `atpy sme store write amendment W-nn --ticket KEY --from - --by "<their words>"`
   - `atpy sme approve W-nn --ticket KEY --by "<their words>"`
 - plan execution, through the executor:
