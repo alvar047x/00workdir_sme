@@ -41,3 +41,9 @@
     FROM <registry>/<vendor image>:${BASE_IMAGE_VERSION}
     RUN <command>
 - commit message: `DVPS-XXXX: <what changed>`. Nothing here reads the message
+
+## Branches
+- DVPS-XXXX-desc, cut from main: the work branch the scripts make. Its MR goes to main
+- the name sets nothing off, but the push does. Every push to any branch runs Build Docker Image and publishes an image tagged with the short sha
+- main: the same, and nothing more. The version tag and latest need a branch named platinum, which this repo does not have
+- an MR pipeline has no build job. The build to read is the push pipeline of the branch
