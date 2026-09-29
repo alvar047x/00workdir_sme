@@ -2,11 +2,11 @@
 kind: system
 key: aws
 report: none
-last_intake: 2026-09-28
+last_intake: 2026-09-29
 ---
 
 ## Environment (facts; source automation_tools/config/topology.yaml and ~/.aws/config)
-- sso session `amwell` (portal d-90676584ef.awsapps.com); a second session `Amwell-stg` exists for stage profiles; a third session `awgov` (directory d-9a67541a80, us-east-2) covers the Pexip Titan enclave and awgov networking. Tokens live in ~/.aws/sso/cache; the resolve hook prints an `AWS:` line with the session state every prompt, so the token state is known before anything runs
+- sso session `amwell` (its start URL is sso_start_url in ~/.aws/config, never copied out); a second session `Amwell-stg` exists for stage profiles; a third session `awgov` (start URL in ~/.aws/config, us-east-2) covers the Pexip Titan enclave and awgov networking. Tokens live in ~/.aws/sso/cache; the resolve hook prints an `AWS:` line with the session state every prompt, so the token state is known before anything runs
 - silvercloud: build, qa, stage, prod-au, prod-ca, prod-ie, prod-uk, prod-us; profile silvercloud-<env>; regions and cluster names in topology.yaml; rollout order build -> qa-aws -> stage-aws -> prod-au -> prod-ca -> prod-ie -> prod-uk -> prod-us; prod-ie and prod-uk deploy at 15:00 EST only
 - ecr: profile amwell-container-registry, us-east-2, registry host in topology.yaml
 - titan: titan-sandbox and titan-admin are the same account, <aws-account-3> (us-west-2 tsnbx7, us-east-2 tsnbx4; mirrors Titan production); use titan-admin (titan-sandbox was denied GetRoleCredentials on DevOps-ECR-Management, DVPS-6804 S-01). Titan production is air-gapped; never search for an AWS account for it (D-0017)
