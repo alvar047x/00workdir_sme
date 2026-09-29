@@ -10,3 +10,8 @@
 - a Titan ticket never dispatches: its work is GPT-only and a sub-agent's model is unverified
 - search my wiki: `rg -il "<terms>" ../00workdir_wiki` and the matching lines; the work wiki is `atpy wiki search` (sys-atlassian)
 - anything else read-only that would cost more than the turn budget, on a non-Titan ticket: one sub-agent with a three-line scope
+
+## Conventions
+- a dispatch is at most three lines: question, ticket, reply shape
+- a sub-agent never edits and never runs `atpy do`; the main agent judges and replies
+- sub-agent refs: note or fail:none; there is no none ref
