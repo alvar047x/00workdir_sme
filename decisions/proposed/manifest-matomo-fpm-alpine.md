@@ -1,12 +1,11 @@
 ## Environment
 - default branch: main; protected: main (a GitLab setting git cannot show, from intake)
 - MR target: main (the default branch, the history is too short to show a target); branch pattern: feature/DVPS-XXXX-desc (git branch -r)
-- contents: one Dockerfile on the public matomo image, plus hardening_manifest.yaml (Dockerfile:4) (repo map evaluated origin/main at b3d0326 of 2026-01-09, and the fetch on 2026-09-28 was refused, so anything newer is unread)
+- contents: one Dockerfile on the public matomo image, plus hardening_manifest.yaml (Dockerfile:4) (repo map evaluated origin/main at b3d0326 of 2026-01-09, fetched 2026-09-28, no change)
 - pipeline: .gitlab-ci.yml includes project/.ecr_image.yml from the pipelines repo at tag stable. The jobs live there, this repo only sets variables (.gitlab-ci.yml:1-4)
 - image: dockerhub/matomo. The repo overrides ECR_REPO, so the path has no ci/ prefix (.gitlab-ci.yml:9)
-- tag to pin: <BASE_IMAGE_VERSION>-<date>, to the day and not the second, so two builds on one day write the same tag. BASE_IMAGE_VERSION is the matomo version, set by hand in .gitlab-ci.yml
+- tag to pin: the short sha tag, because it is the only tag written here. The job prepares <BASE_IMAGE_VERSION>-<date>, but the template clears it on every branch that is not named platinum, and this repo's default is main. BASE_IMAGE_VERSION is the matomo version, set by hand in .gitlab-ci.yml (.gitlab-ci.yml:13-15, pipelines project/.ecr_image.yml:24-28, read at the tag stable, which was 2e0023e9 of 2026-09-21)
 - a push publishes: the build job runs on every branch push, so a work branch already writes an image tagged with its short sha. It never runs on an MR pipeline or a schedule
-- the version tag from a work branch: the template at the stable tag read here (b1919b7a of 2026-06-08) writes it from every branch. The pipelines default branch already writes it from platinum only, and that arrives when stable is next cut, which may have happened since the last fetch
 - consumers: silvercloud-web-infra pins this image in config/<env>/35-matomo-k8s.tfvars, and its docs/runbooks/update-matomo-image.md is the procedure for the bump
 - the template pushes the latest tag only from a branch named platinum. This repo's default is main, so latest never moves here
 - the Dockerfile's ARG BASE_IMAGE_VERSION has no default, so a build outside CI fails unless the arg is passed (Dockerfile:2)
