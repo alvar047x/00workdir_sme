@@ -127,5 +127,5 @@
 - the name sets nothing off here. No CI rule and no Atlantis rule reads a branch name. What runs is decided by the directories the MR touches, and the only branch rule is that apply jobs for accounts/ and platform/ exist on main alone (.gitlab-ci.yml:21, .gitlab/ci/accounts.yml:46, .gitlab/ci/platform.yml:34)
 - an Atlantis apply needs the branch undiverged: it must hold main's newest commit. Rebase on main before asking for the apply (atlantis.yaml, apply_requirements)
 - other shapes on the remote: feature/..., feat/..., fix/..., <person>/<topic>, and the older HSTGDEVOPS- and SRE- keys. None of them changes what runs
-- pexip/titan: main is where Titan work lands now. It holds the newest pexip/titan commits and the stacks 24_gitlab_automation, 25_monitoring and 29_certs, which dev-pexip-titan does not have. dev-pexip-titan stopped moving in the spring and pins the module to a branch, not a tag. The repo's Titan doc still names dev-pexip-titan, so the doc is behind the code. Which branch a Titan ticket uses is still the user's call
+- pexip/titan: cut from main, MR to main. dev-pexip-titan is a dead branch that the repo's Titan doc still names. Never cut from it
 - develop and main are protected. Nothing is pushed to them, everything goes through an MR
