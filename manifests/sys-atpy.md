@@ -15,6 +15,7 @@ last_intake: 2026-09-29
   - `atpy sme brief KEY...`: fetch, epic, delta, blocker, W step, log tail, state, next; appends the Repo section from gather_cmd
   - `atpy sme pull --sprint | pull KEY... [--new]`: --new leaves a key already on hold or planned alone, names it once, fetches the rest
   - `atpy sme state [KEY...]`
+  - `atpy sme status [--tests] [--json]`: two questions from disk, no model: are there still scripts to build (the open NEXT rows and every ticket step against the code), and is the system ready for Kiro (hooks, caps, steering, permissions, Kiro settings, verb list against the code, manifests, hook proof, git, D-0031). VERDICT first, every FAIL names its fix, writes nothing
   - `atpy sme howto [<slug>]`: how to get into or do a thing more than one ticket needs; no slug lists them, a slug prints one; the brief names the ones that match the ticket
   - `atpy sme questions [KEY...]`: the message draft from the live plans: every unchecked human step of the newest approved or proposed plan, grouped by who the step opens with; a superseded, done or closed one asks nothing; steps that open with Adam or user are listed as his, not as a message; no key means the session set
   - `atpy sme history --inventory [--json]`: what automation_tools/tickets holds, by layout: how many tickets each layout has, their dates, and which file names carry what was asked, said, learned, done and sent. Reads names, sizes and dates only, opens no ticket file, writes nothing
@@ -34,6 +35,7 @@ last_intake: 2026-09-29
   - `atpy do <classification> --words "<the prompt verbatim>" [--arg k=v ...] [--approval "<their words>"] [--ticket KEY]`: derives the record (ticket from the session set, repo from the ticket, manifests from the repo, decisions and five booleans from the table in do.py), writes it to sessions/KEY/intake-<n>.json for audit, and runs the script, VERDICT first
   - `atpy do <record.json> [--plan]`: a record path still works. Never hand-write a record and never read `--help` for its shape (SME-01 W-01)
   - scripts run by `atpy do`:
+    - `atpy do aws-login --words "<prompt>" --arg profile=<name from sys-aws> [--arg session=<sso-session>] [--arg wait=150]`: the identity check first, the SSO login in the background only when it fails, then the identity check polled; PASS, or WAITING when the browser click has not landed: say so and stop, never loop
     - `atpy do gitlab-login --words "<prompt>" [--arg repo=<slug>] [--arg fetch=all|<slug>] [--arg reopen=1]`: is the GitLab SSO session valid. PASS when it is. When it lapsed it opens the group's sign-in page in the browser and says HUMAN: reply one line and stop. On go, run it again: that is the refresh, and fetch= moves the clones' remote refs. The sign-in address is never printed
     - `atpy repo pull <slug>`: fetches the default branch and prints what changed since the last evaluation (report re-run, per-section diff)
     - `atpy repo branch-start KEY --repo <slug> --title "<plan title>"`
