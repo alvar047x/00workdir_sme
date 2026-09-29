@@ -18,11 +18,12 @@
 
 ## Watch (how to monitor this repo's pipelines)
 - project: amwell/on-prem-migrated/devops/dockerfiles/rapid7-k8s-guardrails
-- shape: none
-- ci: .gitlab-ci.yml, stages test and secret-detection, one job from GitLab's Secret-Detection template
-- apply: none
-- pass: secret_detection success
-- poll: 60s, cap 30m
+- shape: image-build
+- ci: .gitlab-ci.yml, jobs from project/.ecr_image.yml in the pipelines repo at tag stable
+- jobs: Build Docker Image in stage build, Scan Docker Image in stage test with allow_failure
+- apply: none, there is no deploy job and nothing for a person to play
+- pass: Build Docker Image success on the branch pipeline. Watch the push pipeline, an MR pipeline has no build job
+- poll: 60s, cap 1h
 
 ## Layout
 - Dockerfile: the ARG and the FROM line, nothing else. The image is the vendor's, unchanged
