@@ -11,9 +11,10 @@
 - set outside the repo, so git cannot show them: CVG_PIPELINES_PROJECT and the registry credentials the template uses
 
 ## Validate (what "done" looks like here)
-- no local check exists in the repo
-- on main the only check is the secret_detection job. It proves nothing about an image
-- work that builds the image starts from the unmerged branch, and what proves it is whatever pipeline that branch carries. Read its .gitlab-ci.yml before planning
+- no local check exists in the repo. The branch pipeline's build job is the check
+- Build Docker Image green on the branch pipeline, and its log names the pushed tag
+- Scan Docker Image is allowed to fail, so the pipeline colour does not show its result. Read the scan job and say what it found
+- done for the ticket means the consumer pins the new short sha tag. This repo's merge alone changes nothing that runs
 
 ## Watch (how to monitor this repo's pipelines)
 - project: amwell/on-prem-migrated/devops/dockerfiles/rapid7-k8s-guardrails
