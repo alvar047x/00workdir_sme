@@ -40,3 +40,9 @@ anchor: - When a script will run: `atpy do <script>` and quote its VERDICT line.
 replaces_line: - When a script will run: `atpy do <script>` and quote its VERDICT line. One script, one reply. A post or a force push runs only with the user's words in the approval key (check: `atpy do` validates). When no script fits, write no record and name the nearest scripts in plain words; never compose API calls or shell to do the job by hand (check: covered-primitive gate, budget).
 ---
 - When a script will run: `atpy do <script>` and quote its VERDICT line. One script, one reply (check: verb budget). A post or a force push runs only with the user's words in the approval key (check: `atpy do` validates; a bare `atpy jira comment`, `create`, `transition` or `close` is denied while a ticket is held). When no script fits, write no record and name the nearest scripts in plain words; never compose API calls or shell to do the job by hand (check: covered-primitive gate, budget).
+---
+op: replace
+anchor: - Length: 120 words routine, 250 for a review, more only on request; a deliverab
+replaces_line: - Length: 120 words routine, 250 for a review, more only on request; a deliverable the user asked for sits in its own fenced block capped at 300 (check: respcheck, LENGTH). No closing question on a lookup.
+---
+- Length: 120 words for every reply, a review included; more only on request. A deliverable the user asked for sits in its own fenced block capped at 300 (check: respcheck, LENGTH). No closing question on a lookup.
