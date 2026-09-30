@@ -2,7 +2,7 @@
 # sme-script
 # purpose: Append one JSON line per Kiro prompt or tool call to the session evidence log
 # inputs: arg:kind, stdin:hook payload, env:KIRO_SESSION_ID
-# outputs: file:.sme/state/kiro-prompts.jsonl, file:.sme/state/kiro-tools.jsonl, exit:0=always
+# outputs: file:$SME_HOME/state/kiro-prompts.jsonl, file:$SME_HOME/state/kiro-tools.jsonl, exit:0=always
 # side_effects: none
 # end-sme-script
 """The target of the two A5 logging hooks. Never blocks, never fails.
@@ -32,11 +32,35 @@ FIELDS = {"prompt": "kiro-prompts.jsonl", "tool": "kiro-tools.jsonl"}
 
 
 def state_dir():
-    """.sme/state next to this script's workspace; created if absent."""
+    """<store>/state, created if absent. B1: the store is resolved, not assumed.
+    Order matches sme/cli.py and commands/sme_store.py: SME_HOME; the in-repo
+    .sme/ while it still holds the store; the pointer ~/.config/sme/home; then
+    the in-repo path. Resolving by hand rather than importing keeps this script
+    dependency-free, which is the point of a hook that must never fail."""
     root = Path(os.path.realpath(__file__)).parent.parent.parent
-    d = root / ".sme" / "state"
+    env = os.environ.get("SME_HOME")
+    if env:
+        store = Path(env).expanduser()
+    else:
+        local = root / ".sme"
+        if (local / "vars.toml").exists() or (local / "index.md").exists():
+            store = local
+        else:
+            store = local
+            try:
+                ptr = Path.home() / ".config" / "sme" / "home"
+                if ptr.exists():
+                    cand = Path(ptr.read_text().strip()).expanduser()
+                    if cand.is_dir():
+                        store = cand
+            except OSError:
+                pass
+    d = store / "state"
     d.mkdir(parents=True, exist_ok=True)
     return d
+
+
+ACCOUNT_ID = re.compile(r"(?<!\d)\d{12}(?!\d)")
 
 
 def dig(payload, *names):
@@ -69,10 +93,13 @@ def line_for(kind, payload):
         row["ticket"] = found.group(0) if found else None
     else:
         row["tool"] = dig(payload, "tool_name", "toolName", "tool") or "unknown"
+        # D-0031 (NEXT R8): scrubbed before the command's cut, so half an account id cannot survive it
         target = dig(payload, "path", "file_path", "filePath")
-        if not target:
+        if target:
+            target = ACCOUNT_ID.sub("<account-id>", str(target))
+        else:
             cmd = dig(payload, "command", "cmd")
-            target = str(cmd)[:80] if cmd else None
+            target = ACCOUNT_ID.sub("<account-id>", str(cmd))[:80] if cmd else None
         row["target"] = target
     return row
 
