@@ -46,3 +46,9 @@ anchor: - Length: 120 words routine, 250 for a review, more only on request; a d
 replaces_line: - Length: 120 words routine, 250 for a review, more only on request; a deliverable the user asked for sits in its own fenced block capped at 300 (check: respcheck, LENGTH). No closing question on a lookup.
 ---
 - Length: 120 words for every reply, a review included; more only on request. A deliverable the user asked for sits in its own fenced block capped at 300 (check: respcheck, LENGTH). No closing question on a lookup.
+---
+op: replace
+anchor: | draft | the message only, one fenced block per deliverable, no question; a Jir
+replaces_line: | draft | the message only, one fenced block per deliverable, no question; a Jira comment posts with `atpy jira comment` on yes |
+---
+| draft | the message only, one fenced block per deliverable, no question; a Jira comment posts on yes with `atpy do comment --approval "<their words>"` |
