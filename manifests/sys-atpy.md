@@ -2,7 +2,7 @@
 kind: system
 key: atpy
 report: none
-last_intake: 2026-09-29
+last_intake: 2026-09-30
 ---
 
 ## Environment
@@ -50,10 +50,10 @@ last_intake: 2026-09-29
   - `atpy gitlab watch <id> --repo <slug> --until apply`: the apply is a human play (D-0028)
   - the plan's verification lines
 - end execution, with the approval words in the record (D-0026):
-  - `atpy jira comment KEY "<Markdown>"`
-  - `atpy jira create "<summary>" [--assignee me] [--parent KEY] [--link KEY --link-type <name>] [--sprint next]`
+  - `atpy do comment --words "<prompt>" --approval "<their words>" --ticket KEY --arg text="<Markdown>"`: the only route for a Jira comment while a ticket is held
+  - `atpy do create --words "<prompt>" --approval "<their words>" --arg summary="<summary>" [--arg assignee=me] [--arg parent=KEY] [--arg link=KEY --arg link_type=<name>] [--arg sprint=next]`
   - `atpy jira close KEY [--resolve]`: the whole close in one call: gate, every status in order to Closed, store close; VERDICT first, then the last comment. `atpy do close` runs it with the approval words
-  - `atpy jira transition KEY --status "<name>"`: one move; prints the moves read when the name is absent
+  - `atpy do transition --words "<prompt>" --approval "<their words>" --ticket KEY --arg status="<name>"`: one move; prints the moves read when the name is absent
   - `atpy sme close KEY`
 - store and protocol:
   - `atpy sme approve <P-file> [--replaces D-nnnn] [--manifest slug]`
@@ -80,6 +80,10 @@ last_intake: 2026-09-29
   - `atpy sprint analyze`
 - covered-by: watch = atpy gitlab pipeline, atpy gitlab job, atpy gitlab monitor, at gitlab pipeline, at gitlab job, curl *gitlab.com/api/v4/projects/*/pipelines*, curl *gitlab.com/api/v4/projects/*/jobs*
 - covered-by: gather = atpy gitlab pipelines, at gitlab pipelines, git ls-remote, git log origin/*, git branch -r, curl *gitlab.com/api/v4/projects/*/merge_requests*
+- covered-by: comment = atpy jira comment, at jira comment
+- covered-by: create = atpy jira create, at jira create
+- covered-by: transition = atpy jira transition, at jira transition
+- covered-by: close = atpy jira close, at jira close
 - a covered primitive is denied by the pre-shell gate while the session holds a ticket; the denial names the script, and the script runs through `atpy do` with a record
 - not verbs:
   - `atpy sme propose|amend|intake|reintake` print "no such verb" and exit 1
