@@ -39,6 +39,7 @@ last_intake: 2026-09-30
   - scripts run by `atpy do`:
     - `atpy do aws-login --words "<prompt>" --arg profile=<name from sys-aws> [--arg session=<sso-session>] [--arg wait=150]`: the identity check first, the SSO login in the background only when it fails, then the identity check polled; PASS, or WAITING when the browser click has not landed: say so and stop, never loop
     - `atpy do gitlab-login --words "<prompt>" [--arg repo=<slug>] [--arg fetch=all|<slug>] [--arg reopen=1]`: is the GitLab SSO session valid. PASS when it is. When it lapsed it opens the group's sign-in page in the browser and says HUMAN: reply one line and stop. On go, run it again: that is the refresh, and fetch= moves the clones' remote refs. The sign-in address is never printed
+    - `atpy do az-login --words "<prompt>" --ticket KEY [--arg wait=150] [--arg tenant=<id>]`: is the Azure CLI token valid (a management-scope token, not `az account show`, which passes on a dead refresh token). PASS when it is; when not, starts `az login` in the background and polls; WAITING means sign in on the page az opened and say go, and go runs it again. Needed before `./deploy.sh azure plan` in azure_titan. No tenant, subscription or object id is printed
     - `atpy repo pull <slug>`: fetches the default branch and prints what changed since the last evaluation (report re-run, per-section diff)
     - `atpy repo branch-start KEY --repo <slug> --title "<plan title>"`
     - `atpy repo validate-local --repo <slug>`: a failure origin/<default> also has is pre-existing, named once inside a PASS
