@@ -52,3 +52,9 @@ anchor: | draft | the message only, one fenced block per deliverable, no questio
 replaces_line: | draft | the message only, one fenced block per deliverable, no question; a Jira comment posts with `atpy jira comment` on yes |
 ---
 | draft | the message only, one fenced block per deliverable, no question; a Jira comment posts on yes with `atpy do comment --approval "<their words>"` |
+---
+op: replace
+anchor: | end this session / done for now (verb=answer, or log for one unlogged fact) | 
+replaces_line: | end this session / done for now (verb=answer, or log for one unlogged fact) | 3 lines max: each set ticket, where it stands, who is awaited; then `New chat: say continue.` Never run `sme end`; the next chat sweeps. |
+---
+| end this session / done for now (verb=answer, or log for one unlogged fact) | 3 lines max: each set ticket, where it stands, who is awaited; then `New chat: say continue.` Never run `sme end` (denied in permissions.yaml): the next chat's first prompt sweeps. |
