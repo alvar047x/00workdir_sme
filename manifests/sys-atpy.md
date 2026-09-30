@@ -55,6 +55,7 @@ last_intake: 2026-09-30
   - `atpy do comment --words "<prompt>" --approval "<their words>" --ticket KEY --arg text="<Markdown>"`: the only route for a Jira comment while a ticket is held
   - `atpy do create --words "<prompt>" --approval "<their words>" --arg summary="<summary>" [--arg assignee=me] [--arg parent=KEY] [--arg link=KEY --arg link_type=<name>] [--arg sprint=next]`
   - `atpy jira close KEY [--resolve]`: the whole close in one call: gate, every status in order to Closed, store close; VERDICT first, then the last comment. `atpy do close` runs it with the approval words
+  - `atpy do points --words "<prompt>" --approval "<their words>" --ticket KEY --arg add=N | --arg points=N`: story points on an existing ticket; add=N adds to what Jira holds, points=N sets it
   - `atpy do transition --words "<prompt>" --approval "<their words>" --ticket KEY --arg status="<name>"`: one move; prints the moves read when the name is absent
   - `atpy sme close KEY`
 - store and protocol:
