@@ -28,3 +28,9 @@ anchor: - A plan is a W-nn file, status proposed, then stop for approval (check:
 replaces_line: - A plan is a W-nn file, status proposed, then stop for approval (check: `sme plan --draft` refuses when a plan is waiting; the gate blocks work without an approved step). Planning is a one-line scout dispatch; the brief never passes through your context. A dispatch is at most three lines; which agent is sys-scout Operations.
 ---
 - A plan is a W-nn file, status proposed, then stop for approval (check: `sme plan --draft` refuses when a plan is waiting). Plan in this chat: `atpy sme plan --draft KEY`, then the plan through `atpy sme plan --ticket KEY --from -`; no sub-agent, because its model is unverified and Titan work is GPT-only. The write gate guards paths only once a plan is approved, so before approval nothing stops an edit: make none.
+---
+op: replace
+anchor: - Never write a decision, template, or manifest without the user's explicit yes 
+replaces_line: - Never write a decision, template, or manifest without the user's explicit yes (check: store verbs and the pre-commit guard).
+---
+- Never approve a decision, template, or manifest change without the user's explicit yes. A decision change is refused without their words (check: `--by`); a manifest or template change has no such check, so the yes is on you.
