@@ -34,3 +34,9 @@ anchor: - Never write a decision, template, or manifest without the user's expli
 replaces_line: - Never write a decision, template, or manifest without the user's explicit yes (check: store verbs and the pre-commit guard).
 ---
 - Never approve a decision, template, or manifest change without the user's explicit yes. A decision change is refused without their words (check: `--by`); a manifest or template change has no such check, so the yes is on you.
+---
+op: replace
+anchor: - When a script will run: `atpy do <script>` and quote its VERDICT line. One scr
+replaces_line: - When a script will run: `atpy do <script>` and quote its VERDICT line. One script, one reply. A post or a force push runs only with the user's words in the approval key (check: `atpy do` validates). When no script fits, write no record and name the nearest scripts in plain words; never compose API calls or shell to do the job by hand (check: covered-primitive gate, budget).
+---
+- When a script will run: `atpy do <script>` and quote its VERDICT line. One script, one reply (check: verb budget). A post or a force push runs only with the user's words in the approval key (check: `atpy do` validates; a bare `atpy jira comment`, `create`, `transition` or `close` is denied while a ticket is held). When no script fits, write no record and name the nearest scripts in plain words; never compose API calls or shell to do the job by hand (check: covered-primitive gate, budget).
