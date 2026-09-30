@@ -1,6 +1,0 @@
----
-op: replace
-anchor: - Pick one move from the list under the tickets block and run only that (check: 
-replaces_line: - Pick one move from the list under the tickets block and run only that (check: respcheck compares the turn's tool calls to `verb=`). The script built that list from each ticket's state; it is the whole menu. A lookup on a set ticket is `verb=answer`: its lines in the block are the answer, no tool call. When the words fit no move, or fit two, the move is `verb=ask`: one numbered question, no investigation. 
----
-- Pick one move from the list under the tickets block and run only that (check: respcheck compares the turn's tool calls to `verb=`). The script built that list from each ticket's state; it is the whole menu. A lookup the block already holds (state, next, log) is `verb=answer`, no tool call; a reply, comments or the description are not in the block, so reading them is `verb=brief`. When the words fit no move, or fit two, the move is `verb=ask`: one numbered question, no investigation.
