@@ -13,7 +13,7 @@ last_intake: 2026-09-30
 ## Operations (one line per family; if a verb is not here it does not exist, propose it instead of improvising)
 - intake, lookups (no record):
   - `atpy sme brief KEY...`: fetch, epic, delta, blocker, W step, log tail, state, next; appends the Repo section from gather_cmd
-  - `atpy sme pull --sprint | pull KEY... [--new]`: --new leaves a key already on hold or planned alone, names it once, fetches the rest
+  - `atpy sme pull --sprint | pull KEY... [--new]`: --new leaves a key already on hold or planned alone, names it once, fetches the rest; after the table, one line per ticket that changed since the last pull (status, assignee, sprint, parent, summary or description edited, new comments), or `nothing`
   - `atpy sme state [KEY...]`
   - `atpy sme status [--tests] [--json]`: two questions from disk, no model: are there still scripts to build (the open NEXT rows and every ticket step against the code), and is the system ready for Kiro (hooks, caps, steering, permissions, Kiro settings, verb list against the code, manifests, hook proof, git, D-0031). VERDICT first, every FAIL names its fix, writes nothing
   - `atpy sme credits [KEY...] [--since YYYY-MM-DD]`: what tickets cost in Kiro credits, read from Kiro's own usage records: a turn goes to its ledger ticket=, else a key in its prompt, else the chat's last ticket; the unattributed share and the 35 target printed; the brief and `sme close` carry the ticket's line; a credits question is verb=brief
