@@ -2,29 +2,26 @@
 kind: system
 key: scout
 report: none
-last_intake: 2026-09-17
+last_intake: 2026-09-30
 ---
 TAGS: protocol, cost
 
 ## Environment
-- read-only sub-agents in .kiro/agents/, one permission block (read, read-only shell, fs_write denied, no `atpy do`): scout-lite (Haiku 4.5, 0.4x), scout (Sonnet 5, 1.3x), scout-deep (Opus 5, 2.2x); model ids and multipliers unverified against the Kiro model picker
-- worker (Sonnet 5) is the only sub-agent that edits or runs `atpy do`; the main agent judges and replies
+- no agent file in .kiro/agents, and none is added: no agent file names a model and there are no tiers (Adam 2026-09-24)
+- which model a sub-agent runs on is unverified: Kiro's configuration reference says an agent with no `model` field uses "the default model", and no Kiro page ties that to the chat's pick (checked 2026-09-29, NEXT R4). One live dispatch in October settles it
 - a sub-agent carries none of the resolve injection; a file the main agent reads lands on top of it
 
 ## Operations
-- first matching line wins; the main agent never investigates by hand
-- a registered verb answers it: main agent runs the verb, no dispatch
-- `Plan KEY`, `Work KEY`, or a digest: scout
-- search my wiki: scout-lite, `rg -il "<terms>" ../00workdir_wiki` and the matching lines; the work wiki is never a scout search, it is `atpy wiki search` (sys-atlassian)
-- one named target (path, symbol, commit, command, AWS resource) with a found/not-found answer: scout-lite
-- anything else, including "why does X fail" and any read over ~500 lines: scout
-- scout-lite first line `TOO BIG`: re-dispatch to scout with that line
-- scout first line `INCONCLUSIVE`: re-dispatch to scout-deep with scout's reply; scout-deep is never first
-- an edit, a script run, a pipeline watch: worker
+- first matching line wins
+- a registered verb answers it: the main agent runs the verb, no dispatch
+- `plan` and `work` run in the chat, never dispatched (the move list says so)
+- a Titan ticket never dispatches: its work is GPT-only and a sub-agent's model is unverified
+- search my wiki: `rg -il "<terms>" ../00workdir_wiki` and the matching lines; the work wiki is `atpy wiki search` (sys-atlassian)
+- anything else read-only that would cost more than the turn budget, on a non-Titan ticket: one sub-agent with a three-line scope
 
 ## Conventions
 - a dispatch is at most three lines: question, ticket, reply shape
-- `SHOULD HAVE BEEN LITE` from scout-deep is logged `--ref fail:none --tags protocol`, so the table gets fixed
+- a sub-agent never edits and never runs `atpy do`; the main agent judges and replies
 - sub-agent refs: note or fail:none; there is no none ref
 
 ## Decisions in force here
