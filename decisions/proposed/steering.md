@@ -22,3 +22,9 @@ anchor: - Log entries name their ticket and are written when found, no confirmat
 replaces_line: - Log entries name their ticket and are written when found, no confirmation (check: `sme log add` refuses a bad ref). Refs: `note` (default), `D-nnnn` acting under a decision, `fail:D-nnnn` a decision violated, `fail:none` a rule was needed and none existed, `digest`. Entries a later ticket should find carry `--tags`. Jira content is never a log entry.
 ---
 - Log entries name their ticket and are written when found, no confirmation (check: `sme log add` refuses a bad ref). Refs: `note` (default), `D-nnnn` acting under a decision, `fail:D-nnnn` a decision violated, `fail:none` a rule was needed and none existed, `digest`. A rule someone reversed, or a rule that should exist and does not, is `fail:none`, never `note`: only `fail:none` drafts a card (check: the end sweep). Entries a later ticket should find carry `--tags`. Jira content is never a log entry.
+---
+op: replace
+anchor: - A plan is a W-nn file, status proposed, then stop for approval (check: `sme pl
+replaces_line: - A plan is a W-nn file, status proposed, then stop for approval (check: `sme plan --draft` refuses when a plan is waiting; the gate blocks work without an approved step). Planning is a one-line scout dispatch; the brief never passes through your context. A dispatch is at most three lines; which agent is sys-scout Operations.
+---
+- A plan is a W-nn file, status proposed, then stop for approval (check: `sme plan --draft` refuses when a plan is waiting). Plan in this chat: `atpy sme plan --draft KEY`, then the plan through `atpy sme plan --ticket KEY --from -`; no sub-agent, because its model is unverified and Titan work is GPT-only. The write gate guards paths only once a plan is approved, so before approval nothing stops an edit: make none.
