@@ -56,6 +56,7 @@ last_intake: 2026-10-01
   - `atpy jira comment-check KEY - <<'EOF'`: the same formatter and checks, prints the comment as Jira will show it, posts nothing; run it before asking the user to approve a draft
   - `atpy do create --words "<prompt>" --approval "<their words>" --arg summary="<summary>" [--arg assignee=me] [--arg parent=KEY] [--arg link=KEY --arg link_type=<name>] [--arg sprint=next]`
   - `atpy jira close KEY [--resolve]`: the whole close in one call: gate, every status in order to Closed, store close; VERDICT first, then the last comment. `atpy do close` runs it with the approval words
+  - `atpy do description --words "<prompt>" --approval "<their words>" --ticket KEY --arg from=last-comment`: the description becomes the newest comment as it is in Jira (ADF, mentions kept), nothing retyped; or `--arg text=- <<'EOF'` with Markdown through the comment formatter. After any post or edit through atpy, the ticket is refetched, so automation_tools/tickets/KEY is current
   - `atpy do points --words "<prompt>" --approval "<their words>" --ticket KEY --arg add=N | --arg points=N`: story points on an existing ticket; add=N adds to what Jira holds, points=N sets it
   - `atpy do transition --words "<prompt>" --approval "<their words>" --ticket KEY --arg status="<name>"`: one move; prints the moves read when the name is absent
   - `atpy sme close KEY`
