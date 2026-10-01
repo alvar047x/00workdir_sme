@@ -90,6 +90,12 @@ last_intake: 2026-10-01
 - covered-by: transition = atpy jira transition, at jira transition
 - covered-by: close = atpy jira close, at jira close
 - a covered primitive is denied by the pre-shell gate while the session holds a ticket; the denial names the script, and the script runs through `atpy do` with a record
+- workflows (Kiro recipes, there only while Adam has workflows turned on; when the `run_workflow` tool is absent, use the verb instead):
+  - launched with `run_workflow` and a `workflowPath` under `.kiro/workflows/`, never generated, bundled or `agent://`: the wf-launch hook denies every other launch, and a denial is final
+  - `.kiro/workflows/watch-pipeline.workflow.yaml`, inputs ticket, words (the prompt verbatim), pipeline, repo: waits on one pipeline through one `atpy do watch` record with no model turn while it waits; ends on PASS or on WAITING <job> for a human play, and a FAIL fails the run
+  - `.kiro/workflows/wait-approval.workflow.yaml`, inputs ticket, plan (W-nn): waits until that plan is approved on disk; the user approves in the main chat with `atpy sme approve`, and the approval words never enter the workflow
+  - `python3 automation_tools/wf_watch.py pipeline|approval` is the command behind both watch nodes: Kiro runs it once per poll, never the agent by hand
+  - a recipe holds command nodes only; an agent step in a recipe needs a new decision, and a Titan ticket never gets one
 - not verbs:
   - `atpy sme propose|amend|intake|reintake` print "no such verb" and exit 1
   - `atpy gitlab monitor` is archived
