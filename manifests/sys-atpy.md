@@ -2,7 +2,7 @@
 kind: system
 key: atpy
 report: none
-last_intake: 2026-09-30
+last_intake: 2026-10-01
 ---
 
 ## Environment
@@ -52,7 +52,8 @@ last_intake: 2026-09-30
   - `atpy gitlab watch <id> --repo <slug> --until apply`: the apply is a human play (D-0028)
   - the plan's verification lines
 - end execution, with the approval words in the record (D-0026):
-  - `atpy do comment --words "<prompt>" --approval "<their words>" --ticket KEY --arg text="<Markdown>"`: the only route for a Jira comment while a ticket is held
+  - `atpy do comment --words "<prompt>" --approval "<their words>" --ticket KEY --arg text=- <<'EOF'` then the Markdown, then `EOF`: the only route for a Jira comment while a ticket is held. Text comes through stdin (`text=-`), never a quoted argument, so no shell quoting touches a line break. Every post and edit goes through one formatter (comment_format): escaped line breaks become real ones, Markdown becomes ADF, [~Full Name] becomes a mention; an unresolved mention, a literal \n, a [text](url) link, h2./{code} wiki markup or an unpaired ** REFUSES the post and prints why and a preview
+  - `atpy jira comment-check KEY - <<'EOF'`: the same formatter and checks, prints the comment as Jira will show it, posts nothing; run it before asking the user to approve a draft
   - `atpy do create --words "<prompt>" --approval "<their words>" --arg summary="<summary>" [--arg assignee=me] [--arg parent=KEY] [--arg link=KEY --arg link_type=<name>] [--arg sprint=next]`
   - `atpy jira close KEY [--resolve]`: the whole close in one call: gate, every status in order to Closed, store close; VERDICT first, then the last comment. `atpy do close` runs it with the approval words
   - `atpy do points --words "<prompt>" --approval "<their words>" --ticket KEY --arg add=N | --arg points=N`: story points on an existing ticket; add=N adds to what Jira holds, points=N sets it
