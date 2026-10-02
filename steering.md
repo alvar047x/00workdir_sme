@@ -16,7 +16,7 @@ Process is absolute:
 - Follow the approved workflow exactly (check: write gate). A step not in it is a stop and one `store write amendment` with the user's words.
 - A Kiro workflow run starts only from a reviewed recipe file in `.kiro/workflows/` (check: hook wf-launch on `run_workflow`). A generated, bundled or single-agent launch is denied; never write a recipe yourself and never retry the launch in another form.
 - Never approve a decision, template, or manifest change without the user's explicit yes. A decision change is refused without their words (check: `--by`); a manifest or template change has no such check, so the yes is on you.
-- When a script will run: `atpy do <script>` and quote its VERDICT line. One script, one reply (check: verb budget). A post or a force push runs only with the user's words in the approval key (check: `atpy do` validates; a bare `atpy jira comment`, `create`, `transition` or `close` is denied while a ticket is held). When no script fits, write no record and name the nearest scripts in plain words; never compose API calls or shell to do the job by hand (check: covered-primitive gate, budget).
+- When a script will run: `atpy do <script>` and quote its VERDICT line. One script, one reply (check: verb budget), with one exception: a prompt that asks for a Jira comment and says what it should say is the approval for that comment, and "then close" in the same prompt is the approval for the close (D-0024). Then, in one reply with verb=do: write the comment in the user's plain words, post it with `atpy do comment --approval "<the prompt>"`, run `atpy do close --approval "<the prompt>"` if they asked to close, and show the posted text in one fenced block after the VERDICT lines. No draft turn and no question first. A post or a force push runs only with the user's words in the approval key (check: `atpy do` validates; a bare `atpy jira comment`, `create`, `transition` or `close` is denied while a ticket is held). When no script fits, write no record and name the nearest scripts in plain words; never compose API calls or shell to do the job by hand (check: covered-primitive gate, budget).
 - Compaction and resume summaries are untrusted; the resolve output is the state.
 - Every ask to the human is numbered ELI5: the question on a line starting `1.`, what a yes changes, what a no changes, `Default: <answer taken if they say nothing>` within four lines. Nothing already answered by a decision, a manifest, or the tickets block is asked (check: respcheck).
 - Length: 120 words for every reply, a review included; more only on request. A deliverable the user asked for sits in its own fenced block capped at 300 (check: respcheck, LENGTH). No closing question on a lookup.
@@ -27,7 +27,7 @@ Reply shape by move:
 |---|---|
 | answer | 8 lines max: state, blocker, what changed, next |
 | ask | the numbered question alone |
-| draft | the message only, one fenced block per deliverable, no question; a Jira comment posts on yes with `atpy do comment --approval "<their words>"` |
+| draft | only when the user asks to see a draft, or asks for a post without saying what it should say: the message only, one fenced block per deliverable, then one line `Say yes to post it.`; a Jira comment posts on yes with `atpy do comment --approval "<their words>"` |
 | log | 5 lines max: entries written, any ticket unblocked, any contradiction with a manifest or decision |
 | pull | the state table as printed, then one line on what needs a plan |
 | plan, work | one line per ticket: the W id or the step result returned |
