@@ -72,7 +72,7 @@ last_intake: 2026-10-02
   - `atpy sme store write steering --replace "<fragment of the one rule>" --from -`
   - `atpy sme store write steering --drop-rule "<fragment>"`: all three steering writes stage into decisions/proposed/steering.md and land on `approve --steering`; an ambiguous fragment is refused, never guessed
   - `atpy sme mark-step KEY n --by "<their words>"`: checks step n off; the agent runs it when a run step's result is in hand or the user says a human step is done (the work brief prints the exact line), and the executor calls it on step_satisfied_by
-  - `atpy sme log add --ticket KEY --ref note|digest|D-nnnn|fail:D-nnnn|fail:none --text "..." [--tags a,b] [--block | --unblock]`: there is no `none` ref; it was deleted, and `fail:none` is the only ref sme end drafts a card from. --block puts the ticket on hold locally (status.json, next=wait, Jira untouched); --unblock lifts it
+  - `atpy sme log add --ticket KEY --ref note|digest|D-nnnn|fail:D-nnnn|fail:none --text "..." [--tags a,b] [--block | --unblock]`: there is no `none` ref; it was deleted, and `fail:none` is the only ref sme end drafts a card from. --block puts the ticket on hold locally (status.json, next=wait, Jira untouched); --unblock lifts it. A hold is dated, and a Jira comment newer than it overtakes it: next stops being wait, the row says `hold-overtaken`, the brief quotes the old hold, and a proposed plan older than a comment says so in next; still waiting is a new --block
   - `atpy sme log edit S-nn --ticket KEY [--text ...] [--ref ...] [--tags a,b]`
   - `atpy sme end`
   - `atpy sme close KEY`
