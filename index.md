@@ -22,7 +22,7 @@ D-0021 | active | paths: none | Any git pull, push, terraform apply or destroy, 
 D-0022 | active | paths: none | Any use of an at.py verb.
 D-0023 | active | paths: none | Any read, status change, or comment on a Jira ticket.
 D-0024 | active | paths: none | Any request to close, resolve, or mark done a Jira ticket.
-D-0025 | active | paths: **/.gitlab-ci.yml,**/pipelines/*.yml,.sme/manifests/repo-*.md | Backs the boolean read_trace_only_on_fail. Any plan step, prompt or scout that waits on, checks or reports a GitLab pipeline or job.
+D-0025 | active | paths: **/.gitlab-ci.yml,**/pipelines/*.yml,**/manifests/repo-*.md | Backs the boolean read_trace_only_on_fail. Any plan step, prompt or scout that waits on, checks or reports a GitLab pipeline or job.
 D-0026 | active | paths: none | Backs the booleans post_needs_approval and step_satisfied_by. Every prompt on a ticket in the session set that leads to a script run, and every post the agent proposes.
 D-0027 | active | paths: none | Backs the boolean verify_after. Every ticket plan and every close ask.
 D-0028 | active | paths: **/*.tf,**/*.tfvars,**/pipelines/*.yml | Backs the boolean human_plays_apply. Any pipeline with a manual job, any failed job, and any terraform or helm apply.
